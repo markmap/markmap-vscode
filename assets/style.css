@@ -17,3 +17,8 @@ body {
   bottom: 20px;
   right: 20px;
 }
+
+.btn-text {
+  padding-left: 4px;
+  padding-right: 4px;
+}

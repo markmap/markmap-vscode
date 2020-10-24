@@ -19,17 +19,17 @@ const toolbar = new markmap.Toolbar();
 toolbar.register({
   id: 'editAsText',
   title: 'Edit as text',
-  content: '<div>Edit</div>',
+  content: '<div class="btn-text">Edit</div>',
   onClick: clickHandler('editAsText'),
 });
 toolbar.register({
-  id: 'saveHtml',
-  title: 'Save HTML',
-  content: '<div>Save</div>',
-  onClick: clickHandler('saveHtml'),
+  id: 'exportAsHtml',
+  title: 'Export as HTML',
+  content: '<div class="btn-text">Export</div>',
+  onClick: clickHandler('exportAsHtml'),
 });
-toolbar.setItems(['zoomIn', 'zoomOut', 'fit', 'editAsText', 'saveHtml']);
-document.addEventListener('DOMContentLoaded', () => {
+toolbar.setItems(['zoomIn', 'zoomOut', 'fit', 'editAsText', 'exportAsHtml']);
+setTimeout(() => {
   toolbar.attach(mm);
   document.body.append(toolbar.render());
 });

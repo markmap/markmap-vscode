@@ -33,18 +33,21 @@
     "lint": "eslint src --ext ts",
     "watch": "tsc -watch -p ./",
     "pretest": "yarn run compile && yarn run lint",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "transform": "locky yarn yarn"
   },
   "devDependencies": {
-    "@types/vscode": "^1.50.0",
+    "@gera2ld/locky": "^0.1.0",
     "@types/glob": "^7.1.3",
     "@types/lodash": "^4.14.162",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.14.2",
-    "eslint": "^7.11.0",
+    "@types/vscode": "^1.50.0",
     "@typescript-eslint/eslint-plugin": "^4.5.0",
     "@typescript-eslint/parser": "^4.5.0",
+    "eslint": "^7.11.0",
     "glob": "^7.1.6",
+    "husky": "^4.3.0",
     "mocha": "^8.2.0",
     "typescript": "^4.0.3",
     "vscode-test": "^1.4.0"
@@ -52,5 +55,11 @@
   "dependencies": {
     "lodash": "^4.17.20",
     "markmap-lib": "^0.9.2"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn transform -t",
+      "pre-push": "yarn lint"
+    }
   }
 }

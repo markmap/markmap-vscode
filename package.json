@@ -3,6 +3,8 @@
   "displayName": "Markmap",
   "description": "Visualize your markdown in VSCode",
   "version": "0.0.1",
+  "publisher": "gera2ld",
+  "icon": "assets/favicon.png",
   "engines": {
     "vscode": "^1.50.0"
   },
@@ -61,5 +63,8 @@
       "pre-commit": "yarn transform -t",
       "pre-push": "yarn lint"
     }
-  }
+  },
+  "repository": "https://github.com/gera2ld/markmap-vscode",
+  "author": "Gerald <gera2ld@live.com>",
+  "license": "MIT"
 }

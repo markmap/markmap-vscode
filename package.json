@@ -9,7 +9,12 @@
     "vscode": "^1.50.0"
   },
   "categories": [
-    "Other"
+    "Visualization"
+  ],
+  "keywords": [
+    "markmap",
+    "mindmap",
+    "markdown"
   ],
   "activationEvents": [
     "onCustomEditor:markmap-vscode.markmap"

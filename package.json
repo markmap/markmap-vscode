@@ -2,7 +2,7 @@
   "name": "markmap-vscode",
   "displayName": "Markmap",
   "description": "Visualize your markdown in VSCode",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "gera2ld",
   "icon": "assets/favicon.png",
   "engines": {

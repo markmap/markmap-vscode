@@ -1,8 +1,10 @@
 {
   "name": "markmap-vscode",
-  "displayName": "Markmap",
-  "description": "Visualize your markdown in VSCode",
   "version": "0.0.2",
+  "description": "Visualize your markdown in VSCode",
+  "author": "Gerald <gera2ld@live.com>",
+  "license": "MIT",
+  "displayName": "Markmap",
   "publisher": "gera2ld",
   "icon": "assets/favicon.png",
   "engines": {
@@ -19,7 +21,6 @@
   "activationEvents": [
     "onCustomEditor:markmap-vscode.markmap"
   ],
-  "main": "./out/extension.js",
   "contributes": {
     "customEditors": [
       {
@@ -35,41 +36,41 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn run compile",
-    "compile": "tsc -p ./",
-    "lint": "eslint src --ext ts",
-    "watch": "tsc -watch -p ./",
-    "pretest": "yarn run compile && yarn run lint",
-    "test": "node ./out/test/runTest.js",
-    "transform": "locky yarn yarn"
+    "vscode:prepublish": "yarn lint && yarn clean && yarn build",
+    "build": "rollup -c rollup.conf.js",
+    "lint": "eslint --ext .ts,.tsx .",
+    "watch": "rollup -wc rollup.conf.js",
+    "transform": "locky yarn yarn",
+    "clean": "del dist types"
   },
-  "devDependencies": {
-    "@gera2ld/locky": "^0.1.0",
-    "@types/glob": "^7.1.3",
-    "@types/lodash": "^4.14.164",
-    "@types/mocha": "^8.0.3",
-    "@types/node": "^14.14.6",
-    "@types/vscode": "^1.50.0",
-    "@typescript-eslint/eslint-plugin": "^4.6.1",
-    "@typescript-eslint/parser": "^4.6.1",
-    "eslint": "^7.12.1",
-    "glob": "^7.1.6",
-    "husky": "^4.3.0",
-    "mocha": "^8.2.1",
-    "typescript": "^4.0.5",
-    "vscode-test": "^1.4.1"
-  },
+  "repository": "https://github.com/gera2ld/markmap-vscode",
+  "main": "dist/extension.js",
+  "files": [
+    "dist",
+    "types"
+  ],
+  "typings": "types/index.d.ts",
   "dependencies": {
+    "@babel/runtime": "^7.12.1",
     "lodash": "^4.17.20",
     "markmap-lib": "^0.9.3"
   },
+  "devDependencies": {
+    "@gera2ld/locky": "^0.1.0",
+    "@gera2ld/plaid": "~2.1.3",
+    "@gera2ld/plaid-common-ts": "~2.1.4",
+    "@gera2ld/plaid-rollup": "~2.1.3",
+    "@types/glob": "^7.1.3",
+    "@types/lodash": "^4.14.164",
+    "@types/node": "^14.14.6",
+    "@types/vscode": "^1.50.0",
+    "del-cli": "^3.0.1",
+    "husky": "^4.3.0"
+  },
   "husky": {
     "hooks": {
-      "pre-commit": "yarn transform -t",
-      "pre-push": "yarn lint"
+      "pre-push": "yarn lint",
+      "pre-commit": "yarn transform -t"
     }
-  },
-  "repository": "https://github.com/gera2ld/markmap-vscode",
-  "author": "Gerald <gera2ld@live.com>",
-  "license": "MIT"
+  }
 }

@@ -24,17 +24,6 @@ const el = toolbar.render();
 el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
 document.body.append(el);`);
 
-export function activate(context: ExtensionContext) {
-  context.subscriptions.push(window.registerCustomEditorProvider(
-    MarkmapEditor.viewType,
-    new MarkmapEditor(context),
-    { webviewOptions: { retainContextWhenHidden: true } },
-  ));
-}
-
-// this method is called when your extension is deactivated
-export function deactivate() {}
-
 class MarkmapEditor implements CustomTextEditorProvider {
   static readonly viewType = 'markmap-vscode.markmap';
 
@@ -43,17 +32,17 @@ class MarkmapEditor implements CustomTextEditorProvider {
   public async resolveCustomTextEditor(
     document: TextDocument,
     webviewPanel: WebviewPanel,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<void> {
     webviewPanel.webview.options = {
       enableScripts: true,
     };
     const jsUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/app.js')));
     const cssUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/style.css')));
-    let assets = getAssets();
-    assets = {
+    let allAssets = getAssets();
+    allAssets = {
       styles: [
-        ...assets.styles || [],
+        ...allAssets.styles || [],
         {
           type: 'stylesheet',
           data: {
@@ -68,7 +57,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
         },
       ],
       scripts: [
-        ...assets.scripts || [],
+        ...allAssets.scripts || [],
         {
           type: 'script',
           data: {
@@ -83,7 +72,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
         },
       ],
     };
-    webviewPanel.webview.html = fillTemplate(undefined, assets);
+    webviewPanel.webview.html = fillTemplate(undefined, allAssets);
     const update = () => {
       const md = document.getText();
       const { root } = transform(md);
@@ -97,7 +86,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
     const messageHandlers: { [key: string]: (data?: any) => void } = {
       refresh: update,
       editAsText: () => {
-        const editor = window.showTextDocument(document, {
+        window.showTextDocument(document, {
           viewColumn: ViewColumn.Beside,
         });
       },
@@ -133,8 +122,8 @@ class MarkmapEditor implements CustomTextEditorProvider {
             {
               type: 'iife',
               data: {
-                fn: (renderToolbar) => {
-                  setTimeout(renderToolbar);
+                fn: (r) => {
+                  setTimeout(r);
                 },
                 getParams: () => [renderToolbar],
               },
@@ -147,13 +136,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
         try {
           await workspace.fs.writeFile(targetUri, data);
         } catch (e) {
-          console.error("Cannot write file", e);
+          console.error('Cannot write file', e);
           await window.showErrorMessage(`Cannot write file "${targetUri.toString()}"!`);
         }
       },
-      log: (data) => {
-        console.log('log:', data);
-      },
+      // log: (data) => {
+      //   console.log('log:', data);
+      // },
     };
     webviewPanel.webview.onDidReceiveMessage(e => {
       const handler = messageHandlers[e.type];
@@ -166,3 +155,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
     });
   }
 }
+
+export function activate(context: ExtensionContext) {
+  context.subscriptions.push(window.registerCustomEditorProvider(
+    MarkmapEditor.viewType,
+    new MarkmapEditor(context),
+    { webviewOptions: { retainContextWhenHidden: true } },
+  ));
+}
+
+export function deactivate() {}

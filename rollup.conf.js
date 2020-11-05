@@ -10,6 +10,9 @@ const pkg = require('./package.json');
 const DIST = defaultOptions.distDir;
 const FILENAME = 'extension';
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
+const replaceValues = {
+  'process.env.TOOLBAR_VERSION': JSON.stringify(require('markmap-toolbar/package.json').version),
+};
 
 const external = [
   'path',
@@ -31,6 +34,7 @@ const rollupConfig = [
       plugins: getRollupPlugins({
         extensions: defaultOptions.extensions,
         postcss: postcssOptions,
+        replaceValues,
       }),
       external,
     },

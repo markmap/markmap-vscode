@@ -1,6 +1,7 @@
 import { join } from 'path';
-import { transform, getAssets, getUsedAssets } from 'markmap-lib/dist/transform';
-import { fillTemplate } from 'markmap-lib/dist/template';
+import {
+  transform, getAssets, getUsedAssets, fillTemplate,
+} from 'markmap-lib';
 import {
   CustomTextEditorProvider,
   ExtensionContext,
@@ -12,9 +13,9 @@ import {
   ViewColumn,
   workspace,
 } from 'vscode';
-import { debounce } from 'lodash';
+import debounce from 'lodash.debounce';
 
-const TOOLBAR_VERSION = '0.1.3';
+const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
 const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
 const renderToolbar = new Function(`\

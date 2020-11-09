@@ -62,7 +62,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
         {
           type: 'script',
           data: {
-            src: `https://cdn.jsdelivr.net/combine/npm/@gera2ld/jsx-dom@1.2.1/dist/index.min.js,${TOOLBAR_JS}`,
+            src: `https://cdn.jsdelivr.net/${TOOLBAR_JS}`,
           },
         },
         {
@@ -117,7 +117,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
             {
               type: 'script',
               data: {
-                src: `https://cdn.jsdelivr.net/combine/npm/@gera2ld/jsx-dom@1.2.1/dist/index.min.js,${TOOLBAR_JS}`,
+                src: `https://cdn.jsdelivr.net/${TOOLBAR_JS}`,
               },
             },
             {

@@ -8,7 +8,7 @@
   "publisher": "gera2ld",
   "icon": "assets/favicon.png",
   "engines": {
-    "vscode": "^1.50.0"
+    "vscode": "^1.51.0"
   },
   "categories": [
     "Visualization"

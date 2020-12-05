@@ -10,4 +10,5 @@ vsc-extension-quickstart.md
 **/*.map
 **/*.ts
 node_modules/**
-**/rollup.conf.js
+rollup.conf.js
+gulpfile.js

@@ -36,35 +36,35 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "yarn lint && yarn clean && yarn build",
-    "build": "rollup -c rollup.conf.js",
+    "vscode:prepublish": "yarn lint && yarn build",
+    "build": "gulp clean && gulp build",
     "lint": "eslint --ext .ts,.tsx .",
-    "watch": "rollup -wc rollup.conf.js",
-    "transform": "locky yarn yarn",
-    "clean": "del dist types"
+    "watch": "gulp dev",
+    "transform": "locky yarn yarn"
   },
   "repository": "https://github.com/gera2ld/markmap-vscode",
   "main": "dist/extension.js",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
-  "typings": "types/index.d.ts",
   "devDependencies": {
     "@babel/runtime": "^7.12.5",
     "@gera2ld/locky": "^0.1.0",
-    "@gera2ld/plaid": "~2.1.3",
+    "@gera2ld/plaid": "~2.1.6",
     "@gera2ld/plaid-common-ts": "~2.1.5",
     "@gera2ld/plaid-rollup": "~2.1.3",
     "@types/glob": "^7.1.3",
     "@types/lodash.debounce": "^4.0.6",
-    "@types/node": "^14.14.6",
-    "@types/vscode": "^1.50.0",
-    "del-cli": "^3.0.1",
+    "@types/node": "^14.14.10",
+    "@types/vscode": "^1.51.0",
+    "del": "^6.0.0",
+    "fancy-log": "^1.3.3",
+    "gulp": "^4.0.2",
+    "gulp-concat": "^2.6.1",
     "husky": "^4.3.0",
     "lodash.debounce": "^4.0.8",
-    "markmap-lib": "^0.10.1",
-    "markmap-toolbar": "^0.1.3"
+    "markmap-lib": "^0.11.0",
+    "markmap-toolbar": "^0.1.4"
   },
   "husky": {
     "hooks": {

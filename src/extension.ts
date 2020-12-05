@@ -1,6 +1,6 @@
 import { join } from 'path';
 import {
-  transform, getAssets, getUsedAssets, fillTemplate,
+  Transformer, fillTemplate,
 } from 'markmap-lib';
 import {
   CustomTextEditorProvider,
@@ -25,6 +25,8 @@ const el = toolbar.render();
 el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
 document.body.append(el);`);
 
+const transformer = new Transformer();
+
 class MarkmapEditor implements CustomTextEditorProvider {
   static readonly viewType = 'markmap-vscode.markmap';
 
@@ -40,7 +42,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
     };
     const jsUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/app.js')));
     const cssUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/style.css')));
-    let allAssets = getAssets();
+    let allAssets = transformer.getAssets();
     allAssets = {
       styles: [
         ...allAssets.styles || [],
@@ -76,7 +78,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
     webviewPanel.webview.html = fillTemplate(undefined, allAssets);
     const update = () => {
       const md = document.getText();
-      const { root } = transform(md);
+      const { root } = transformer.transform(md);
       webviewPanel.webview.postMessage({
         type: 'setData',
         data: root,
@@ -100,8 +102,8 @@ class MarkmapEditor implements CustomTextEditorProvider {
         });
         if (!targetUri) return;
         const md = document.getText();
-        const { root, features } = transform(md);
-        let assets = getUsedAssets(features);
+        const { root, features } = transformer.transform(md);
+        let assets = transformer.getUsedAssets(features);
         assets = {
           styles: [
             ...assets.styles || [],

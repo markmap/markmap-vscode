@@ -1,3 +1,4 @@
+const path = require('path');
 const {
   defaultOptions,
   getRollupExternal,
@@ -8,6 +9,7 @@ const {
 const pkg = require('./package.json');
 
 const DIST = defaultOptions.distDir;
+const PRISM = path.resolve('src/prism');
 const FILENAME = 'extension';
 const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
 const replaceValues = {
@@ -17,6 +19,7 @@ const replaceValues = {
 const external = [
   'path',
   'vscode',
+  PRISM,
 ];
 const bundleOptions = {
   extend: true,
@@ -35,6 +38,12 @@ const rollupConfig = [
         extensions: defaultOptions.extensions,
         postcss: postcssOptions,
         replaceValues,
+        aliases: {
+          entries: [
+            { find: 'prismjs/components/', replacement: path.resolve('src/blackhole') },
+            { find: 'prismjs', replacement: PRISM },
+          ],
+        },
       }),
       external,
     },

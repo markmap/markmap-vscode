@@ -19,9 +19,16 @@
     "markdown"
   ],
   "activationEvents": [
+    "onCommand:markmap-vscode.open",
     "onCustomEditor:markmap-vscode.markmap"
   ],
   "contributes": {
+    "commands": [
+      {
+        "command": "markmap-vscode.open",
+        "title": "Open as markmap"
+      }
+    ],
     "customEditors": [
       {
         "viewType": "markmap-vscode.markmap",

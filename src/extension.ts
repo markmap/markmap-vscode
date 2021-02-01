@@ -12,9 +12,11 @@ import {
   window,
   ViewColumn,
   workspace,
+  commands,
 } from 'vscode';
 import debounce from 'lodash.debounce';
 
+const PREFIX = 'markmap-vscode';
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
 const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
@@ -28,7 +30,7 @@ document.body.append(el);`);
 const transformer = new Transformer();
 
 class MarkmapEditor implements CustomTextEditorProvider {
-  static readonly viewType = 'markmap-vscode.markmap';
+  static readonly viewType = `${PREFIX}.markmap`;
 
   constructor(public context: ExtensionContext) {}
 
@@ -160,6 +162,14 @@ class MarkmapEditor implements CustomTextEditorProvider {
 }
 
 export function activate(context: ExtensionContext) {
+  context.subscriptions.push(commands.registerCommand(`${PREFIX}.open`, () => {
+    commands.executeCommand(
+      'vscode.openWith',
+      window.activeTextEditor.document.uri,
+      MarkmapEditor.viewType,
+      ViewColumn.Beside,
+    );
+  }));
   context.subscriptions.push(window.registerCustomEditorProvider(
     MarkmapEditor.viewType,
     new MarkmapEditor(context),

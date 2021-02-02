@@ -40,7 +40,15 @@
         ],
         "priority": "default"
       }
-    ]
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "markmap-vscode.open",
+          "when": "editorLangId == markdown"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "yarn lint && yarn build",

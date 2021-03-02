@@ -20,12 +20,14 @@ const PREFIX = 'markmap-vscode';
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
 const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
-const renderToolbar = new Function(`\
-const toolbar = new markmap.Toolbar();
-toolbar.attach(mm);
-const el = toolbar.render();
-el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
-document.body.append(el);`);
+const renderToolbar = (win: any) => {
+  const { markmap, mm } = win;
+  const toolbar = new markmap.Toolbar();
+  toolbar.attach(mm);
+  const el = toolbar.render();
+  el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
+  document.body.append(el);
+};
 
 const transformer = new Transformer();
 
@@ -128,7 +130,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
               type: 'iife',
               data: {
                 fn: (r) => {
-                  setTimeout(r);
+                  setTimeout(r, 0, window);
                 },
                 getParams: () => [renderToolbar],
               },

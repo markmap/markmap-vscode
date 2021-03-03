@@ -9,7 +9,7 @@ import {
   WebviewPanel,
   CancellationToken,
   Uri,
-  window,
+  window as vscodeWindow,
   ViewColumn,
   workspace,
   commands,
@@ -93,12 +93,12 @@ class MarkmapEditor implements CustomTextEditorProvider {
     const messageHandlers: { [key: string]: (data?: any) => void } = {
       refresh: update,
       editAsText: () => {
-        window.showTextDocument(document, {
+        vscodeWindow.showTextDocument(document, {
           viewColumn: ViewColumn.Beside,
         });
       },
       exportAsHtml: async () => {
-        const targetUri = await window.showSaveDialog({
+        const targetUri = await vscodeWindow.showSaveDialog({
           saveLabel: 'Export',
           filters: {
             HTML: ['html'],
@@ -144,7 +144,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
           await workspace.fs.writeFile(targetUri, data);
         } catch (e) {
           console.error('Cannot write file', e);
-          await window.showErrorMessage(`Cannot write file "${targetUri.toString()}"!`);
+          await vscodeWindow.showErrorMessage(`Cannot write file "${targetUri.toString()}"!`);
         }
       },
       // log: (data) => {
@@ -167,12 +167,12 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(commands.registerCommand(`${PREFIX}.open`, () => {
     commands.executeCommand(
       'vscode.openWith',
-      window.activeTextEditor.document.uri,
+      vscodeWindow.activeTextEditor.document.uri,
       MarkmapEditor.viewType,
       ViewColumn.Beside,
     );
   }));
-  context.subscriptions.push(window.registerCustomEditorProvider(
+  context.subscriptions.push(vscodeWindow.registerCustomEditorProvider(
     MarkmapEditor.viewType,
     new MarkmapEditor(context),
     { webviewOptions: { retainContextWhenHidden: true } },

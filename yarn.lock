@@ -1246,10 +1246,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/vscode@^1.52.0":
-  version "1.52.0"
-  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.52.0.tgz#61917968dd403932127fc4004a21fd8d69e4f61c"
-  integrity sha1-YZF5aN1AOTISf8QASiH9jWnk9hw=
+"@types/vscode@^1.51.0":
+  version "1.53.0"
+  resolved "https://registry.yarnpkg.com/@types/vscode/-/vscode-1.53.0.tgz#47b53717af6562f2ad05171bc9c8500824a3905c"
+  integrity sha1-R7U3F69lYvKtBRcbychQCCSjkFw=
 
 "@typescript-eslint/eslint-plugin@^4.12.0":
   version "4.14.1"

@@ -22,8 +22,8 @@ const VIEW_TYPE_DEFAULT = `${PREFIX}.markmap.default`;
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
 const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
-const renderToolbar = (win: any) => {
-  const { markmap, mm } = win;
+const renderToolbar = () => {
+  const { markmap, mm } = window as any;
   const toolbar = new markmap.Toolbar();
   toolbar.attach(mm);
   const el = toolbar.render();
@@ -130,7 +130,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
               type: 'iife',
               data: {
                 fn: (r) => {
-                  setTimeout(r, 0, window);
+                  setTimeout(r);
                 },
                 getParams: () => [renderToolbar],
               },

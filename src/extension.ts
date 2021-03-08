@@ -17,6 +17,8 @@ import {
 import debounce from 'lodash.debounce';
 
 const PREFIX = 'markmap-vscode';
+const VIEW_TYPE = `${PREFIX}.markmap`;
+const VIEW_TYPE_DEFAULT = `${PREFIX}.markmap.default`;
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
 const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
@@ -32,8 +34,6 @@ const renderToolbar = (win: any) => {
 const transformer = new Transformer();
 
 class MarkmapEditor implements CustomTextEditorProvider {
-  static readonly viewType = `${PREFIX}.markmap`;
-
   constructor(public context: ExtensionContext) {}
 
   public async resolveCustomTextEditor(
@@ -168,13 +168,19 @@ export function activate(context: ExtensionContext) {
     commands.executeCommand(
       'vscode.openWith',
       vscodeWindow.activeTextEditor.document.uri,
-      MarkmapEditor.viewType,
+      VIEW_TYPE,
       ViewColumn.Beside,
     );
   }));
+  const markmapEditor = new MarkmapEditor(context);
   context.subscriptions.push(vscodeWindow.registerCustomEditorProvider(
-    MarkmapEditor.viewType,
-    new MarkmapEditor(context),
+    VIEW_TYPE,
+    markmapEditor,
+    { webviewOptions: { retainContextWhenHidden: true } },
+  ));
+  context.subscriptions.push(vscodeWindow.registerCustomEditorProvider(
+    VIEW_TYPE_DEFAULT,
+    markmapEditor,
     { webviewOptions: { retainContextWhenHidden: true } },
   ));
 }

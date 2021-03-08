@@ -20,7 +20,8 @@
   ],
   "activationEvents": [
     "onCommand:markmap-vscode.open",
-    "onCustomEditor:markmap-vscode.markmap"
+    "onCustomEditor:markmap-vscode.markmap",
+    "onCustomEditor:markmap-vscode.markmap.default"
   ],
   "contributes": {
     "commands": [
@@ -31,14 +32,24 @@
     ],
     "customEditors": [
       {
-        "viewType": "markmap-vscode.markmap",
-        "displayName": "Markmap",
+        "viewType": "markmap-vscode.markmap.default",
+        "displayName": "Markmap Preview",
         "selector": [
           {
             "filenamePattern": "*.mm.md"
           }
         ],
         "priority": "default"
+      },
+      {
+        "viewType": "markmap-vscode.markmap",
+        "displayName": "Markmap",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          }
+        ],
+        "priority": "option"
       }
     ],
     "menus": {

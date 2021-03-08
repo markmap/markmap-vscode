@@ -46,6 +46,8 @@ class MarkmapEditor implements CustomTextEditorProvider {
     };
     const jsUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/app.js')));
     const cssUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/style.css')));
+    const toolbarJs = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/index.umd.min.js')));
+    const toolbarCss = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/style.min.css')));
     let allAssets = transformer.getAssets();
     allAssets = {
       styles: [
@@ -53,7 +55,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
         {
           type: 'stylesheet',
           data: {
-            href: `https://cdn.jsdelivr.net/${TOOLBAR_CSS}`,
+            href: `${toolbarCss}`,
           },
         },
         {
@@ -68,7 +70,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
         {
           type: 'script',
           data: {
-            src: `https://cdn.jsdelivr.net/${TOOLBAR_JS}`,
+            src: `${toolbarJs}`,
           },
         },
         {

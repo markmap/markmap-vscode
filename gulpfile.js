@@ -43,6 +43,13 @@ function watch() {
   gulp.watch('src/**', buildJs);
 }
 
+function copyToolbar() {
+  return gulp.src([
+    'node_modules/markmap-toolbar/dist/index.umd.min.js',
+    'node_modules/markmap-toolbar/dist/style.min.css',
+  ]).pipe(gulp.dest(DIST + '/toolbar'));
+}
+
 exports.clean = clean;
-exports.build = gulp.series(buildPrism, buildJs);
-exports.dev = gulp.series(buildPrism, buildJs, watch);
+exports.build = gulp.series(copyToolbar, buildPrism, buildJs);
+exports.dev = gulp.series(copyToolbar, buildPrism, buildJs, watch);

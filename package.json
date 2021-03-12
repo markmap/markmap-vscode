@@ -27,20 +27,14 @@
     "commands": [
       {
         "command": "markmap-vscode.open",
-        "title": "Open as markmap"
+        "title": "Open as markmap",
+        "icon": {
+          "light": "./assets/light.svg",
+          "dark": "./assets/dark.svg"
+        }
       }
     ],
     "customEditors": [
-      {
-        "viewType": "markmap-vscode.markmap.default",
-        "displayName": "Markmap Preview",
-        "selector": [
-          {
-            "filenamePattern": "*.mm.md"
-          }
-        ],
-        "priority": "default"
-      },
       {
         "viewType": "markmap-vscode.markmap",
         "displayName": "Markmap",
@@ -57,6 +51,20 @@
         {
           "command": "markmap-vscode.open",
           "when": "editorLangId == markdown"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceLangId == markdown",
+          "command": "markmap-vscode.open",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "when": "resourceLangId == markdown && activeEditor == workbench.editors.files.textFileEditor",
+          "command": "markmap-vscode.open",
+          "group": "navigation"
         }
       ]
     }

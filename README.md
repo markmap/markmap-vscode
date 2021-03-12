@@ -12,11 +12,16 @@ This extension integrates [markmap](https://markmap.js.org/) into VSCode.
 
 ## Usage
 
-### Open a markdown file as markmap
+### Command Palette
 
-- Open a markdown file, for instance `README.md`.
-- Open the Command Palette (⇧⌘P) and search `Open as markmap`, press enter.
+Open a markdown file. Then open the Command Palette (⇧⌘P) and search `Open as markmap`, press enter.
 
-### Open a markmap file
+### Context menu
 
-Create or open a file whose name ends with `.mm.md`, and enjoy.
+Right click on a markdown file, then choose `Open as markmap`.
+
+### Button on title-bar
+
+Open a markdown file. Find the markmap icon on the editor title-bar and click it.
+
+![title button](https://user-images.githubusercontent.com/3139113/110966366-25f0cf00-8390-11eb-9a16-3c4d66712f47.png)

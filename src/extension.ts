@@ -18,7 +18,6 @@ import debounce from 'lodash.debounce';
 
 const PREFIX = 'markmap-vscode';
 const VIEW_TYPE = `${PREFIX}.markmap`;
-const VIEW_TYPE_DEFAULT = `${PREFIX}.markmap.default`;
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
 const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
@@ -177,11 +176,6 @@ export function activate(context: ExtensionContext) {
   const markmapEditor = new MarkmapEditor(context);
   context.subscriptions.push(vscodeWindow.registerCustomEditorProvider(
     VIEW_TYPE,
-    markmapEditor,
-    { webviewOptions: { retainContextWhenHidden: true } },
-  ));
-  context.subscriptions.push(vscodeWindow.registerCustomEditorProvider(
-    VIEW_TYPE_DEFAULT,
     markmapEditor,
     { webviewOptions: { retainContextWhenHidden: true } },
   ));

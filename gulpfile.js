@@ -50,6 +50,16 @@ function copyToolbar() {
   ]).pipe(gulp.dest(DIST + '/toolbar'));
 }
 
+function copyD3() {
+  return gulp.src('node_modules/d3/dist/d3.min.js').pipe(gulp.dest(DIST + '/d3'));
+}
+
+function copyView() {
+  return gulp.src('node_modules/markmap-view/dist/index.min.js').pipe(gulp.dest(DIST + '/markmap-view'));
+}
+
+const copy = gulp.parallel(copyToolbar, copyD3, copyView);
+
 exports.clean = clean;
-exports.build = gulp.series(copyToolbar, buildPrism, buildJs);
-exports.dev = gulp.series(copyToolbar, buildPrism, buildJs, watch);
+exports.build = gulp.series(copy, buildPrism, buildJs);
+exports.dev = gulp.series(copy, buildPrism, buildJs, watch);

@@ -16,11 +16,11 @@ const replaceValues = {
   'process.env.TOOLBAR_VERSION': JSON.stringify(require('markmap-toolbar/package.json').version),
 };
 
-const external = [
+const external = getRollupExternal([
   'path',
   'vscode',
   PRISM,
-];
+]);
 const bundleOptions = {
   extend: true,
   esModule: false,

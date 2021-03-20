@@ -2,17 +2,18 @@ import { join } from 'path';
 import {
   Transformer, fillTemplate,
 } from 'markmap-lib';
+import type { JSItem } from 'markmap-common';
 import {
+  CancellationToken,
   CustomTextEditorProvider,
   ExtensionContext,
   TextDocument,
-  WebviewPanel,
-  CancellationToken,
   Uri,
-  window as vscodeWindow,
   ViewColumn,
-  workspace,
+  WebviewPanel,
   commands,
+  window as vscodeWindow,
+  workspace,
 } from 'vscode';
 import debounce from 'lodash.debounce';
 
@@ -47,6 +48,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
     const cssUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/style.css')));
     const toolbarJs = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/index.umd.min.js')));
     const toolbarCss = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/style.min.css')));
+    const baseJs: JSItem[] = [
+      webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/d3/d3.min.js'))),
+      webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/markmap-view/index.min.js'))),
+    ].map(uri => ({ type: 'script', data: { src: uri.toString() } }));
     let allAssets = transformer.getAssets();
     allAssets = {
       styles: [
@@ -54,13 +59,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
         {
           type: 'stylesheet',
           data: {
-            href: `${toolbarCss}`,
+            href: toolbarCss.toString(),
           },
         },
         {
           type: 'stylesheet',
           data: {
-            href: `${cssUri}`,
+            href: cssUri.toString(),
           },
         },
       ],
@@ -69,18 +74,29 @@ class MarkmapEditor implements CustomTextEditorProvider {
         {
           type: 'script',
           data: {
-            src: `${toolbarJs}`,
+            src: toolbarJs.toString(),
           },
         },
         {
           type: 'script',
           data: {
-            src: `${jsUri}`,
+            src: jsUri.toString(),
           },
         },
       ],
     };
-    webviewPanel.webview.html = fillTemplate(undefined, allAssets);
+    webviewPanel.webview.html = fillTemplate(undefined, allAssets, {
+      baseJs,
+    });
+    const updateCursor = () => {
+      const editor = vscodeWindow.activeTextEditor;
+      if (editor.document === document) {
+        webviewPanel.webview.postMessage({
+          type: 'setCursor',
+          data: editor.selection.active.line,
+        });
+      }
+    };
     const update = () => {
       const md = document.getText();
       const { root } = transformer.transform(md);
@@ -88,7 +104,9 @@ class MarkmapEditor implements CustomTextEditorProvider {
         type: 'setData',
         data: root,
       });
+      updateCursor();
     };
+    const debouncedUpdateCursor = debounce(updateCursor, 300);
     const debouncedUpdate = debounce(update, 300);
 
     const messageHandlers: { [key: string]: (data?: any) => void } = {
@@ -160,6 +178,9 @@ class MarkmapEditor implements CustomTextEditorProvider {
       if (e.document === document) {
         debouncedUpdate();
       }
+    });
+    vscodeWindow.onDidChangeTextEditorSelection(e => {
+      debouncedUpdateCursor();
     });
   }
 }

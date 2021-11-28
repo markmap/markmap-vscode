@@ -46,7 +46,7 @@ function watch() {
 function copyToolbar() {
   return gulp.src([
     'node_modules/markmap-toolbar/dist/index.umd.min.js',
-    'node_modules/markmap-toolbar/dist/style.min.css',
+    'node_modules/markmap-toolbar/dist/style.css',
   ]).pipe(gulp.dest(DIST + '/toolbar'));
 }
 
@@ -61,5 +61,5 @@ function copyView() {
 const copy = gulp.parallel(copyToolbar, copyD3, copyView);
 
 exports.clean = clean;
-exports.build = gulp.series(copy, buildPrism, buildJs);
+exports.build = gulp.series(clean, copy, buildPrism, buildJs);
 exports.dev = gulp.series(copy, buildPrism, buildJs, watch);

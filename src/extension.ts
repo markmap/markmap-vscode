@@ -20,7 +20,7 @@ import debounce from 'lodash.debounce';
 const PREFIX = 'markmap-vscode';
 const VIEW_TYPE = `${PREFIX}.markmap`;
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
-const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.min.css`;
+const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
 const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
 const renderToolbar = () => {
   const { markmap, mm } = window as any;
@@ -47,7 +47,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
     const jsUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/app.js')));
     const cssUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/style.css')));
     const toolbarJs = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/index.umd.min.js')));
-    const toolbarCss = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/style.min.css')));
+    const toolbarCss = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/style.css')));
     const baseJs: JSItem[] = [
       webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/d3/d3.min.js'))),
       webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/markmap-view/index.min.js'))),

@@ -71,10 +71,10 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "vscode:prepublish": "run-s compile",
+    "vscode:prepublish": "yarn compile",
     "dev": "gulp dev",
     "build": "gulp build",
-    "compile": "run-s lint build",
+    "compile": "yarn lint && yarn build",
     "lint": "eslint --ext .ts,.tsx .",
     "transform": "locky yarn yarn"
   },

@@ -5,9 +5,10 @@ const del = require('del');
 const components = require('prismjs/components');
 
 const DIST = 'dist';
+const TEMP = 'temp';
 
 function clean() {
-  return del([DIST]);
+  return del([DIST, TEMP]);
 }
 
 const languages = Object.keys(components.languages).filter(key => key !== 'meta');
@@ -28,7 +29,7 @@ function buildPrism() {
     ...keys.map(key => `node_modules/prismjs/components/prism-${key}.min.js`),
   ])
     .pipe(concat('prism.js', { newLine: ';' }))
-    .pipe(gulp.dest(DIST));
+    .pipe(gulp.dest(TEMP));
 }
 
 function buildJs() {

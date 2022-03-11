@@ -1,4 +1,3 @@
-import { join } from 'path';
 import {
   Transformer, fillTemplate,
 } from 'markmap-lib';
@@ -8,7 +7,6 @@ import {
   CustomTextEditorProvider,
   ExtensionContext,
   TextDocument,
-  Uri,
   ViewColumn,
   WebviewPanel,
   commands,
@@ -16,6 +14,7 @@ import {
   workspace,
 } from 'vscode';
 import debounce from 'lodash.debounce';
+import { Utils } from 'vscode-uri';
 
 const PREFIX = 'markmap-vscode';
 const VIEW_TYPE = `${PREFIX}.markmap`;
@@ -36,6 +35,10 @@ const transformer = new Transformer();
 class MarkmapEditor implements CustomTextEditorProvider {
   constructor(public context: ExtensionContext) {}
 
+  private resolveAssetPath(relPath: string) {
+    return Utils.joinPath(this.context.extensionUri, relPath);
+  }
+
   public async resolveCustomTextEditor(
     document: TextDocument,
     webviewPanel: WebviewPanel,
@@ -44,13 +47,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
     webviewPanel.webview.options = {
       enableScripts: true,
     };
-    const jsUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/app.js')));
-    const cssUri = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'assets/style.css')));
-    const toolbarJs = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/index.umd.min.js')));
-    const toolbarCss = webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/toolbar/style.css')));
+    const jsUri = webviewPanel.webview.asWebviewUri(this.resolveAssetPath('assets/app.js'));
+    const cssUri = webviewPanel.webview.asWebviewUri(this.resolveAssetPath('assets/style.css'));
+    const toolbarJs = webviewPanel.webview.asWebviewUri(this.resolveAssetPath('dist/toolbar/index.umd.min.js'));
+    const toolbarCss = webviewPanel.webview.asWebviewUri(this.resolveAssetPath('dist/toolbar/style.css'));
     const baseJs: JSItem[] = [
-      webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/d3/d3.min.js'))),
-      webviewPanel.webview.asWebviewUri(Uri.file(join(this.context.extensionPath, 'dist/markmap-view/index.min.js'))),
+      webviewPanel.webview.asWebviewUri(this.resolveAssetPath('dist/d3/d3.min.js')),
+      webviewPanel.webview.asWebviewUri(this.resolveAssetPath('dist/markmap-view/index.min.js')),
     ].map(uri => ({ type: 'script', data: { src: uri.toString() } }));
     let allAssets = transformer.getAssets();
     allAssets = {
@@ -166,9 +169,6 @@ class MarkmapEditor implements CustomTextEditorProvider {
           await vscodeWindow.showErrorMessage(`Cannot write file "${targetUri.toString()}"!`);
         }
       },
-      // log: (data) => {
-      //   console.log('log:', data);
-      // },
     };
     webviewPanel.webview.onDidReceiveMessage(e => {
       const handler = messageHandlers[e.type];
@@ -179,7 +179,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
         debouncedUpdate();
       }
     });
-    vscodeWindow.onDidChangeTextEditorSelection(e => {
+    vscodeWindow.onDidChangeTextEditorSelection(() => {
       debouncedUpdateCursor();
     });
   }
@@ -202,4 +202,6 @@ export function activate(context: ExtensionContext) {
   ));
 }
 
-export function deactivate() {}
+export function deactivate() {
+  // noop
+}

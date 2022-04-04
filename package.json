@@ -49,8 +49,8 @@
     "menus": {
       "commandPalette": [
         {
-          "command": "markmap-vscode.open",
-          "when": "editorLangId == markdown"
+          "when": "editorLangId == markdown",
+          "command": "markmap-vscode.open"
         }
       ],
       "explorer/context": [

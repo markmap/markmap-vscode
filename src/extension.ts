@@ -12,6 +12,7 @@ import {
   commands,
   window as vscodeWindow,
   workspace,
+  Uri,
 } from 'vscode';
 import debounce from 'lodash.debounce';
 import { Utils } from 'vscode-uri';
@@ -93,7 +94,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
     });
     const updateCursor = () => {
       const editor = vscodeWindow.activeTextEditor;
-      if (editor.document === document) {
+      if (editor?.document === document) {
         webviewPanel.webview.postMessage({
           type: 'setCursor',
           data: editor.selection.active.line,
@@ -186,10 +187,11 @@ class MarkmapEditor implements CustomTextEditorProvider {
 }
 
 export function activate(context: ExtensionContext) {
-  context.subscriptions.push(commands.registerCommand(`${PREFIX}.open`, () => {
+  context.subscriptions.push(commands.registerCommand(`${PREFIX}.open`, (uri?: Uri) => {
+    uri ??= vscodeWindow.activeTextEditor?.document.uri;
     commands.executeCommand(
       'vscode.openWith',
-      vscodeWindow.activeTextEditor.document.uri,
+      uri,
       VIEW_TYPE,
       ViewColumn.Beside,
     );

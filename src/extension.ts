@@ -103,10 +103,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
     };
     const update = () => {
       const md = document.getText();
-      const { root } = transformer.transform(md);
+      const { root, frontmatter } = transformer.transform(md);
       webviewPanel.webview.postMessage({
         type: 'setData',
-        data: root,
+        data: { root, frontmatter },
       });
       updateCursor();
     };
@@ -129,7 +129,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
         });
         if (!targetUri) return;
         const md = document.getText();
-        const { root, features } = transformer.transform(md);
+        const { root, features, frontmatter } = transformer.transform(md);
         let assets = transformer.getUsedAssets(features);
         assets = {
           styles: [
@@ -152,7 +152,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
             {
               type: 'iife',
               data: {
-                fn: (r) => {
+                fn: (r: typeof renderToolbar) => {
                   setTimeout(r);
                 },
                 getParams: () => [renderToolbar],
@@ -160,7 +160,9 @@ class MarkmapEditor implements CustomTextEditorProvider {
             },
           ],
         };
-        const html = fillTemplate(root, assets);
+        const html = fillTemplate(root, assets, {
+          jsonOptions: (frontmatter as any)?.markmap,
+        });
         const encoder = new TextEncoder();
         const data = encoder.encode(html);
         try {

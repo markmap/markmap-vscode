@@ -85,25 +85,25 @@
     "dist"
   ],
   "devDependencies": {
-    "@babel/runtime": "^7.17.2",
+    "@babel/runtime": "^7.17.9",
     "@gera2ld/locky": "^0.1.1",
-    "@gera2ld/plaid": "~2.5.1",
+    "@gera2ld/plaid": "~2.5.2",
     "@gera2ld/plaid-common-ts": "~2.5.1",
     "@gera2ld/plaid-rollup": "~2.5.0",
     "@types/glob": "^7.2.0",
-    "@types/lodash.debounce": "^4.0.6",
-    "@types/node": "^17.0.21",
+    "@types/lodash.debounce": "^4.0.7",
+    "@types/node": "^17.0.30",
     "@types/vscode": "~1.58.0",
-    "d3": "^7.3.0",
+    "d3": "^7.4.4",
     "del": "^6.0.0",
     "fancy-log": "^2.0.0",
     "gulp": "^4.0.2",
     "gulp-concat": "^2.6.1",
     "husky": "^7.0.4",
     "lodash.debounce": "^4.0.8",
-    "markmap-lib": "^0.12.0",
-    "markmap-toolbar": "^0.2.0",
-    "markmap-view": "^0.2.7",
+    "markmap-lib": "^0.13.2",
+    "markmap-toolbar": "^0.13.2",
+    "markmap-view": "^0.13.2",
     "vscode-uri": "^3.0.3"
   }
 }

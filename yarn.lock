@@ -971,10 +971,17 @@
     "@babel/helper-validator-option" "^7.16.7"
     "@babel/plugin-transform-typescript" "^7.16.7"
 
-"@babel/runtime@^7.12.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.0", "@babel/runtime@^7.16.3", "@babel/runtime@^7.17.2", "@babel/runtime@^7.8.4":
+"@babel/runtime@^7.12.1", "@babel/runtime@^7.12.5", "@babel/runtime@^7.16.0", "@babel/runtime@^7.16.3", "@babel/runtime@^7.8.4":
   version "7.17.2"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.17.2.tgz#66f68591605e59da47523c631416b18508779941"
   integrity sha512-hzeyJyMA1YGdJTuWU0e/j4wKXrU4OMFvY2MSlaI9B7VQb0r5cxTE3EAIS2Q7Tn2RIcDkRvTA/v2JsAEhxe99uw==
+  dependencies:
+    regenerator-runtime "^0.13.4"
+
+"@babel/runtime@^7.17.9":
+  version "7.17.9"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.17.9.tgz#d19fbf802d01a8cb6cf053a64e472d42c434ba72"
+  integrity sha512-lSiBBvodq29uShpWGNbgFdKYNiFDo5/HIYsaCEY9ff4sb10x9jizo2+pRrSyF4jKZCXqgzuqBOQKbUm90gQwJg==
   dependencies:
     regenerator-runtime "^0.13.4"
 
@@ -1067,10 +1074,10 @@
     rollup-plugin-postcss "^4.0.2"
     rollup-plugin-terser "^7.0.2"
 
-"@gera2ld/plaid@~2.5.1":
-  version "2.5.1"
-  resolved "https://registry.yarnpkg.com/@gera2ld/plaid/-/plaid-2.5.1.tgz#db740e0250ee9d6413ee89cba767a0dca92693ce"
-  integrity sha512-1BQ1S2J1VLJsbhPR5H2h8UK8KHC2QU0UfGwjd8Iooe7Ypl31GWLGxF24IvDoIUXhfP9mLftUTULW9NStHPt2GA==
+"@gera2ld/plaid@~2.5.2":
+  version "2.5.2"
+  resolved "https://registry.yarnpkg.com/@gera2ld/plaid/-/plaid-2.5.2.tgz#db4df848bea825a5d991ab3926c1de90026883da"
+  integrity sha512-TUwYMb1lPta7eC1ZQrcKLEVNyCWwZEclsRoyZv8TstheCxBB4nGKqk0Z6AGyIuXED4EFgpIdhRZpKp+IVqCUug==
   dependencies:
     "@babel/core" "^7.16.5"
     "@babel/eslint-parser" "^7.16.5"
@@ -1461,10 +1468,10 @@
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.9.tgz#97edc9037ea0c38585320b28964dde3b39e4660d"
   integrity sha512-qcUXuemtEu+E5wZSJHNxUXeCZhAfXKQ41D+duX+VYPde7xyEVZci+/oXKJL13tnRs9lR2pr4fod59GT6/X1/yQ==
 
-"@types/lodash.debounce@^4.0.6":
-  version "4.0.6"
-  resolved "https://registry.yarnpkg.com/@types/lodash.debounce/-/lodash.debounce-4.0.6.tgz#c5a2326cd3efc46566c47e4c0aa248dc0ee57d60"
-  integrity sha512-4WTmnnhCfDvvuLMaF3KV4Qfki93KebocUF45msxhYyjMttZDQYzHkO639ohhk8+oco2cluAFL3t5+Jn4mleylQ==
+"@types/lodash.debounce@^4.0.7":
+  version "4.0.7"
+  resolved "https://registry.yarnpkg.com/@types/lodash.debounce/-/lodash.debounce-4.0.7.tgz#0285879defb7cdb156ae633cecd62d5680eded9f"
+  integrity sha512-X1T4wMZ+gT000M2/91SYj0d/7JfeNZ9PeeOldSNoE/lunLeQXKvkmIumI29IaKMotU/ln/McOIvgzZcQ/3TrSA==
   dependencies:
     "@types/lodash" "*"
 
@@ -1478,10 +1485,15 @@
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.5.tgz#1001cc5e6a3704b83c236027e77f2f58ea010f40"
   integrity sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==
 
-"@types/node@*", "@types/node@^17.0.21":
+"@types/node@*":
   version "17.0.21"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.21.tgz#864b987c0c68d07b4345845c3e63b75edd143644"
   integrity sha512-DBZCJbhII3r90XbQxI8Y9IjjiiOGlZ0Hr32omXIZvwwZ7p4DMMXGrKXVyPfuoBOri9XNtL0UK69jYIBIsRX3QQ==
+
+"@types/node@^17.0.30":
+  version "17.0.30"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.30.tgz#2c6e8512acac70815e8176aa30c38025067880ef"
+  integrity sha512-oNBIZjIqyHYP8VCNAV9uEytXVeXG2oR0w9lgAXro20eugRQfY002qr3CUl6BAe+Yf/z3CRjPdz27Pu6WWtuSRw==
 
 "@types/parse-json@^4.0.0":
   version "4.0.0"
@@ -2902,10 +2914,10 @@ d3@^6.2.0:
     d3-transition "2"
     d3-zoom "2"
 
-d3@^7.3.0:
-  version "7.3.0"
-  resolved "https://registry.yarnpkg.com/d3/-/d3-7.3.0.tgz#f3d5a22c1f658952a6491cf50132f5267ed7a40a"
-  integrity sha512-MDRLJCMK232OJQRqGljQ/gCxtB8k3/sLKFjftMjzPB3nKVUODpdW9Rb3vcq7U8Ka5YKoZkAmp++Ur6I+6iNWIw==
+d3@^7.4.4:
+  version "7.4.4"
+  resolved "https://registry.yarnpkg.com/d3/-/d3-7.4.4.tgz#bfbf87487c37d3196efebd5a63e3a0ed8299d8ff"
+  integrity sha512-97FE+MYdAlV3R9P74+R3Uar7wUKkIFu89UWMjEaDhiJ9VxKvqaMxauImy8PC2DdBkdM2BxJOIoLxPrcZUyrKoQ==
   dependencies:
     d3-array "3"
     d3-axis "3"
@@ -4678,44 +4690,44 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-markmap-common@^0.1.6:
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/markmap-common/-/markmap-common-0.1.6.tgz#11050562c23ae84b160e01e663478f29f1dd9ae6"
-  integrity sha512-fx4YUo6gZFFr08mi8qX8i6RH9xm5yieLKHr9hAdaTMP+CkPmgzB65F/+t39aFH5HcyEgs5vtTrRZ40lkhalETA==
+markmap-common@^0.13.0:
+  version "0.13.0"
+  resolved "https://registry.yarnpkg.com/markmap-common/-/markmap-common-0.13.0.tgz#7453b7fb12d47c8499fc59b24c5a1c627e4b6ef5"
+  integrity sha512-MEYgCmIcDJdBRx8B4TwefQEVUJGtqhPuyb8VeQlXd1q1rHVdVrjn1JParQQNz13s34j+ivObyTFgWsmy4/mdKg==
   dependencies:
     "@babel/runtime" "^7.12.1"
 
-markmap-lib@^0.12.0:
-  version "0.12.0"
-  resolved "https://registry.yarnpkg.com/markmap-lib/-/markmap-lib-0.12.0.tgz#931c78fb41eeedf46827e0f3866c959b5d7a4b6b"
-  integrity sha512-v2faTe1nFQvgFG7kKBocd6l8D/NTwvl5/dpQ19eigQ7rDDkNHOT9aMKnkIriiHfT36oT+YkG0XNHgJv2oWab4A==
+markmap-lib@^0.13.2:
+  version "0.13.2"
+  resolved "https://registry.yarnpkg.com/markmap-lib/-/markmap-lib-0.13.2.tgz#a0ab1421ee123a375924ee4d81f7e62a3b0f7cea"
+  integrity sha512-S4ywGrpuCzLbIBSF6y7bSNEkcNSopxVvUchibs9MkjMcf/q+WR6LFhSDAv0W/DGsoPGYJLos3HidZP/xr808ig==
   dependencies:
     "@babel/runtime" "^7.16.3"
     js-yaml "^4.1.0"
     katex "^0.15.1"
-    markmap-common "^0.1.6"
+    markmap-common "^0.13.0"
     prismjs "^1.25.0"
     remarkable "^2.0.1"
     remarkable-katex "^1.1.8"
 
-markmap-toolbar@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/markmap-toolbar/-/markmap-toolbar-0.2.0.tgz#58e6a6b9d27aa9fac73e19540ffc62f2068c9052"
-  integrity sha512-3DEJrlbdGDZeZDGKCBMmupeSB5DS+iHMvx8o/aItAlSRqxo4hlMlUGgs0B77mRm82pgkkkTWEkmR26cYxHYURg==
+markmap-toolbar@^0.13.2:
+  version "0.13.2"
+  resolved "https://registry.yarnpkg.com/markmap-toolbar/-/markmap-toolbar-0.13.2.tgz#bd6e5d9121da94cd674836c700726ae75e2c6048"
+  integrity sha512-rViTeD8uEVtyj62TwcZatj6lQ+88RoE/xwBL+NqfeVpuQ+pWPkEIvDyH8b3yCjtkGzk941u0C76eTE47EEgPzQ==
   dependencies:
     "@babel/runtime" "^7.16.3"
     "@gera2ld/jsx-dom" "^2.1.1"
 
-markmap-view@^0.2.7:
-  version "0.2.7"
-  resolved "https://registry.yarnpkg.com/markmap-view/-/markmap-view-0.2.7.tgz#95bdd1930f85f5661b4c401454f4eb12947ecb04"
-  integrity sha512-07zNIV5OUSQcFd9dghVEykk2oKkQuRvPQgH+oKadganYW9Yu5qN7gks8CmlLwE4AGNH87zxlF0UfpGLH9aI+rQ==
+markmap-view@^0.13.2:
+  version "0.13.2"
+  resolved "https://registry.yarnpkg.com/markmap-view/-/markmap-view-0.13.2.tgz#bbaca1b29dec477422eb74d1dabeadac0f3e060c"
+  integrity sha512-Fiw7Hw46Iz2BFKxwtkrvcPrGk/dOk48/2ukqu3gAWHb/ABlShg1LsZe3EehW852b1JZxkJ8TzGL1Dwt0VI1aJA==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@types/d3" "^6.0.0"
     d3 "^6.2.0"
     d3-flextree "^2.1.1"
-    markmap-common "^0.1.6"
+    markmap-common "^0.13.0"
 
 matchdep@^2.0.0:
   version "2.0.0"

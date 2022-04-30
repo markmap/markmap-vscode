@@ -2,6 +2,7 @@ import {
   Transformer, fillTemplate,
 } from 'markmap-lib';
 import type { JSItem } from 'markmap-common';
+import type { IMarkmapJSONOptions } from 'markmap-view';
 import {
   CancellationToken,
   CustomTextEditorProvider,
@@ -34,7 +35,7 @@ const renderToolbar = () => {
 const transformer = new Transformer();
 
 class MarkmapEditor implements CustomTextEditorProvider {
-  constructor(public context: ExtensionContext) {}
+  constructor(private context: ExtensionContext) {}
 
   private resolveAssetPath(relPath: string) {
     return Utils.joinPath(this.context.extensionUri, relPath);
@@ -101,12 +102,28 @@ class MarkmapEditor implements CustomTextEditorProvider {
         });
       }
     };
+    let defaultOptions: IMarkmapJSONOptions;
+    const updateOptions = () => {
+      const raw = workspace.getConfiguration('markmap').get<string>('defaultOptions');
+      try {
+        defaultOptions = raw && JSON.parse(raw);
+      } catch {
+        defaultOptions = null;
+      }
+      update();
+    };
     const update = () => {
       const md = document.getText();
       const { root, frontmatter } = transformer.transform(md);
       webviewPanel.webview.postMessage({
         type: 'setData',
-        data: { root, frontmatter },
+        data: {
+          root,
+          jsonOptions: {
+            ...defaultOptions,
+            ...(frontmatter as any)?.markmap,
+          },
+        },
       });
       updateCursor();
     };
@@ -184,6 +201,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
     });
     vscodeWindow.onDidChangeTextEditorSelection(() => {
       debouncedUpdateCursor();
+    });
+    updateOptions();
+    workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration('markmap')) updateOptions();
     });
   }
 }

@@ -67,6 +67,17 @@
           "group": "navigation"
         }
       ]
+    },
+    "configuration": {
+      "title": "Markmap",
+      "properties": {
+        "markmap.defaultOptions": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Default options for Markmap, for example `{\"color\":\"#2980b9\"}`",
+          "editPresentation": "multilineText"
+        }
+      }
     }
   },
   "scripts": {

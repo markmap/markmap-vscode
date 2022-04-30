@@ -3,7 +3,7 @@ let firstTime = true;
 let root;
 const handlers = {
   setData(data) {
-    mm.setData(root = data.root, markmap.deriveOptions(data.frontmatter?.markmap) || {});
+    mm.setData(root = data.root, markmap.deriveOptions(data.jsonOptions) || {});
     if (firstTime) {
       mm.fit();
       firstTime = false;

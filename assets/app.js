@@ -1,6 +1,7 @@
 const vscode = acquireVsCodeApi();
 let firstTime = true;
 let root;
+let style;
 const handlers = {
   setData(data) {
     mm.setData(root = data.root, markmap.deriveOptions(data.jsonOptions) || {});
@@ -16,6 +17,13 @@ const handlers = {
         bottom: 80,
       });
     }
+  },
+  setCSS(data) {
+    if (!style) {
+      style = document.createElement('style');
+      document.head.append(style);
+    }
+    style.textContent = data || '';
   },
 };
 window.addEventListener('message', e => {

@@ -1,7 +1,7 @@
 import {
   Transformer, fillTemplate,
 } from 'markmap-lib';
-import type { JSItem } from 'markmap-common';
+import type { CSSItem, JSItem } from 'markmap-common';
 import type { IMarkmapJSONOptions } from 'markmap-view';
 import {
   CancellationToken,
@@ -103,6 +103,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
       }
     };
     let defaultOptions: IMarkmapJSONOptions;
+    let customCSS: string;
     const updateOptions = () => {
       const raw = workspace.getConfiguration('markmap').get<string>('defaultOptions');
       try {
@@ -111,6 +112,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
         defaultOptions = null;
       }
       update();
+    };
+    const updateCSS = () => {
+      customCSS = workspace.getConfiguration('markmap').get<string>('customCSS');
+      webviewPanel.webview.postMessage({
+        type: 'setCSS',
+        data: customCSS,
+      });
     };
     const update = () => {
       const md = document.getText();
@@ -157,6 +165,12 @@ class MarkmapEditor implements CustomTextEditorProvider {
                 href: `https://cdn.jsdelivr.net/${TOOLBAR_CSS}`,
               },
             },
+            ...customCSS ? [
+              {
+                type: 'style',
+                data: customCSS,
+              } as CSSItem,
+            ] : [],
           ],
           scripts: [
             ...assets.scripts || [],
@@ -178,7 +192,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
           ],
         };
         const html = fillTemplate(root, assets, {
-          jsonOptions: (frontmatter as any)?.markmap,
+          jsonOptions: {
+            ...defaultOptions,
+            ...(frontmatter as any)?.markmap,
+          },
         });
         const encoder = new TextEncoder();
         const data = encoder.encode(html);
@@ -214,8 +231,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
       debouncedUpdateCursor();
     });
     updateOptions();
+    updateCSS();
     workspace.onDidChangeConfiguration(e => {
-      if (e.affectsConfiguration('markmap')) updateOptions();
+      if (e.affectsConfiguration('markmap.defaultOptions')) updateOptions();
+      if (e.affectsConfiguration('markmap.customCSS')) updateCSS();
     });
   }
 }

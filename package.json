@@ -76,6 +76,12 @@
           "default": "",
           "markdownDescription": "Default options for Markmap, for example `{\"color\":\"#2980b9\"}`",
           "editPresentation": "multilineText"
+        },
+        "markmap.customCSS": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Custom CSS for Markmap, please don't change this if you are not sure what you are doing. You can test your styles on <https://markmap.js.org> since the SVGs shares the same structure.",
+          "editPresentation": "multilineText"
         }
       }
     }

@@ -23,6 +23,18 @@ window.addEventListener('message', e => {
   const handler = handlers[type];
   handler?.(data);
 });
+document.addEventListener('click', e => {
+  const el = e.target?.closest('a');
+  if (el) {
+    const href = el.getAttribute('href');
+    if (!href.includes('://')) {
+      vscode.postMessage({
+        type: 'openFile',
+        data: href,
+      });
+    }
+  }
+});
 vscode.postMessage({ type: 'refresh' });
 
 const toolbar = new markmap.Toolbar();

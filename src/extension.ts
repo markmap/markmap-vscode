@@ -189,7 +189,18 @@ class MarkmapEditor implements CustomTextEditorProvider {
           await vscodeWindow.showErrorMessage(`Cannot write file "${targetUri.toString()}"!`);
         }
       },
+      openFile(relPath: string) {
+        const filePath = Utils.joinPath(Utils.dirname(document.uri), relPath);
+        commands.executeCommand(
+          'vscode.open',
+          filePath,
+        );
+      },
     };
+    // const logger = vscodeWindow.createOutputChannel('Markmap');
+    // messageHandlers.log = (data: string) => {
+    //   logger.appendLine(data);
+    // };
     webviewPanel.webview.onDidReceiveMessage(e => {
       const handler = messageHandlers[e.type];
       handler?.(e.data);

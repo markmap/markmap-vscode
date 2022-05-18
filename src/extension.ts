@@ -1,8 +1,7 @@
 import {
   Transformer, fillTemplate,
 } from 'markmap-lib';
-import type { CSSItem, JSItem } from 'markmap-common';
-import type { IMarkmapJSONOptions } from 'markmap-view';
+import type { CSSItem, JSItem, IMarkmapJSONOptions } from 'markmap-common';
 import {
   CancellationToken,
   CustomTextEditorProvider,
@@ -21,8 +20,21 @@ import { Utils } from 'vscode-uri';
 const PREFIX = 'markmap-vscode';
 const VIEW_TYPE = `${PREFIX}.markmap`;
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
-const TOOLBAR_CSS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
-const TOOLBAR_JS = `npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
+const TOOLBAR_CSS = `https://cdn.jsdelivr.net/npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
+const TOOLBAR_JS = `https://cdn.jsdelivr.net/npm/markmap-toolbar@${TOOLBAR_VERSION}/dist/index.umd.min.js`;
+const LOCAL_ASSETS = {
+  js: {
+    app: 'assets/app.js',
+    toolbar: 'dist/toolbar/index.umd.min.js',
+    d3: 'dist/d3/d3.min.js',
+    markmapView: 'dist/markmap-view/index.min.js',
+  },
+  css: {
+    app: 'assets/style.css',
+    toolbar: 'dist/toolbar/style.css',
+  },
+};
+
 const renderToolbar = () => {
   const { markmap, mm } = window as any;
   const toolbar = new markmap.Toolbar();
@@ -41,6 +53,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
     return Utils.joinPath(this.context.extensionUri, relPath);
   }
 
+  private async loadAsset(relPath: string) {
+    const bytes = await workspace.fs.readFile(this.resolveAssetPath(relPath))
+    const decoder = new TextDecoder();
+    const data = decoder.decode(bytes);
+    return data;
+  }
+
   public async resolveCustomTextEditor(
     document: TextDocument,
     webviewPanel: WebviewPanel,
@@ -49,13 +68,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
     webviewPanel.webview.options = {
       enableScripts: true,
     };
-    const jsUri = webviewPanel.webview.asWebviewUri(this.resolveAssetPath('assets/app.js'));
-    const cssUri = webviewPanel.webview.asWebviewUri(this.resolveAssetPath('assets/style.css'));
-    const toolbarJs = webviewPanel.webview.asWebviewUri(this.resolveAssetPath('dist/toolbar/index.umd.min.js'));
-    const toolbarCss = webviewPanel.webview.asWebviewUri(this.resolveAssetPath('dist/toolbar/style.css'));
+    const jsUri = webviewPanel.webview.asWebviewUri(this.resolveAssetPath(LOCAL_ASSETS.js.app));
+    const cssUri = webviewPanel.webview.asWebviewUri(this.resolveAssetPath(LOCAL_ASSETS.css.app));
+    const toolbarJs = webviewPanel.webview.asWebviewUri(this.resolveAssetPath(LOCAL_ASSETS.js.toolbar));
+    const toolbarCss = webviewPanel.webview.asWebviewUri(this.resolveAssetPath(LOCAL_ASSETS.css.toolbar));
     const baseJs: JSItem[] = [
-      webviewPanel.webview.asWebviewUri(this.resolveAssetPath('dist/d3/d3.min.js')),
-      webviewPanel.webview.asWebviewUri(this.resolveAssetPath('dist/markmap-view/index.min.js')),
+      webviewPanel.webview.asWebviewUri(this.resolveAssetPath(LOCAL_ASSETS.js.d3)),
+      webviewPanel.webview.asWebviewUri(this.resolveAssetPath(LOCAL_ASSETS.js.markmapView)),
     ].map(uri => ({ type: 'script', data: { src: uri.toString() } }));
     let allAssets = transformer.getAssets();
     allAssets = {
@@ -155,14 +174,22 @@ class MarkmapEditor implements CustomTextEditorProvider {
         if (!targetUri) return;
         const md = document.getText();
         const { root, features, frontmatter } = transformer.transform(md);
+        const jsonOptions = {
+          ...defaultOptions,
+          ...(frontmatter as any)?.markmap,
+        };
+        const { embedAssets } = jsonOptions as { embedAssets?: boolean };
         let assets = transformer.getUsedAssets(features);
         assets = {
           styles: [
             ...assets.styles || [],
-            {
+            embedAssets ? {
+              type: 'style',
+              data: await this.loadAsset(LOCAL_ASSETS.css.toolbar),
+            } : {
               type: 'stylesheet',
               data: {
-                href: `https://cdn.jsdelivr.net/${TOOLBAR_CSS}`,
+                href: TOOLBAR_CSS,
               },
             },
             ...customCSS ? [
@@ -176,8 +203,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
             ...assets.scripts || [],
             {
               type: 'script',
-              data: {
-                src: `https://cdn.jsdelivr.net/${TOOLBAR_JS}`,
+              data: embedAssets ? {
+                textContent: await this.loadAsset(LOCAL_ASSETS.js.toolbar),
+              } : {
+                src: TOOLBAR_JS,
               },
             },
             {
@@ -191,19 +220,27 @@ class MarkmapEditor implements CustomTextEditorProvider {
             },
           ],
         };
-        const html = fillTemplate(root, assets, {
-          jsonOptions: {
-            ...defaultOptions,
-            ...(frontmatter as any)?.markmap,
-          },
-        });
+        const extra = {
+          jsonOptions,
+        } as Parameters<typeof fillTemplate>[2];
+        if (embedAssets) {
+          extra.baseJs = (await Promise.all([
+            this.loadAsset(LOCAL_ASSETS.js.d3),
+            this.loadAsset(LOCAL_ASSETS.js.markmapView),
+          ])).map(textContent => ({
+            type: 'script',
+            data: {
+              textContent,
+            },
+          }));
+        }
+        const html = fillTemplate(root, assets, extra);
         const encoder = new TextEncoder();
         const data = encoder.encode(html);
         try {
           await workspace.fs.writeFile(targetUri, data);
         } catch (e) {
-          console.error('Cannot write file', e);
-          await vscodeWindow.showErrorMessage(`Cannot write file "${targetUri.toString()}"!`);
+          vscodeWindow.showErrorMessage(`Cannot write file "${targetUri.toString()}"!`);
         }
       },
       openFile(relPath: string) {

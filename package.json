@@ -118,9 +118,9 @@
     "gulp-concat": "^2.6.1",
     "husky": "^7.0.4",
     "lodash.debounce": "^4.0.8",
-    "markmap-lib": "^0.13.2",
-    "markmap-toolbar": "^0.13.2",
-    "markmap-view": "^0.13.2",
+    "markmap-lib": "^0.13.3",
+    "markmap-toolbar": "^0.13.3",
+    "markmap-view": "^0.13.3",
     "vscode-uri": "^3.0.3"
   }
 }

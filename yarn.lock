@@ -4690,44 +4690,44 @@ map-visit@^1.0.0:
   dependencies:
     object-visit "^1.0.0"
 
-markmap-common@^0.13.0:
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/markmap-common/-/markmap-common-0.13.0.tgz#7453b7fb12d47c8499fc59b24c5a1c627e4b6ef5"
-  integrity sha512-MEYgCmIcDJdBRx8B4TwefQEVUJGtqhPuyb8VeQlXd1q1rHVdVrjn1JParQQNz13s34j+ivObyTFgWsmy4/mdKg==
+markmap-common@^0.13.3:
+  version "0.13.3"
+  resolved "https://registry.yarnpkg.com/markmap-common/-/markmap-common-0.13.3.tgz#a41b1a5f95fc5843905057f2e1778e427cf869a6"
+  integrity sha512-bKdEUgeLmloyJXrPErg+LdD7HppqRm836TQzhIWN1Wm5THOG8POouAdnLh14X6JCe1ofFbEMhPMZFs9unRLhtQ==
   dependencies:
     "@babel/runtime" "^7.12.1"
 
-markmap-lib@^0.13.2:
-  version "0.13.2"
-  resolved "https://registry.yarnpkg.com/markmap-lib/-/markmap-lib-0.13.2.tgz#a0ab1421ee123a375924ee4d81f7e62a3b0f7cea"
-  integrity sha512-S4ywGrpuCzLbIBSF6y7bSNEkcNSopxVvUchibs9MkjMcf/q+WR6LFhSDAv0W/DGsoPGYJLos3HidZP/xr808ig==
+markmap-lib@^0.13.3:
+  version "0.13.3"
+  resolved "https://registry.yarnpkg.com/markmap-lib/-/markmap-lib-0.13.3.tgz#0dc8178b66cb15898125d4b204e33a4c6f2ac336"
+  integrity sha512-4ldQfldiEZddMOUoEJnfVpekiJas+mG9D9oAUpDM+9Ypg+x3bThnjjXlx8isfXsSjRV6caZnn4+I9lAa2i5Wfg==
   dependencies:
     "@babel/runtime" "^7.16.3"
     js-yaml "^4.1.0"
     katex "^0.15.1"
-    markmap-common "^0.13.0"
+    markmap-common "^0.13.3"
     prismjs "^1.25.0"
     remarkable "^2.0.1"
     remarkable-katex "^1.1.8"
 
-markmap-toolbar@^0.13.2:
-  version "0.13.2"
-  resolved "https://registry.yarnpkg.com/markmap-toolbar/-/markmap-toolbar-0.13.2.tgz#bd6e5d9121da94cd674836c700726ae75e2c6048"
-  integrity sha512-rViTeD8uEVtyj62TwcZatj6lQ+88RoE/xwBL+NqfeVpuQ+pWPkEIvDyH8b3yCjtkGzk941u0C76eTE47EEgPzQ==
+markmap-toolbar@^0.13.3:
+  version "0.13.3"
+  resolved "https://registry.yarnpkg.com/markmap-toolbar/-/markmap-toolbar-0.13.3.tgz#9b58d9d262d11e07d0ec206de7fed2c3634071f6"
+  integrity sha512-DPDMwGiLHnfLumo5TqCpYQGIGbwXwRrQY3jQ/R8K/5d6sct2scbeVbUfc+d17vr6MGC3vi41Eq01lJyqClI9OA==
   dependencies:
     "@babel/runtime" "^7.16.3"
     "@gera2ld/jsx-dom" "^2.1.1"
 
-markmap-view@^0.13.2:
-  version "0.13.2"
-  resolved "https://registry.yarnpkg.com/markmap-view/-/markmap-view-0.13.2.tgz#bbaca1b29dec477422eb74d1dabeadac0f3e060c"
-  integrity sha512-Fiw7Hw46Iz2BFKxwtkrvcPrGk/dOk48/2ukqu3gAWHb/ABlShg1LsZe3EehW852b1JZxkJ8TzGL1Dwt0VI1aJA==
+markmap-view@^0.13.3:
+  version "0.13.3"
+  resolved "https://registry.yarnpkg.com/markmap-view/-/markmap-view-0.13.3.tgz#29950e1f52f5e43f4e37f2681ff155e4aad93cac"
+  integrity sha512-5nT2J9PyrlK4DgNmrSLq4jYEWWpuUaTq3x0FgeBt5jngaUVy7GjTHDq+0nt5K8OecKUnAyaCx7nhizqpnIab9A==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@types/d3" "^6.0.0"
     d3 "^6.2.0"
     d3-flextree "^2.1.1"
-    markmap-common "^0.13.0"
+    markmap-common "^0.13.3"
 
 matchdep@^2.0.0:
   version "2.0.0"

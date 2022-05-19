@@ -74,7 +74,7 @@
         "markmap.defaultOptions": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Default options for Markmap, for example `{\"color\":\"#2980b9\"}`",
+          "markdownDescription": "Default options for Markmap, for example `{\"color\":\"#2980b9\",\"embedAssets\":false}`",
           "editPresentation": "multilineText"
         },
         "markmap.customCSS": {

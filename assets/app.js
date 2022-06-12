@@ -58,7 +58,7 @@ toolbar.register({
   content: createButton('Export'),
   onClick: clickHandler('exportAsHtml'),
 });
-toolbar.setItems(['zoomIn', 'zoomOut', 'fit', 'editAsText', 'exportAsHtml']);
+toolbar.setItems(['zoomIn', 'zoomOut', 'fit', 'recurse', 'editAsText', 'exportAsHtml']);
 setTimeout(() => {
   toolbar.attach(mm);
   document.body.append(toolbar.render());

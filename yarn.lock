@@ -1685,14 +1685,6 @@
   resolved "https://registry.yarnpkg.com/@types/geojson/-/geojson-7946.0.8.tgz#30744afdb385e2945e22f3b033f897f76b1f12ca"
   integrity sha512-1rkryxURpr6aWP7R786/UQOkJ3PcpQiWkAXBmdWc7ryFWqN6a4xfK7BtjXvFBKO9LjQ+MWQSWxYeZX1OApnArA==
 
-"@types/glob@^7.2.0":
-  version "7.2.0"
-  resolved "https://registry.yarnpkg.com/@types/glob/-/glob-7.2.0.tgz#bc1b5bf3aa92f25bd5dd39f35c57361bdce5b2eb"
-  integrity sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==
-  dependencies:
-    "@types/minimatch" "*"
-    "@types/node" "*"
-
 "@types/json-schema@^7.0.9":
   version "7.0.9"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.9.tgz#97edc9037ea0c38585320b28964dde3b39e4660d"
@@ -1709,11 +1701,6 @@
   version "4.14.179"
   resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.179.tgz#490ec3288088c91295780237d2497a3aa9dfb5c5"
   integrity sha512-uwc1x90yCKqGcIOAT6DwOSuxnrAbpkdPsUOZtwrXb4D/6wZs+6qG7QnIawDuZWg0sWpxl+ltIKCaLoMlna678w==
-
-"@types/minimatch@*":
-  version "3.0.5"
-  resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.5.tgz#1001cc5e6a3704b83c236027e77f2f58ea010f40"
-  integrity sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==
 
 "@types/node@*":
   version "17.0.21"
@@ -4983,10 +4970,10 @@ markmap-common@^0.14.2:
   dependencies:
     "@babel/runtime" "^7.12.1"
 
-markmap-lib@^0.14.3:
-  version "0.14.3"
-  resolved "https://registry.yarnpkg.com/markmap-lib/-/markmap-lib-0.14.3.tgz#8ad43102af570014ccd84f8e234200f8af6a00f6"
-  integrity sha512-nvHpeBp3nlQvCgNETHwASYLqo4GGjl3JF04+Aq3i0+8ni0mKDqongrEslU1cI0SuELOjGphTXiLt6ugcObhE/A==
+markmap-lib@^0.14.4:
+  version "0.14.4"
+  resolved "https://registry.yarnpkg.com/markmap-lib/-/markmap-lib-0.14.4.tgz#99d5721d8082bd90d01ce3f5ffc213b912969464"
+  integrity sha512-tyXhpER0XdQe/sxWOjMVshbPcfrcNnV5MzdjxVGUUovep1jxFuuBWS5Cp7z41pzUpW1+56Mxb7Vgp4Psme3sSw==
   dependencies:
     "@babel/runtime" "^7.18.9"
     js-yaml "^4.1.0"
@@ -4995,18 +4982,18 @@ markmap-lib@^0.14.3:
     remarkable "^2.0.1"
     remarkable-katex "^1.2.1"
 
-markmap-toolbar@^0.14.3:
-  version "0.14.3"
-  resolved "https://registry.yarnpkg.com/markmap-toolbar/-/markmap-toolbar-0.14.3.tgz#ec4ad9eff08c492fd70305b7c3902f19dc5acdd3"
-  integrity sha512-57+TUQu8k+NyGlr8dtZiqY8D60EmsHIoXXNkkz3DuzdQU8UefC+PaRVUkJvrfvgU2P2f7dBKO+NpGgSk1wbY+w==
+markmap-toolbar@^0.14.4:
+  version "0.14.4"
+  resolved "https://registry.yarnpkg.com/markmap-toolbar/-/markmap-toolbar-0.14.4.tgz#120d0b15ea4ad140b5c46778633a53869c4b737b"
+  integrity sha512-PQnnSucOFIR+AlU/ju1QUiZWSaLw/C9T43CY7K/Chp1jthgF3NitXVmrZ/79Bgak9npqrYPrZ8jK7A2yQDztyA==
   dependencies:
     "@babel/runtime" "^7.16.3"
     "@gera2ld/jsx-dom" "^2.1.1"
 
-markmap-view@^0.14.3:
-  version "0.14.3"
-  resolved "https://registry.yarnpkg.com/markmap-view/-/markmap-view-0.14.3.tgz#660e46b757305ed67a998def9e1431023a184a1d"
-  integrity sha512-8w96PQv5O4+XAKhdHWnZvl16PvOn1UdvBRWdhkwYjH2DXuWp1cmXqF4ushgEp4Ec/GxhZlTcQN4+0hyFxgIK+w==
+markmap-view@^0.14.4:
+  version "0.14.4"
+  resolved "https://registry.yarnpkg.com/markmap-view/-/markmap-view-0.14.4.tgz#a340a3c08fc671b2812a80a6405beed13c2e1677"
+  integrity sha512-SHG5FmqIjGiWjAn4FJ7FgzbPN9c0XPYEFu/RV7c3ZyWuKNL1YZRbwROjkElN5UXaMDhjlieoxnWJIDKp3vPRAA==
   dependencies:
     "@babel/runtime" "^7.12.5"
     "@types/d3" "^6.0.0"

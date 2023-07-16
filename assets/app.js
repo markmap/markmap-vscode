@@ -61,7 +61,7 @@ toolbar.register({
 toolbar.setItems(['zoomIn', 'zoomOut', 'fit', 'recurse', 'editAsText', 'exportAsHtml']);
 setTimeout(() => {
   toolbar.attach(mm);
-  document.body.append(toolbar.render());
+  document.body.append(toolbar.el);
 });
 
 function createButton(text) {

@@ -9,19 +9,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          persist-credentials: false
-      - uses: actions/setup-node@v2
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - uses: pnpm/action-setup@v2
         with:
-          node-version: '16'
+          version: 8
       - name: Install deps
-        run: yarn
-      - name: Publish to VSCE
-        run: npx vsce publish -p $VSCE_TOKEN
-        env:
-          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
-      - name: Publish to Open VSX
-        run: npx ovsx publish -p $OVSX_TOKEN
-        env:
-          OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
+        run: pnpm i
+      - name: Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.OVSX_TOKEN }}
+          dependencies: false
+      - name: Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@v1
+        with:
+          pat: ${{ secrets.VSCE_TOKEN }}
+          dependencies: false
+          registryUrl: https://marketplace.visualstudio.com

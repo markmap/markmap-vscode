@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.1.1
+
+- Use <kbd>Cmd</kbd>+click to toggle nodes recursively on macOS
+
 ## 0.1.0
 
 - Added offline mode

@@ -4,7 +4,7 @@ import { readPackageUp } from 'read-pkg-up';
 import plaid from '@gera2ld/plaid';
 import pkg from './package.json' assert { type: 'json' };
 
-const { defaultOptions, getRollupExternal, getRollupPlugins, loadConfigSync } =
+const { defaultOptions, getRollupExternal, getRollupPlugins } =
   plaid;
 
 async function getVersion(module) {
@@ -26,19 +26,11 @@ export default async () => {
   };
 
   const external = getRollupExternal(['path', 'vscode']);
-  const postcssConfig =
-    loadConfigSync('postcss') ||
-    (await import('@gera2ld/plaid/config/postcssrc.js'));
-  const postcssOptions = {
-    ...postcssConfig,
-    inject: false,
-  };
   const rollupConfig = [
     {
       input: 'src/extension.ts',
       plugins: getRollupPlugins({
         extensions: defaultOptions.extensions,
-        postcss: postcssOptions,
         replaceValues,
       }),
       external,

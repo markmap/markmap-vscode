@@ -153,8 +153,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
           },
         });
         if (!targetUri) return;
-        let md = document.getText();
-        md = md.replace(/\r\n?/g, '\n');
+        const md = document.getText();
         const { root, features, frontmatter } = transformerExport.transform(md);
         const jsonOptions = {
           ...defaultOptions,

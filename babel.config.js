@@ -3,6 +3,4 @@ module.exports = {
   presets: [
     '@babel/preset-typescript',
   ],
-  plugins: [
-  ].filter(Boolean),
 };

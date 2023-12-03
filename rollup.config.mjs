@@ -2,10 +2,8 @@ import { dirname } from 'path';
 import { createRequire } from 'module';
 import { readPackageUp } from 'read-pkg-up';
 import plaid from '@gera2ld/plaid';
-import pkg from './package.json' assert { type: 'json' };
 
-const { defaultOptions, getRollupExternal, getRollupPlugins } =
-  plaid;
+const { getRollupExternal, getRollupPlugins } = plaid;
 
 async function getVersion(module) {
   const require = createRequire(import.meta.url);
@@ -15,43 +13,27 @@ async function getVersion(module) {
 }
 
 export default async () => {
-  const DIST = defaultOptions.distDir;
-  const FILENAME = 'extension';
-  const BANNER = `/*! ${pkg.name} v${pkg.version} | ${pkg.license} License */`;
   const replaceValues = {
-    'process.env.DIST': JSON.stringify('dist'),
     'process.env.TOOLBAR_VERSION': JSON.stringify(
-      await getVersion('markmap-toolbar')
+      await getVersion('markmap-toolbar'),
     ),
   };
 
   const external = getRollupExternal(['path', 'vscode']);
-  const rollupConfig = [
-    {
-      input: 'src/extension.ts',
-      plugins: getRollupPlugins({
-        extensions: defaultOptions.extensions,
-        replaceValues,
-      }),
-      external,
-      output: {
-        format: 'cjs',
-        file: `${DIST}/${FILENAME}.js`,
-      },
+  const rollupConfig = {
+    input: {
+      extension: 'src/extension.ts',
+      postbuild: 'src/postbuild.ts',
     },
-  ];
-
-  rollupConfig.forEach((item) => {
-    item.output = {
-      indent: false,
-      // If set to false, circular dependencies and live bindings for external imports won't work
-      externalLiveBindings: false,
-      ...item.output,
-      ...(BANNER && {
-        banner: BANNER,
-      }),
-    };
-  });
+    plugins: getRollupPlugins({
+      replaceValues,
+    }),
+    external,
+    output: {
+      format: 'cjs',
+      dir: 'dist',
+    },
+  };
 
   return rollupConfig;
 };

@@ -7,21 +7,10 @@ const TOOLBAR_JS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/index.js`;
 const APP_CSS = 'assets/style.css';
 const APP_JS = 'assets/app.js';
 
-function removeVersionString(part: string) {
-  return part.replace(/@.+$/, '');
-}
+export const ASSETS_PREFIX = 'dist/web_assets/';
 
 export function localProvider(path: string) {
-  const parts = path.split('/');
-  // xxx@0.0.0-alpha.0+aaaaaa
-  // @scope/xxx@0.0.0-alpha.0+aaaaaa
-  if (parts[0].startsWith('@')) {
-    parts[1] = removeVersionString(parts[1]);
-  } else {
-    parts[0] = removeVersionString(parts[0]);
-  }
-  path = parts.join('/');
-  return `${process.env.DIST}/${path}`;
+  return `${ASSETS_PREFIX}${path}`;
 }
 
 export function mergeAssets(...args: IAssets[]): IAssets {
@@ -38,7 +27,6 @@ transformerLocal.urlBuilder.setProvider(local, localProvider);
 transformerLocal.urlBuilder.provider = local;
 
 export const transformerExport = new Transformer();
-transformerExport.urlBuilder.setProvider(local, localProvider);
 let bestProvider = transformerExport.urlBuilder.provider;
 transformerExport.urlBuilder.getFastestProvider().then(provider => {
   bestProvider = provider;
@@ -46,7 +34,8 @@ transformerExport.urlBuilder.getFastestProvider().then(provider => {
 
 export function setExportMode(offline: boolean) {
   if (offline) {
-    transformerExport.urlBuilder.provider = 'local';
+    transformerExport.urlBuilder.setProvider(local, localProvider);
+    transformerExport.urlBuilder.provider = local;
   } else {
     transformerExport.urlBuilder.provider = bestProvider;
   }

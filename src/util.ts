@@ -1,5 +1,6 @@
 import { buildCSSItem, buildJSItem } from 'markmap-common';
-import { Transformer, baseJsPaths, IAssets } from 'markmap-lib';
+import { IAssets, Transformer } from 'markmap-lib';
+import { baseJsPaths } from 'markmap-render';
 
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
@@ -28,7 +29,7 @@ transformerLocal.urlBuilder.provider = local;
 
 export const transformerExport = new Transformer();
 let bestProvider = transformerExport.urlBuilder.provider;
-transformerExport.urlBuilder.getFastestProvider().then(provider => {
+transformerExport.urlBuilder.getFastestProvider().then((provider) => {
   bestProvider = provider;
 });
 
@@ -57,10 +58,8 @@ export function getAssets(transformer: Transformer) {
   };
   let allAssets = transformer.getAssets();
   allAssets = mergeAssets(baseAssets, allAssets, toolbarAssets, {
-    styles: [APP_CSS]
-      .map((path) => buildCSSItem(path)),
-    scripts: [APP_JS]
-      .map((path) => buildJSItem(path)),
+    styles: [APP_CSS].map((path) => buildCSSItem(path)),
+    scripts: [APP_JS].map((path) => buildJSItem(path)),
   });
   return { toolbarAssets, baseAssets, allAssets };
 }

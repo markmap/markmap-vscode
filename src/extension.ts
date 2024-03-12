@@ -1,24 +1,26 @@
-import { JSItem, type CSSItem, type IMarkmapJSONOptions } from 'markmap-common';
+import debounce from 'lodash.debounce';
+import { JSItem, type CSSItem } from 'markmap-common';
+import { fillTemplate } from 'markmap-render';
+import type { IMarkmapJSONOptions } from 'markmap-view';
 import {
   CancellationToken,
   CustomTextEditorProvider,
   ExtensionContext,
   TextDocument,
+  Uri,
   ViewColumn,
   WebviewPanel,
   commands,
   window as vscodeWindow,
   workspace,
-  Uri,
 } from 'vscode';
-import debounce from 'lodash.debounce';
 import { Utils } from 'vscode-uri';
 import {
   getAssets,
   mergeAssets,
   setExportMode,
-  transformerLocal,
   transformerExport,
+  transformerLocal,
 } from './util';
 
 const PREFIX = 'markmap-vscode';
@@ -48,7 +50,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
   public async resolveCustomTextEditor(
     document: TextDocument,
     webviewPanel: WebviewPanel,
-    token: CancellationToken
+    token: CancellationToken,
   ): Promise<void> {
     webviewPanel.webview.options = {
       enableScripts: true,
@@ -84,11 +86,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
         return item;
       }),
     };
-    webviewPanel.webview.html = transformerLocal.fillTemplate(
-      undefined,
-      resolvedAssets,
-      { baseJs: [] }
-    );
+    webviewPanel.webview.html = fillTemplate(undefined, resolvedAssets, {
+      baseJs: [],
+      urlBuilder: transformerLocal.urlBuilder,
+    });
     const updateCursor = () => {
       const editor = vscodeWindow.activeTextEditor;
       if (editor?.document === document) {
@@ -197,7 +198,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
                   };
                 }
                 return item;
-              })
+              }),
             ),
             Promise.all(
               (assets.scripts || []).map(async (item): Promise<JSItem> => {
@@ -210,7 +211,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
                   };
                 }
                 return item;
-              })
+              }),
             ),
           ]);
           assets = {
@@ -218,9 +219,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
             scripts,
           };
         }
-        const html = transformerExport.fillTemplate(root, assets, {
+        const html = fillTemplate(root, assets, {
           baseJs: [],
           jsonOptions,
+          urlBuilder: transformerExport.urlBuilder,
         });
         const encoder = new TextEncoder();
         const data = encoder.encode(html);
@@ -228,7 +230,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
           await workspace.fs.writeFile(targetUri, data);
         } catch (e) {
           vscodeWindow.showErrorMessage(
-            `Cannot write file "${targetUri.toString()}"!`
+            `Cannot write file "${targetUri.toString()}"!`,
           );
         }
       },
@@ -270,15 +272,15 @@ export function activate(context: ExtensionContext) {
         'vscode.openWith',
         uri,
         VIEW_TYPE,
-        ViewColumn.Beside
+        ViewColumn.Beside,
       );
-    })
+    }),
   );
   const markmapEditor = new MarkmapEditor(context);
   context.subscriptions.push(
     vscodeWindow.registerCustomEditorProvider(VIEW_TYPE, markmapEditor, {
       webviewOptions: { retainContextWhenHidden: true },
-    })
+    }),
   );
 }
 

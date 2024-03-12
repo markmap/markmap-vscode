@@ -98,17 +98,18 @@
   ],
   "devDependencies": {
     "@babel/runtime": "^7.22.6",
-    "@gera2ld/plaid": "^2.6.0",
-    "@gera2ld/plaid-rollup": "^2.6.0",
+    "@gera2ld/plaid": "~2.7.0",
+    "@gera2ld/plaid-rollup": "~2.7.0",
     "@types/lodash.debounce": "^4.0.7",
     "@types/node": "^20.4.2",
     "@types/vscode": "~1.75.0",
     "del-cli": "^5.1.0",
     "husky": "^8.0.3",
     "lodash.debounce": "^4.0.8",
-    "markmap-common": "^0.15.6",
-    "markmap-lib": "^0.15.7",
-    "markmap-toolbar": "^0.15.6",
+    "markmap-common": "^0.16.0",
+    "markmap-lib": "^0.16.1",
+    "markmap-render": "^0.16.0",
+    "markmap-toolbar": "^0.16.0",
     "read-pkg-up": "^10.0.0",
     "vscode-uri": "^3.0.7"
   }

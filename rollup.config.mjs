@@ -1,9 +1,7 @@
-import { dirname } from 'path';
+import { defineExternal, definePlugins } from '@gera2ld/plaid-rollup';
 import { createRequire } from 'module';
+import { dirname } from 'path';
 import { readPackageUp } from 'read-pkg-up';
-import plaid from '@gera2ld/plaid';
-
-const { getRollupExternal, getRollupPlugins } = plaid;
 
 async function getVersion(module) {
   const require = createRequire(import.meta.url);
@@ -19,13 +17,13 @@ export default async () => {
     ),
   };
 
-  const external = getRollupExternal(['path', 'vscode']);
+  const external = defineExternal(['path', 'vscode']);
   const rollupConfig = {
     input: {
       extension: 'src/extension.ts',
       postbuild: 'src/postbuild.ts',
     },
-    plugins: getRollupPlugins({
+    plugins: definePlugins({
       replaceValues,
     }),
     external,

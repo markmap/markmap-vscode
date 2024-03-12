@@ -20,11 +20,13 @@ jobs:
       - name: Install deps
         run: pnpm i
       - name: Publish to Open VSX Registry
+        continue-on-error: true
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.OVSX_TOKEN }}
           dependencies: false
       - name: Publish to Visual Studio Marketplace
+        continue-on-error: true
         uses: HaaLeo/publish-vscode-extension@v1
         with:
           pat: ${{ secrets.VSCE_TOKEN }}

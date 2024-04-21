@@ -19,27 +19,7 @@ body {
 }
 
 .btn-text {
+  height: auto;
   padding-left: 4px;
   padding-right: 4px;
-}
-
-.vscode-dark :not(.markmap-fold) > circle {
-  fill: #444;
-}
-
-.vscode-dark .mm-toolbar {
-  background: #222;
-  border-color: #444;
-}
-
-.vscode-dark .mm-toolbar:hover {
-  border-color: #666;
-}
-
-.vscode-dark .mm-toolbar > *:hover {
-  background-color: #444;
-}
-
-.vscode-dark .mm-toolbar > *:hover > * {
-  color: #bbb;
 }

@@ -4,6 +4,7 @@ import { fillTemplate } from 'markmap-render';
 import type { IMarkmapJSONOptions } from 'markmap-view';
 import {
   CancellationToken,
+  ColorThemeKind,
   CustomTextEditorProvider,
   ExtensionContext,
   TextDocument,
@@ -34,7 +35,7 @@ const renderToolbar = () => {
 };
 
 class MarkmapEditor implements CustomTextEditorProvider {
-  constructor(private context: ExtensionContext) {}
+  constructor(private context: ExtensionContext) { }
 
   private resolveAssetPath(relPath: string) {
     return Utils.joinPath(this.context.extensionUri, relPath);
@@ -121,6 +122,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
         data: customCSS,
       });
     };
+    const updateTheme = () => {
+      const dark = [ColorThemeKind.Dark, ColorThemeKind.HighContrast].includes(vscodeWindow.activeColorTheme.kind);
+      webviewPanel.webview.postMessage({
+        type: 'setTheme',
+        data: dark,
+      });
+    };
     const update = () => {
       const md = document.getText();
       const { root, frontmatter } = transformerLocal.transform(md);
@@ -140,7 +148,11 @@ class MarkmapEditor implements CustomTextEditorProvider {
     const debouncedUpdate = debounce(update, 300);
 
     const messageHandlers: { [key: string]: (data?: any) => void } = {
-      refresh: update,
+      refresh: () => {
+        update();
+        updateCSS();
+        updateTheme();
+      },
       editAsText: () => {
         vscodeWindow.showTextDocument(document, {
           viewColumn: ViewColumn.Beside,
@@ -168,11 +180,11 @@ class MarkmapEditor implements CustomTextEditorProvider {
           styles: [
             ...(customCSS
               ? [
-                  {
-                    type: 'style',
-                    data: customCSS,
-                  } as CSSItem,
-                ]
+                {
+                  type: 'style',
+                  data: customCSS,
+                } as CSSItem,
+              ]
               : []),
           ],
           scripts: [
@@ -255,8 +267,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
     vscodeWindow.onDidChangeTextEditorSelection(() => {
       debouncedUpdateCursor();
     });
+    vscodeWindow.onDidChangeActiveColorTheme(updateTheme);
     updateOptions();
     updateCSS();
+    updateTheme();
     workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('markmap.defaultOptions')) updateOptions();
       if (e.affectsConfiguration('markmap.customCSS')) updateCSS();

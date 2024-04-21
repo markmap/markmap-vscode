@@ -25,6 +25,9 @@ const handlers = {
     }
     style.textContent = data || '';
   },
+  setTheme(dark) {
+    document.documentElement.classList[dark ? 'add' : 'remove']('markmap-dark');
+  },
 };
 window.addEventListener('message', e => {
   const { type, data } = e.data;

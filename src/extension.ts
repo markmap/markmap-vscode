@@ -1,7 +1,7 @@
 import debounce from 'lodash.debounce';
 import { JSItem, type CSSItem } from 'markmap-common';
 import { fillTemplate } from 'markmap-render';
-import type { IMarkmapJSONOptions } from 'markmap-view';
+import { defaultOptions, type IMarkmapJSONOptions } from 'markmap-view';
 import {
   CancellationToken,
   ColorThemeKind,
@@ -35,7 +35,7 @@ const renderToolbar = () => {
 };
 
 class MarkmapEditor implements CustomTextEditorProvider {
-  constructor(private context: ExtensionContext) { }
+  constructor(private context: ExtensionContext) {}
 
   private resolveAssetPath(relPath: string) {
     return Utils.joinPath(this.context.extensionUri, relPath);
@@ -100,16 +100,16 @@ class MarkmapEditor implements CustomTextEditorProvider {
         });
       }
     };
-    let defaultOptions: IMarkmapJSONOptions;
+    let globalOptions: IMarkmapJSONOptions;
     let customCSS: string;
     const updateOptions = () => {
       const raw = workspace
         .getConfiguration('markmap')
         .get<string>('defaultOptions');
       try {
-        defaultOptions = raw && JSON.parse(raw);
+        globalOptions = raw && JSON.parse(raw);
       } catch {
-        defaultOptions = null;
+        globalOptions = null;
       }
       update();
     };
@@ -123,7 +123,9 @@ class MarkmapEditor implements CustomTextEditorProvider {
       });
     };
     const updateTheme = () => {
-      const dark = [ColorThemeKind.Dark, ColorThemeKind.HighContrast].includes(vscodeWindow.activeColorTheme.kind);
+      const dark = [ColorThemeKind.Dark, ColorThemeKind.HighContrast].includes(
+        vscodeWindow.activeColorTheme.kind,
+      );
       webviewPanel.webview.postMessage({
         type: 'setTheme',
         data: dark,
@@ -138,6 +140,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
           root,
           jsonOptions: {
             ...defaultOptions,
+            ...globalOptions,
             ...(frontmatter as any)?.markmap,
           },
         },
@@ -169,7 +172,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
         const md = document.getText();
         const { root, features, frontmatter } = transformerExport.transform(md);
         const jsonOptions = {
-          ...defaultOptions,
+          ...globalOptions,
           ...(frontmatter as any)?.markmap,
         };
         const { embedAssets } = jsonOptions as { embedAssets?: boolean };
@@ -180,11 +183,11 @@ class MarkmapEditor implements CustomTextEditorProvider {
           styles: [
             ...(customCSS
               ? [
-                {
-                  type: 'style',
-                  data: customCSS,
-                } as CSSItem,
-              ]
+                  {
+                    type: 'style',
+                    data: customCSS,
+                  } as CSSItem,
+                ]
               : []),
           ],
           scripts: [

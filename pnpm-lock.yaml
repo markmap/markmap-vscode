@@ -39,14 +39,14 @@ importers:
         specifier: ^0.17.1
         version: 0.17.1
       markmap-lib:
-        specifier: ^0.17.1
-        version: 0.17.1(markmap-common@0.17.1)
+        specifier: ^0.17.2
+        version: 0.17.2(markmap-common@0.17.1)
       markmap-render:
-        specifier: ^0.17.1
-        version: 0.17.1(markmap-common@0.17.1)
+        specifier: ^0.17.2
+        version: 0.17.2(markmap-common@0.17.1)
       markmap-toolbar:
-        specifier: ^0.17.1
-        version: 0.17.1(markmap-common@0.17.1)
+        specifier: ^0.17.2
+        version: 0.17.2(markmap-common@0.17.1)
       read-pkg-up:
         specifier: ^10.0.0
         version: 10.0.0
@@ -2668,23 +2668,23 @@ packages:
     peerDependencies:
       markmap-common: '*'
 
-  markmap-lib@0.17.1:
-    resolution: {integrity: sha512-+SPuvF3ENvS0xS1A6S7gVMgAsMQwSTzqko3vVEJb5Wk7gDC5NlmksPjj3QQImKc359b1qJlOXXPFF7svrvdbvA==}
+  markmap-lib@0.17.2:
+    resolution: {integrity: sha512-zS5nL8OBR4hRpqegxeXAd4jQq/wd+Xn21bHhW0QHgGzE3dJTG55pLDi1rmdaHLCTpN7lUtO5MBOZ1HyXGYuHwQ==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-render@0.17.1:
-    resolution: {integrity: sha512-NYTvPrY2rhtL2RkpdhSR8aOklQeagWDXfwIFqE900updD++qnXAmsDl/yTqCoKQg1oFkGCAoYGvzHCrY5ekKpA==}
+  markmap-render@0.17.2:
+    resolution: {integrity: sha512-tfwwBXUPU5bYVGiqWoZjAtvQX0uUwYc+CmwvHtw98EPJ1gPP395Wm2NjDFHqH4pWZ6/UhMQt0DhFuguGZyzMog==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-toolbar@0.17.1:
-    resolution: {integrity: sha512-cGFPrYUd/0t/+Ume9R7Gx+Qlzdf8p49CDt2FisJGuOyC0Nr3x7U8rBP6LeKbFueBN5wRKC3zwgeVqesF6GpKvA==}
+  markmap-toolbar@0.17.2:
+    resolution: {integrity: sha512-WQ05P2xvQmZT0ybRUE0uRzrs30aXlJ6/yEUsA6A9nYEwm8T9jSwBxIM/5zYlkH/XzUcsRRxtCa4k1IWR74gkpQ==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-view@0.17.1:
-    resolution: {integrity: sha512-bfI9s1CG3E2bgQ9fMo68NRrp2mYtSLRnxE3gwgD8JON17/RtihSr+8iCyS1DypbKr9qXbz5f5SCMTslZ1ZDjfg==}
+  markmap-view@0.17.2:
+    resolution: {integrity: sha512-kF9bbXWF/10UBFTatv0kPQSBgVb8+Xn4Bttep78i9879nzqRaIjCNzZYGtpxK0gx9B4U9NGMZrx/B4cTTwmeQA==}
     peerDependencies:
       markmap-common: '*'
 
@@ -3722,6 +3722,11 @@ packages:
   yaml@1.10.2:
     resolution: {integrity: sha512-r3vXyErRCYJ7wg28yvBY5VSoAF8ZvlcW9/BwUzEtUsjvX/DKs24dIkuwjtuprwJJHsbyUbLApepYTR1BN4uHrg==}
     engines: {node: '>= 6'}
+
+  yaml@2.5.1:
+    resolution: {integrity: sha512-bLQOjaX/ADgQ20isPJRvF0iRUHIxVhYvr53Of7wGcWlO2jvtUlH5m87DsmulFVxRpNLOnI4tB6p/oh8D7kpn9Q==}
+    engines: {node: '>= 14'}
+    hasBin: true
 
   yargs-parser@20.2.9:
     resolution: {integrity: sha512-y11nGElTIV+CT3Zv9t7VKl+Q3hTQoT9a1Qzezhhl6Rp21gJ/IVTW7Z3y9EWXhuUBC2Shnf+DX0antecpAwSP8w==}
@@ -6754,12 +6759,11 @@ snapshots:
       cheerio: 1.0.0-rc.12
       markmap-common: 0.17.1
 
-  markmap-lib@0.17.1(markmap-common@0.17.1):
+  markmap-lib@0.17.2(markmap-common@0.17.1):
     dependencies:
       '@babel/runtime': 7.22.6
       '@iktakahiro/markdown-it-katex': 4.0.1
       highlight.js: 11.9.0
-      js-yaml: 4.1.0
       katex: 0.16.10
       markdown-it: 14.1.0
       markdown-it-ins: 4.0.0
@@ -6768,22 +6772,23 @@ snapshots:
       markdown-it-sup: 2.0.0
       markmap-common: 0.17.1
       markmap-html-parser: 0.17.1(markmap-common@0.17.1)
-      markmap-view: 0.17.1(markmap-common@0.17.1)
+      markmap-view: 0.17.2(markmap-common@0.17.1)
       prismjs: 1.29.0
+      yaml: 2.5.1
 
-  markmap-render@0.17.1(markmap-common@0.17.1):
+  markmap-render@0.17.2(markmap-common@0.17.1):
     dependencies:
       '@babel/runtime': 7.22.6
       markmap-common: 0.17.1
-      markmap-view: 0.17.1(markmap-common@0.17.1)
+      markmap-view: 0.17.2(markmap-common@0.17.1)
 
-  markmap-toolbar@0.17.1(markmap-common@0.17.1):
+  markmap-toolbar@0.17.2(markmap-common@0.17.1):
     dependencies:
       '@babel/runtime': 7.22.6
       '@gera2ld/jsx-dom': 2.2.2
       markmap-common: 0.17.1
 
-  markmap-view@0.17.1(markmap-common@0.17.1):
+  markmap-view@0.17.2(markmap-common@0.17.1):
     dependencies:
       '@babel/runtime': 7.22.6
       '@gera2ld/jsx-dom': 2.2.2
@@ -7863,6 +7868,8 @@ snapshots:
   yallist@4.0.0: {}
 
   yaml@1.10.2: {}
+
+  yaml@2.5.1: {}
 
   yargs-parser@20.2.9: {}
 

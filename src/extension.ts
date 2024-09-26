@@ -133,7 +133,10 @@ class MarkmapEditor implements CustomTextEditorProvider {
     };
     const update = () => {
       const md = document.getText();
-      const { root, frontmatter } = transformerLocal.transform(md);
+      const { root, frontmatter } = transformerLocal.transform(
+        md,
+        globalOptions?.htmlParser,
+      );
       webviewPanel.webview.postMessage({
         type: 'setData',
         data: {

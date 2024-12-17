@@ -4,7 +4,10 @@ let root;
 let style;
 const handlers = {
   setData(data) {
-    mm.setData(root = data.root, markmap.deriveOptions(data.jsonOptions) || {});
+    mm.setData(
+      (root = data.root),
+      markmap.deriveOptions(data.jsonOptions) || {},
+    );
     if (firstTime) {
       mm.fit();
       firstTime = false;
@@ -29,12 +32,12 @@ const handlers = {
     document.documentElement.classList[dark ? 'add' : 'remove']('markmap-dark');
   },
 };
-window.addEventListener('message', e => {
+window.addEventListener('message', (e) => {
   const { type, data } = e.data;
   const handler = handlers[type];
   handler?.(data);
 });
-document.addEventListener('click', e => {
+document.addEventListener('click', (e) => {
   const el = e.target?.closest('a');
   if (el) {
     const href = el.getAttribute('href');
@@ -61,7 +64,14 @@ toolbar.register({
   content: createButton('Export'),
   onClick: clickHandler('exportAsHtml'),
 });
-toolbar.setItems(['zoomIn', 'zoomOut', 'fit', 'recurse', 'editAsText', 'exportAsHtml']);
+toolbar.setItems([
+  'zoomIn',
+  'zoomOut',
+  'fit',
+  'recurse',
+  'editAsText',
+  'exportAsHtml',
+]);
 setTimeout(() => {
   toolbar.attach(mm);
   document.body.append(toolbar.el);
@@ -82,11 +92,11 @@ function clickHandler(type) {
 
 function findActiveNode(line) {
   function dfs(node) {
-    const lines = node.p?.lines;
-    if (lines && lines[0] <= line && line < lines[1]) {
+    const [start, end] = node.payload?.lines?.split(',').map((s) => +s) || [];
+    if (start >= 0 && start <= line && line < end) {
       best = node;
     }
-    node.c?.forEach(dfs);
+    node.children?.forEach(dfs);
   }
   let best;
   dfs(root);

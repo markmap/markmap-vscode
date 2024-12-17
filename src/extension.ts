@@ -35,7 +35,7 @@ const renderToolbar = () => {
 };
 
 class MarkmapEditor implements CustomTextEditorProvider {
-  constructor(private context: ExtensionContext) {}
+  constructor(private context: ExtensionContext) { }
 
   private resolveAssetPath(relPath: string) {
     return Utils.joinPath(this.context.extensionUri, relPath);
@@ -153,6 +153,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
     const debouncedUpdateCursor = debounce(updateCursor, 300);
     const debouncedUpdate = debounce(update, 300);
 
+    const logger = vscodeWindow.createOutputChannel('Markmap');
     const messageHandlers: { [key: string]: (data?: any) => void } = {
       refresh: () => {
         update();
@@ -186,11 +187,11 @@ class MarkmapEditor implements CustomTextEditorProvider {
           styles: [
             ...(customCSS
               ? [
-                  {
-                    type: 'style',
-                    data: customCSS,
-                  } as CSSItem,
-                ]
+                {
+                  type: 'style',
+                  data: customCSS,
+                } as CSSItem,
+              ]
               : []),
           ],
           scripts: [
@@ -256,21 +257,20 @@ class MarkmapEditor implements CustomTextEditorProvider {
         const filePath = Utils.joinPath(Utils.dirname(document.uri), relPath);
         commands.executeCommand('vscode.open', filePath);
       },
-    };
-    const logger = vscodeWindow.createOutputChannel('Markmap');
-    messageHandlers.log = (data: string) => {
-      logger.appendLine(data);
+      log(data: string) {
+        logger.appendLine(data);
+      },
     };
     webviewPanel.webview.onDidReceiveMessage((e) => {
       const handler = messageHandlers[e.type];
       handler?.(e.data);
     });
     workspace.onDidChangeTextDocument((e) => {
-      if (e.document === document) {
-        debouncedUpdate();
-      }
+      if (e.document !== document) return;
+      debouncedUpdate();
     });
-    vscodeWindow.onDidChangeTextEditorSelection(() => {
+    vscodeWindow.onDidChangeTextEditorSelection((e) => {
+      if (e.textEditor.document !== document) return;
       debouncedUpdateCursor();
     });
     vscodeWindow.onDidChangeActiveColorTheme(updateTheme);

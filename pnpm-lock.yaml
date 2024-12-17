@@ -36,17 +36,17 @@ importers:
         specifier: ^4.0.8
         version: 4.0.8
       markmap-common:
-        specifier: ^0.17.1
-        version: 0.17.1
+        specifier: 0.17.3-beta.4
+        version: 0.17.3-beta.4
       markmap-lib:
-        specifier: ^0.17.2
-        version: 0.17.2(markmap-common@0.17.1)
+        specifier: 0.17.3-beta.4
+        version: 0.17.3-beta.4(markmap-common@0.17.3-beta.4)
       markmap-render:
-        specifier: ^0.17.2
-        version: 0.17.2(markmap-common@0.17.1)
+        specifier: 0.17.3-beta.4
+        version: 0.17.3-beta.4(markmap-common@0.17.3-beta.4)
       markmap-toolbar:
-        specifier: ^0.17.2
-        version: 0.17.2(markmap-common@0.17.1)
+        specifier: 0.17.3-beta.4
+        version: 0.17.3-beta.4(markmap-common@0.17.3-beta.4)
       read-pkg-up:
         specifier: ^10.0.0
         version: 10.0.0
@@ -904,9 +904,6 @@ packages:
   '@iconify/utils@2.1.22':
     resolution: {integrity: sha512-6UHVzTVXmvO8uS6xFF+L/QTSpTzA/JZxtgU+KYGFyDYMEObZ1bu/b5l+zNJjHy+0leWjHI+C0pXlzGvv3oXZMA==}
 
-  '@iktakahiro/markdown-it-katex@4.0.1':
-    resolution: {integrity: sha512-kGFooO7fIOgY34PSG8ZNVsUlKhhNoqhzW2kq94TNGa8COzh73PO4KsEoPOsQVG1mEAe8tg7GqG0FoVao0aMHaw==}
-
   '@jridgewell/gen-mapping@0.3.3':
     resolution: {integrity: sha512-HLhSWOLRi875zjjMG/r+Nv0oCW8umGb0BgEhyX3dDX3egwZtB8PqLnjz3yedt8R5StBrzcg4aBpnh8UA9D1BoQ==}
     engines: {node: '>=6.0.0'}
@@ -1463,6 +1460,9 @@ packages:
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0
 
+  '@vscode/markdown-it-katex@1.1.1':
+    resolution: {integrity: sha512-3KTlbsRBPJQLE2YmLL7K6nunTlU+W9T5+FjfNdWuIUKgxSS6HWLQHaO3L4MkJi7z7MpIPpY+g4N+cWNBPE/MSA==}
+
   acorn-jsx@5.3.2:
     resolution: {integrity: sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==}
     peerDependencies:
@@ -1638,9 +1638,9 @@ packages:
   cheerio-select@2.1.0:
     resolution: {integrity: sha512-9v9kG0LvzrlcungtnJtpGNxY+fzECQKhK4EGJX2vByejiMX84MFNQw4UxPJl3bFbTMw+Dfs37XaIkCwTZfLh4g==}
 
-  cheerio@1.0.0-rc.12:
-    resolution: {integrity: sha512-VqR8m68vM46BNnuZ5NtnGBKIE/DfN0cRIzg9n40EIq9NOv90ayxLBXA8fXC5gquFRGJSTRqBq25Jt2ECLR431Q==}
-    engines: {node: '>= 6'}
+  cheerio@1.0.0:
+    resolution: {integrity: sha512-quS9HgjQpdaXOvsZz82Oz7uxtXiy6UIsIQcpBj7HRw2M63Skasm9qlDocAM7jNuaxdhpPU7c4kJN+gA5MCu4ww==}
+    engines: {node: '>=18.17'}
 
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
@@ -2001,6 +2001,9 @@ packages:
   electron-to-chromium@1.4.701:
     resolution: {integrity: sha512-K3WPQ36bUOtXg/1+69bFlFOvdSm0/0bGqmsfPDLRXLanoKXdA+pIWuf/VbA9b+2CwBFuONgl4NEz4OEm+OJOKA==}
 
+  encoding-sniffer@0.2.0:
+    resolution: {integrity: sha512-ju7Wq1kg04I3HtiYIOrUrdfdDvkyO9s5XM8QAj/bN61Yo/Vb4vgJxy5vi4Yxk01gWHbrofpPtpxM8bKger9jhg==}
+
   entities@2.2.0:
     resolution: {integrity: sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==}
 
@@ -2299,8 +2302,8 @@ packages:
     resolution: {integrity: sha512-r0EI+HBMcXadMrugk0GCQ+6BQV39PiWAZVfq7oIckeGiN7sjRGyQxPdft3nQekFTCQbYxLBH+/axZMeH8UX6+w==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  htmlparser2@8.0.2:
-    resolution: {integrity: sha512-GYdjWKDkbRLkZ5geuHs5NY1puJ+PXwP7+fHPRz06Eirsb9ugf6d8kkXav6ADhcODhFFPMIXyxkxSuMf3D6NCFA==}
+  htmlparser2@9.1.0:
+    resolution: {integrity: sha512-5zfg6mHUoaer/97TxnGpxmbR7zJtPwIYFMZ/H5ucTlPZhKvtum05yiPK3Mgai3a0DyVxv7qYqoweaEd2nrYQzQ==}
 
   human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
@@ -2546,10 +2549,6 @@ packages:
   jsonc-parser@3.2.1:
     resolution: {integrity: sha512-AilxAyFOAcK5wA1+LeaySVBrHsGQvUFCDWXKpZjzaL0PqW+xfBOttn8GNtWKFWqneyMZj41MWF9Kl6iPWLwgOA==}
 
-  katex@0.12.0:
-    resolution: {integrity: sha512-y+8btoc/CK70XqcHqjxiGWBOeIL8upbS0peTPXTvgrh21n1RiWWcIpSWM+4uXq+IAgNh9YYQWdc7LVDPDAEEAg==}
-    hasBin: true
-
   katex@0.16.10:
     resolution: {integrity: sha512-ZiqaC04tp2O5utMsl2TEZTXxa6WSC4yo0fv5ML++D3QZv/vx2Mct0mTlRx3O+uUkjfuAgOkzsCmq5MiUEsDDdA==}
     hasBin: true
@@ -2660,31 +2659,31 @@ packages:
     resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
     hasBin: true
 
-  markmap-common@0.17.1:
-    resolution: {integrity: sha512-U1v2+CkdE9OzNgONvBwUW26RMcu27Bqlv/JuAG+l1qRkTduD2aT4cGew6qb4VLjpqhcBwS3mcj0Xd7LVW01QFA==}
+  markmap-common@0.17.3-beta.4:
+    resolution: {integrity: sha512-G78N8An1G3aU3swEDt624/PVNU4EFQnHuqFpTMmj8UmngNt6BWy2/6H/taVLG8mqCbx3YsyDeh2rUnWufVwAQw==}
 
-  markmap-html-parser@0.17.1:
-    resolution: {integrity: sha512-wdzneAsNXNIYH3R8xZVNYi/4MXhswuZ4wmZxHS3+BLp9jO6kBCoQybICB90tcAcXUjiSAYRnirq3EvkSK0AdDw==}
+  markmap-html-parser@0.17.3-beta.4:
+    resolution: {integrity: sha512-OwsGv9B+O0heVq5JqAvPbT7U2+dINnBgIc7dexNM4ePtg/EwuUbdMT2CoK45RmKBmmyGk/wU/8gLH/ihrgvK6g==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-lib@0.17.2:
-    resolution: {integrity: sha512-zS5nL8OBR4hRpqegxeXAd4jQq/wd+Xn21bHhW0QHgGzE3dJTG55pLDi1rmdaHLCTpN7lUtO5MBOZ1HyXGYuHwQ==}
+  markmap-lib@0.17.3-beta.4:
+    resolution: {integrity: sha512-tKwOJ2gDcZrPwucznhCcVfpPwu78eoKLvCbF5Yb4urEk630YP5yzgnpkVZamcphC1rvc+h/+AIk7jFGmOKq8Og==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-render@0.17.2:
-    resolution: {integrity: sha512-tfwwBXUPU5bYVGiqWoZjAtvQX0uUwYc+CmwvHtw98EPJ1gPP395Wm2NjDFHqH4pWZ6/UhMQt0DhFuguGZyzMog==}
+  markmap-render@0.17.3-beta.4:
+    resolution: {integrity: sha512-Z6kwaBaWc/roIuE05WG2V6+xc4YvXeZm8mrTSKMow0pCJ5WoKaPvq0jd5DmhtgZXymBEWaJ2kFCqXAuqh+y11g==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-toolbar@0.17.2:
-    resolution: {integrity: sha512-WQ05P2xvQmZT0ybRUE0uRzrs30aXlJ6/yEUsA6A9nYEwm8T9jSwBxIM/5zYlkH/XzUcsRRxtCa4k1IWR74gkpQ==}
+  markmap-toolbar@0.17.3-beta.4:
+    resolution: {integrity: sha512-H4JZJpb2rAx0e9PAwGLSzXS/SEtdDrIbewuf3bLtQi5FeA7qjx+i3kjIaV8cPpnDkt5P+aTKWyqDCbra5puOEw==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-view@0.17.2:
-    resolution: {integrity: sha512-kF9bbXWF/10UBFTatv0kPQSBgVb8+Xn4Bttep78i9879nzqRaIjCNzZYGtpxK0gx9B4U9NGMZrx/B4cTTwmeQA==}
+  markmap-view@0.17.3-beta.4:
+    resolution: {integrity: sha512-cUfPrMdTpbbNojozVVcUn2Zaxupuibas2QYFJ4wm0g3TDWbiC2fYgxH6w3p0WiwLaM8Lew9Tene/ANAo3JS/3g==}
     peerDependencies:
       markmap-common: '*'
 
@@ -2895,6 +2894,9 @@ packages:
 
   parse5-htmlparser2-tree-adapter@7.0.0:
     resolution: {integrity: sha512-B77tOZrqqfUfnVcOrUvfdLbz4pu4RopLD/4vmu3HUPswwTA8OH0EMW9BlWR2B0RCoiZRAHEUu7IxeP1Pd1UU+g==}
+
+  parse5-parser-stream@7.1.2:
+    resolution: {integrity: sha512-JyeQc9iwFLn5TbvvqACIF/VXG6abODeB3Fwmv/TGdLk2LfbWkaySGY72at4+Ty7EkPZj854u4CrICqNk2qIbow==}
 
   parse5@7.1.2:
     resolution: {integrity: sha512-Czj1WaSVpaoj0wbhMzLmWD69anp2WH7FXMB9n1Sy8/ZFF9jolSQVMu1Ij5WIyGmcBmhk7EOndpO4mIpihVqAXw==}
@@ -3616,6 +3618,10 @@ packages:
   unconfig@0.3.11:
     resolution: {integrity: sha512-bV/nqePAKv71v3HdVUn6UefbsDKQWRX+bJIkiSm0+twIds6WiD2bJLWWT3i214+J/B4edufZpG2w7Y63Vbwxow==}
 
+  undici@6.21.0:
+    resolution: {integrity: sha512-BUgJXc752Kou3oOIuU1i+yZZypyZRqNPW0vqoMPl8VaoalSfeR0D8/t4iAS3yirs79SSMTxTag+ZC86uswv+Cw==}
+    engines: {node: '>=18.17'}
+
   unicode-canonical-property-names-ecmascript@2.0.0:
     resolution: {integrity: sha512-yY5PpDlfVIU5+y/BSCxAJRBIS1Zc2dDG3Ujq+sR0U+JjUevW2JhocOF+soROYDSaAezOzOKuyyixhD6mBknSmQ==}
     engines: {node: '>=4'}
@@ -3693,6 +3699,14 @@ packages:
 
   vscode-uri@3.0.7:
     resolution: {integrity: sha512-eOpPHogvorZRobNqJGhapa0JdwaxpjVvyBp0QIUMRMSf8ZAlqOdEquKuRmw9Qwu0qXtJIWqFtMkmvJjUZmMjVA==}
+
+  whatwg-encoding@3.1.1:
+    resolution: {integrity: sha512-6qN4hJdMwfYBtE3YBTTHhoeuUrDBPZmbQaxWAqSALV/MeEnR5z1xd8UKud2RAkFoPkmB+hli1TZSnyi84xz1vQ==}
+    engines: {node: '>=18'}
+
+  whatwg-mimetype@4.0.0:
+    resolution: {integrity: sha512-QaKxh0eNIi2mE9p2vEdzfagOKHCcj1pJ56EEHGQOVxp8r9/iszLUUV7v89x9O1p/T+NlTM5W7jW6+cz4Fq1YVg==}
+    engines: {node: '>=18'}
 
   which-boxed-primitive@1.0.2:
     resolution: {integrity: sha512-bwZdv0AKLpplFY2KZRX6TvyuN7ojjr7lwkg6ml0roIy9YeuSr7JS372qlNW18UQYzgYK9ziGcerWqZOmEn9VNg==}
@@ -4819,10 +4833,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@iktakahiro/markdown-it-katex@4.0.1':
-    dependencies:
-      katex: 0.12.0
-
   '@jridgewell/gen-mapping@0.3.3':
     dependencies:
       '@jridgewell/set-array': 1.1.2
@@ -5425,6 +5435,10 @@ snapshots:
     transitivePeerDependencies:
       - rollup
 
+  '@vscode/markdown-it-katex@1.1.1':
+    dependencies:
+      katex: 0.16.10
+
   acorn-jsx@5.3.2(acorn@8.11.2):
     dependencies:
       acorn: 8.11.2
@@ -5617,15 +5631,19 @@ snapshots:
       domhandler: 5.0.3
       domutils: 3.1.0
 
-  cheerio@1.0.0-rc.12:
+  cheerio@1.0.0:
     dependencies:
       cheerio-select: 2.1.0
       dom-serializer: 2.0.0
       domhandler: 5.0.3
       domutils: 3.1.0
-      htmlparser2: 8.0.2
+      encoding-sniffer: 0.2.0
+      htmlparser2: 9.1.0
       parse5: 7.1.2
       parse5-htmlparser2-tree-adapter: 7.0.0
+      parse5-parser-stream: 7.1.2
+      undici: 6.21.0
+      whatwg-mimetype: 4.0.0
 
   chokidar@3.6.0:
     dependencies:
@@ -6051,6 +6069,11 @@ snapshots:
 
   electron-to-chromium@1.4.701: {}
 
+  encoding-sniffer@0.2.0:
+    dependencies:
+      iconv-lite: 0.6.3
+      whatwg-encoding: 3.1.1
+
   entities@2.2.0: {}
 
   entities@4.5.0: {}
@@ -6450,7 +6473,7 @@ snapshots:
     dependencies:
       lru-cache: 7.18.3
 
-  htmlparser2@8.0.2:
+  htmlparser2@9.1.0:
     dependencies:
       domelementtype: 2.3.0
       domhandler: 5.0.3
@@ -6645,10 +6668,6 @@ snapshots:
 
   jsonc-parser@3.2.1: {}
 
-  katex@0.12.0:
-    dependencies:
-      commander: 2.20.3
-
   katex@0.16.10:
     dependencies:
       commander: 8.3.0
@@ -6747,22 +6766,22 @@ snapshots:
       punycode.js: 2.3.1
       uc.micro: 2.1.0
 
-  markmap-common@0.17.1:
+  markmap-common@0.17.3-beta.4:
     dependencies:
       '@babel/runtime': 7.22.6
       '@gera2ld/jsx-dom': 2.2.2
       npm2url: 0.2.4
 
-  markmap-html-parser@0.17.1(markmap-common@0.17.1):
+  markmap-html-parser@0.17.3-beta.4(markmap-common@0.17.3-beta.4):
     dependencies:
       '@babel/runtime': 7.22.6
-      cheerio: 1.0.0-rc.12
-      markmap-common: 0.17.1
+      cheerio: 1.0.0
+      markmap-common: 0.17.3-beta.4
 
-  markmap-lib@0.17.2(markmap-common@0.17.1):
+  markmap-lib@0.17.3-beta.4(markmap-common@0.17.3-beta.4):
     dependencies:
       '@babel/runtime': 7.22.6
-      '@iktakahiro/markdown-it-katex': 4.0.1
+      '@vscode/markdown-it-katex': 1.1.1
       highlight.js: 11.9.0
       katex: 0.16.10
       markdown-it: 14.1.0
@@ -6770,32 +6789,32 @@ snapshots:
       markdown-it-mark: 4.0.0
       markdown-it-sub: 2.0.0
       markdown-it-sup: 2.0.0
-      markmap-common: 0.17.1
-      markmap-html-parser: 0.17.1(markmap-common@0.17.1)
-      markmap-view: 0.17.2(markmap-common@0.17.1)
+      markmap-common: 0.17.3-beta.4
+      markmap-html-parser: 0.17.3-beta.4(markmap-common@0.17.3-beta.4)
+      markmap-view: 0.17.3-beta.4(markmap-common@0.17.3-beta.4)
       prismjs: 1.29.0
       yaml: 2.5.1
 
-  markmap-render@0.17.2(markmap-common@0.17.1):
+  markmap-render@0.17.3-beta.4(markmap-common@0.17.3-beta.4):
     dependencies:
       '@babel/runtime': 7.22.6
-      markmap-common: 0.17.1
-      markmap-view: 0.17.2(markmap-common@0.17.1)
+      markmap-common: 0.17.3-beta.4
+      markmap-view: 0.17.3-beta.4(markmap-common@0.17.3-beta.4)
 
-  markmap-toolbar@0.17.2(markmap-common@0.17.1):
+  markmap-toolbar@0.17.3-beta.4(markmap-common@0.17.3-beta.4):
     dependencies:
       '@babel/runtime': 7.22.6
       '@gera2ld/jsx-dom': 2.2.2
-      markmap-common: 0.17.1
+      markmap-common: 0.17.3-beta.4
 
-  markmap-view@0.17.2(markmap-common@0.17.1):
+  markmap-view@0.17.3-beta.4(markmap-common@0.17.3-beta.4):
     dependencies:
       '@babel/runtime': 7.22.6
       '@gera2ld/jsx-dom': 2.2.2
       '@types/d3': 7.4.3
       d3: 7.9.0
       d3-flextree: 2.1.2
-      markmap-common: 0.17.1
+      markmap-common: 0.17.3-beta.4
 
   mdn-data@2.0.14: {}
 
@@ -7030,6 +7049,10 @@ snapshots:
   parse5-htmlparser2-tree-adapter@7.0.0:
     dependencies:
       domhandler: 5.0.3
+      parse5: 7.1.2
+
+  parse5-parser-stream@7.1.2:
+    dependencies:
       parse5: 7.1.2
 
   parse5@7.1.2:
@@ -7760,6 +7783,8 @@ snapshots:
       jiti: 1.21.0
       mlly: 1.6.1
 
+  undici@6.21.0: {}
+
   unicode-canonical-property-names-ecmascript@2.0.0: {}
 
   unicode-match-property-ecmascript@2.0.0:
@@ -7836,6 +7861,12 @@ snapshots:
       terser: 5.30.3
 
   vscode-uri@3.0.7: {}
+
+  whatwg-encoding@3.1.1:
+    dependencies:
+      iconv-lite: 0.6.3
+
+  whatwg-mimetype@4.0.0: {}
 
   which-boxed-primitive@1.0.2:
     dependencies:

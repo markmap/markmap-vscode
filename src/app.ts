@@ -46,7 +46,10 @@ document.addEventListener('click', (e) => {
   const el = (e.target as HTMLElement)?.closest('a');
   if (el) {
     const href = el.getAttribute('href');
-    if (!href.includes('://')) {
+    if (href.startsWith('#')) {
+      const node = findHeading(href.slice(1));
+      if (node) highlightNode(node);
+    } else if (!href.includes('://')) {
       vscode.postMessage({
         type: 'openFile',
         data: href,
@@ -96,6 +99,21 @@ function clickHandler(type: string) {
   return () => {
     vscode.postMessage({ type });
   };
+}
+
+function findHeading(id: string) {
+  function dfs(node: INode) {
+    if (!/^h\d$/.test(node.payload.tag as string)) return false;
+    const normalizedId = node.content.trim().replace(/\W/g, '-').toLowerCase();
+    if (normalizedId === id) {
+      target = node;
+      return true;
+    }
+    return node.children?.some(dfs);
+  }
+  let target: INode | undefined;
+  dfs(root);
+  return target;
 }
 
 function findActiveNode(line: number) {

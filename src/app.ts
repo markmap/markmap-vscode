@@ -36,6 +36,10 @@ const handlers = {
   setTheme(dark: boolean) {
     document.documentElement.classList[dark ? 'add' : 'remove']('markmap-dark');
   },
+  downloadSvg(path: string) {
+    const content = new XMLSerializer().serializeToString(mm.svg.node());
+    vscode.postMessage({ type: 'downloadSvg', data: { content, path } });
+  },
 };
 window.addEventListener('message', (e) => {
   const { type, data } = e.data;
@@ -67,10 +71,10 @@ toolbar.register({
   onClick: clickHandler('editAsText'),
 });
 toolbar.register({
-  id: 'exportAsHtml',
-  title: 'Export as HTML',
+  id: 'export',
+  title: 'Export',
   content: createButton('Export'),
-  onClick: clickHandler('exportAsHtml'),
+  onClick: clickHandler('export'),
 });
 toolbar.setItems([
   'zoomIn',
@@ -78,7 +82,7 @@ toolbar.setItems([
   'fit',
   'recurse',
   'editAsText',
-  'exportAsHtml',
+  'export',
 ]);
 const highlightEl = document.createElement('div');
 highlightEl.className = 'markmap-highlight-area';

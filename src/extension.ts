@@ -16,6 +16,7 @@ import {
   workspace,
 } from 'vscode';
 import { Utils } from 'vscode-uri';
+import localImage from './plugins/local-image';
 import {
   getAssets,
   getLocalTransformer,
@@ -23,20 +24,31 @@ import {
   setExportMode,
   transformerExport,
 } from './util';
-import localImage from './plugins/local-image';
 
 const PREFIX = 'markmap-vscode';
 const VIEW_TYPE = `${PREFIX}.markmap`;
 
-const renderToolbar = () => {
+function renderToolbar() {
   const { markmap, mm } = window as any;
   const { el } = markmap.Toolbar.create(mm);
   el.setAttribute('style', 'position:absolute;bottom:20px;right:20px');
   document.body.append(el);
-};
+}
+
+async function writeFile(targetUri: Uri, text: string) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(text);
+  try {
+    await workspace.fs.writeFile(targetUri, data);
+  } catch (e) {
+    vscodeWindow.showErrorMessage(
+      `Cannot write file "${targetUri.toString()}"!`,
+    );
+  }
+}
 
 class MarkmapEditor implements CustomTextEditorProvider {
-  constructor(private context: ExtensionContext) { }
+  constructor(private context: ExtensionContext) {}
 
   private resolveAssetPath(relPath: string) {
     return Utils.joinPath(this.context.extensionUri, relPath);
@@ -62,7 +74,11 @@ class MarkmapEditor implements CustomTextEditorProvider {
         .asWebviewUri(this.resolveAssetPath(relPath))
         .toString();
     const transformerLocal = getLocalTransformer([
-      localImage(relPath => webviewPanel.webview.asWebviewUri(Utils.joinPath(Utils.dirname(document.uri), relPath)).toString())
+      localImage((relPath) =>
+        webviewPanel.webview
+          .asWebviewUri(Utils.joinPath(Utils.dirname(document.uri), relPath))
+          .toString(),
+      ),
     ]);
     const { allAssets } = getAssets(transformerLocal);
     const resolvedAssets = {
@@ -158,6 +174,81 @@ class MarkmapEditor implements CustomTextEditorProvider {
     const debouncedUpdate = debounce(update, 300);
 
     const logger = vscodeWindow.createOutputChannel('Markmap');
+
+    const exportAsHtml = async (targetUri: Uri) => {
+      const md = document.getText();
+      const { root, features, frontmatter } = transformerExport.transform(md);
+      const jsonOptions = {
+        ...globalOptions,
+        ...(frontmatter as any)?.markmap,
+      };
+      const { embedAssets } = jsonOptions as { embedAssets?: boolean };
+      setExportMode(embedAssets);
+      let assets = transformerExport.getUsedAssets(features);
+      const { baseAssets, toolbarAssets } = getAssets(transformerExport);
+      assets = mergeAssets(baseAssets, assets, toolbarAssets, {
+        styles: [
+          ...(customCSS
+            ? [
+                {
+                  type: 'style',
+                  data: customCSS,
+                } as CSSItem,
+              ]
+            : []),
+        ],
+        scripts: [
+          {
+            type: 'iife',
+            data: {
+              fn: (r: typeof renderToolbar) => {
+                setTimeout(r);
+              },
+              getParams: () => [renderToolbar],
+            },
+          },
+        ],
+      });
+      if (embedAssets) {
+        const [styles, scripts] = await Promise.all([
+          Promise.all(
+            (assets.styles || []).map(async (item): Promise<CSSItem> => {
+              if (item.type === 'stylesheet') {
+                return {
+                  type: 'style',
+                  data: await this.loadAsset(item.data.href),
+                };
+              }
+              return item;
+            }),
+          ),
+          Promise.all(
+            (assets.scripts || []).map(async (item): Promise<JSItem> => {
+              if (item.type === 'script' && item.data.src) {
+                return {
+                  ...item,
+                  data: {
+                    textContent: await this.loadAsset(item.data.src),
+                  },
+                };
+              }
+              return item;
+            }),
+          ),
+        ]);
+        assets = {
+          styles,
+          scripts,
+        };
+      }
+      const html = fillTemplate(root, assets, {
+        baseJs: [],
+        jsonOptions,
+        urlBuilder: transformerExport.urlBuilder,
+      });
+      await writeFile(targetUri, html);
+    };
+
     const messageHandlers: { [key: string]: (data?: any) => void } = {
       refresh: () => {
         update();
@@ -169,93 +260,27 @@ class MarkmapEditor implements CustomTextEditorProvider {
           viewColumn: ViewColumn.Beside,
         });
       },
-      exportAsHtml: async () => {
+      async export() {
         const targetUri = await vscodeWindow.showSaveDialog({
           saveLabel: 'Export',
           filters: {
             HTML: ['html'],
+            SVG: ['svg'],
           },
         });
         if (!targetUri) return;
-        const md = document.getText();
-        const { root, features, frontmatter } = transformerExport.transform(md);
-        const jsonOptions = {
-          ...globalOptions,
-          ...(frontmatter as any)?.markmap,
-        };
-        const { embedAssets } = jsonOptions as { embedAssets?: boolean };
-        setExportMode(embedAssets);
-        let assets = transformerExport.getUsedAssets(features);
-        const { baseAssets, toolbarAssets } = getAssets(transformerExport);
-        assets = mergeAssets(baseAssets, assets, toolbarAssets, {
-          styles: [
-            ...(customCSS
-              ? [
-                {
-                  type: 'style',
-                  data: customCSS,
-                } as CSSItem,
-              ]
-              : []),
-          ],
-          scripts: [
-            {
-              type: 'iife',
-              data: {
-                fn: (r: typeof renderToolbar) => {
-                  setTimeout(r);
-                },
-                getParams: () => [renderToolbar],
-              },
-            },
-          ],
-        });
-        if (embedAssets) {
-          const [styles, scripts] = await Promise.all([
-            Promise.all(
-              (assets.styles || []).map(async (item): Promise<CSSItem> => {
-                if (item.type === 'stylesheet') {
-                  return {
-                    type: 'style',
-                    data: await this.loadAsset(item.data.href),
-                  };
-                }
-                return item;
-              }),
-            ),
-            Promise.all(
-              (assets.scripts || []).map(async (item): Promise<JSItem> => {
-                if (item.type === 'script' && item.data.src) {
-                  return {
-                    ...item,
-                    data: {
-                      textContent: await this.loadAsset(item.data.src),
-                    },
-                  };
-                }
-                return item;
-              }),
-            ),
-          ]);
-          assets = {
-            styles,
-            scripts,
-          };
+        if (targetUri.path.endsWith('.html')) {
+          await exportAsHtml(targetUri);
+        } else if (targetUri.path.endsWith('.svg')) {
+          webviewPanel.webview.postMessage({
+            type: 'downloadSvg',
+            data: targetUri.toString(),
+          });
         }
-        const html = fillTemplate(root, assets, {
-          baseJs: [],
-          jsonOptions,
-          urlBuilder: transformerExport.urlBuilder,
-        });
-        const encoder = new TextEncoder();
-        const data = encoder.encode(html);
-        try {
-          await workspace.fs.writeFile(targetUri, data);
-        } catch (e) {
-          vscodeWindow.showErrorMessage(
-            `Cannot write file "${targetUri.toString()}"!`,
-          );
-        }
+      },
+      async downloadSvg(data: { content: string; path: string }) {
+        const targetUri = Uri.parse(data.path);
+        await writeFile(targetUri, data.content);
       },
       openFile(relPath: string) {
         const filePath = Utils.joinPath(Utils.dirname(document.uri), relPath);

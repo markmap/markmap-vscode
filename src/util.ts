@@ -6,7 +6,7 @@ const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
 const TOOLBAR_CSS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/style.css`;
 const TOOLBAR_JS = `markmap-toolbar@${TOOLBAR_VERSION}/dist/index.js`;
 const APP_CSS = 'assets/style.css';
-const APP_JS = 'assets/app.js';
+const APP_JS = 'dist/app.js';
 
 export const ASSETS_PREFIX = 'dist/web_assets/';
 

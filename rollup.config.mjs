@@ -1,3 +1,4 @@
+import { defineConfig } from 'rollup';
 import { defineExternal, definePlugins } from '@gera2ld/plaid-rollup';
 import { createRequire } from 'module';
 import { dirname } from 'path';
@@ -10,28 +11,42 @@ async function getVersion(module) {
   return packageJson.version;
 }
 
-export default async () => {
-  const replaceValues = {
-    'process.env.TOOLBAR_VERSION': JSON.stringify(
-      await getVersion('markmap-toolbar'),
-    ),
-  };
-
-  const external = defineExternal(['path', 'vscode']);
-  const rollupConfig = {
-    input: {
-      extension: 'src/extension.ts',
-      postbuild: 'src/postbuild.ts',
-    },
-    plugins: definePlugins({
-      replaceValues,
-    }),
-    external,
-    output: {
-      format: 'cjs',
-      dir: 'dist',
-    },
-  };
-
-  return rollupConfig;
+const replaceValues = {
+  'process.env.TOOLBAR_VERSION': JSON.stringify(
+    await getVersion('markmap-toolbar'),
+  ),
 };
+
+const external = defineExternal(['path', 'vscode']);
+
+export default defineConfig([{
+  input: {
+    extension: 'src/extension.ts',
+    postbuild: 'src/postbuild.ts',
+  },
+  plugins: definePlugins({
+    replaceValues,
+  }),
+  external,
+  output: {
+    format: 'cjs',
+    dir: 'dist',
+  },
+}, {
+  input: {
+    app: 'src/app.ts',
+  },
+  plugins: definePlugins({
+    replaceValues,
+  }),
+  external: ['markmap-common', 'markmap-toolbar', 'markmap-view'],
+  output: {
+    format: 'iife',
+    dir: 'dist',
+    globals: {
+      'markmap-common': 'markmap',
+      'markmap-toolbar': 'markmap',
+      'markmap-view': 'markmap',
+    }
+  },
+}]);

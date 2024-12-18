@@ -18,11 +18,12 @@ import {
 import { Utils } from 'vscode-uri';
 import {
   getAssets,
+  getLocalTransformer,
   mergeAssets,
   setExportMode,
   transformerExport,
-  transformerLocal,
 } from './util';
+import localImage from './plugins/local-image';
 
 const PREFIX = 'markmap-vscode';
 const VIEW_TYPE = `${PREFIX}.markmap`;
@@ -60,6 +61,9 @@ class MarkmapEditor implements CustomTextEditorProvider {
       webviewPanel.webview
         .asWebviewUri(this.resolveAssetPath(relPath))
         .toString();
+    const transformerLocal = getLocalTransformer([
+      localImage(relPath => webviewPanel.webview.asWebviewUri(Utils.joinPath(Utils.dirname(document.uri), relPath)).toString())
+    ]);
     const { allAssets } = getAssets(transformerLocal);
     const resolvedAssets = {
       ...allAssets,

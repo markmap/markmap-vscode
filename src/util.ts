@@ -1,5 +1,5 @@
 import { buildCSSItem, buildJSItem } from 'markmap-common';
-import { IAssets, Transformer } from 'markmap-lib';
+import { builtInPlugins, IAssets, ITransformPlugin, Transformer } from 'markmap-lib';
 import { baseJsPaths } from 'markmap-render';
 
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;
@@ -23,9 +23,12 @@ export function mergeAssets(...args: IAssets[]): IAssets {
 
 const local = 'local';
 
-export const transformerLocal = new Transformer();
-transformerLocal.urlBuilder.setProvider(local, localProvider);
-transformerLocal.urlBuilder.provider = local;
+export function getLocalTransformer(plugins: ITransformPlugin[] = []) {
+  const transformerLocal = new Transformer([...builtInPlugins, ...plugins]);
+  transformerLocal.urlBuilder.setProvider(local, localProvider);
+  transformerLocal.urlBuilder.provider = local;
+  return transformerLocal;
+}
 
 export const transformerExport = new Transformer();
 let bestProvider = transformerExport.urlBuilder.provider;

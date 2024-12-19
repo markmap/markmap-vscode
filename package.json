@@ -23,11 +23,22 @@
     "commands": [
       {
         "command": "markmap-vscode.open",
+        "category": "Markmap",
         "title": "Open as markmap",
         "icon": {
           "light": "./assets/light.svg",
           "dark": "./assets/dark.svg"
         }
+      },
+      {
+        "command": "markmap-vscode.toggle",
+        "category": "Markmap",
+        "title": "Toggle the active node"
+      },
+      {
+        "command": "markmap-vscode.toggle-recursively",
+        "category": "Markmap",
+        "title": "Toggle the active node recursively"
       }
     ],
     "customEditors": [
@@ -47,6 +58,14 @@
         {
           "when": "editorLangId == markdown",
           "command": "markmap-vscode.open"
+        },
+        {
+          "when": "editorLangId == markdown",
+          "command": "markmap-vscode.toggle"
+        },
+        {
+          "when": "editorLangId == markdown",
+          "command": "markmap-vscode.toggle-recursively"
         }
       ],
       "explorer/context": [

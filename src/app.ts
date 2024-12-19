@@ -12,10 +12,12 @@ const vscode = acquireVsCodeApi();
 let firstTime = true;
 let root: INode | undefined;
 let style: HTMLStyleElement;
-let active: {
-  node: INode;
-  el: Element;
-} | undefined;
+let active:
+  | {
+      node: INode;
+      el: Element;
+    }
+  | undefined;
 
 const handlers = {
   async setData(data: { root?: INode; jsonOptions?: IMarkmapJSONOptions }) {
@@ -25,8 +27,11 @@ const handlers = {
       firstTime = false;
     }
   },
-  setCursor(line: number) {
-    const node = root && findActiveNode(line);
+  async setCursor(options: { line: number; autoExpand?: boolean }) {
+    const result = root && findActiveNode(options);
+    if (!result) return;
+    const { node, needRerender } = result;
+    if (needRerender) await mm.renderData();
     if (node) highlightNode(node);
   },
   setCSS(data: string) {
@@ -127,18 +132,38 @@ function findHeading(id: string) {
   return target;
 }
 
-function findActiveNode(line: number) {
-  function dfs(node: INode) {
+function findActiveNode({
+  line,
+  autoExpand = true,
+}: {
+  line: number;
+  autoExpand?: boolean;
+}) {
+  function dfs(node: INode, ancestors: INode[] = []) {
     const [start, end] =
       (node.payload?.lines as string)?.split(',').map((s) => +s) || [];
     if (start >= 0 && start <= line && line < end) {
       best = node;
+      bestAncestors = ancestors;
     }
-    node.children?.forEach(dfs);
+    ancestors = [...ancestors, node];
+    node.children?.forEach((child) => {
+      dfs(child, ancestors);
+    });
   }
   let best: INode | undefined;
+  let bestAncestors: INode[] = [];
   dfs(root);
-  return best;
+  let needRerender = false;
+  if (autoExpand) {
+    bestAncestors.forEach((node) => {
+      if (node.payload?.fold) {
+        node.payload.fold = 0;
+        needRerender = true;
+      }
+    });
+  }
+  return best && { node: best, needRerender };
 }
 
 function highlightNode(node: INode) {

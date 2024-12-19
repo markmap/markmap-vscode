@@ -47,7 +47,9 @@ async function writeFile(targetUri: Uri, text: string) {
 }
 
 class MarkmapEditor implements CustomTextEditorProvider {
-  constructor(private context: ExtensionContext) {}
+  private webviewPanelMap = new Map<TextDocument, WebviewPanel>();
+
+  constructor(private context: ExtensionContext) { }
 
   private resolveAssetPath(relPath: string) {
     return Utils.joinPath(this.context.extensionUri, relPath);
@@ -61,6 +63,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
   }
 
   resolveCustomTextEditor(document: TextDocument, webviewPanel: WebviewPanel) {
+    this.webviewPanelMap.set(document, webviewPanel);
     webviewPanel.webview.options = {
       enableScripts: true,
     };
@@ -111,11 +114,16 @@ class MarkmapEditor implements CustomTextEditorProvider {
       if (editor?.document === document) {
         webviewPanel.webview.postMessage({
           type: 'setCursor',
-          data: editor.selection.active.line,
+          data: {
+            line: editor.selection.active.line,
+            autoExpand: globalOptions?.autoExpand,
+          },
         });
       }
     };
-    let globalOptions: IMarkmapJSONOptions;
+    let globalOptions: IMarkmapJSONOptions & {
+      autoExpand?: boolean;
+    };
     let customCSS: string;
     const updateOptions = () => {
       const raw = workspace
@@ -185,11 +193,11 @@ class MarkmapEditor implements CustomTextEditorProvider {
         styles: [
           ...(customCSS
             ? [
-                {
-                  type: 'style',
-                  data: customCSS,
-                } as CSSItem,
-              ]
+              {
+                type: 'style',
+                data: customCSS,
+              } as CSSItem,
+            ]
             : []),
         ],
         scripts: [
@@ -311,6 +319,16 @@ class MarkmapEditor implements CustomTextEditorProvider {
     ];
     webviewPanel.onDidDispose(() => {
       disposables.forEach((disposable) => disposable.dispose());
+      this.webviewPanelMap.delete(document);
+    });
+  }
+
+  toggleActiveNode(document: TextDocument, recursive = false) {
+    const webviewPanel = this.webviewPanelMap.get(document);
+    if (!webviewPanel) return;
+    webviewPanel.webview.postMessage({
+      type: 'toggleNode',
+      data: recursive,
     });
   }
 }
@@ -326,6 +344,14 @@ export function activate(context: ExtensionContext) {
         VIEW_TYPE,
         ViewColumn.Beside,
       );
+    }),
+    commands.registerCommand(`${PREFIX}.toggle`, () => {
+      const document = vscodeWindow.activeTextEditor?.document;
+      if (document) markmapEditor.toggleActiveNode(document);
+    }),
+    commands.registerCommand(`${PREFIX}.toggle-recursively`, () => {
+      const document = vscodeWindow.activeTextEditor?.document;
+      if (document) markmapEditor.toggleActiveNode(document, true);
     }),
   );
   context.subscriptions.push(

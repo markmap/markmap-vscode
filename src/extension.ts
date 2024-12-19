@@ -3,7 +3,6 @@ import { JSItem, type CSSItem } from 'markmap-common';
 import { fillTemplate } from 'markmap-render';
 import { defaultOptions, type IMarkmapJSONOptions } from 'markmap-view';
 import {
-  CancellationToken,
   ColorThemeKind,
   CustomTextEditorProvider,
   ExtensionContext,
@@ -61,11 +60,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
     return data;
   }
 
-  public async resolveCustomTextEditor(
-    document: TextDocument,
-    webviewPanel: WebviewPanel,
-    token: CancellationToken,
-  ): Promise<void> {
+  resolveCustomTextEditor(document: TextDocument, webviewPanel: WebviewPanel) {
     webviewPanel.webview.options = {
       enableScripts: true,
     };
@@ -290,30 +285,38 @@ class MarkmapEditor implements CustomTextEditorProvider {
         logger.appendLine(data);
       },
     };
-    webviewPanel.webview.onDidReceiveMessage((e) => {
-      const handler = messageHandlers[e.type];
-      handler?.(e.data);
-    });
-    workspace.onDidChangeTextDocument((e) => {
-      if (e.document !== document) return;
-      debouncedUpdate();
-    });
-    vscodeWindow.onDidChangeTextEditorSelection((e) => {
-      if (e.textEditor.document !== document) return;
-      debouncedUpdateCursor();
-    });
-    vscodeWindow.onDidChangeActiveColorTheme(updateTheme);
+
     updateOptions();
     updateCSS();
     updateTheme();
-    workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('markmap.defaultOptions')) updateOptions();
-      if (e.affectsConfiguration('markmap.customCSS')) updateCSS();
+
+    const disposables = [
+      webviewPanel.webview.onDidReceiveMessage((e) => {
+        const handler = messageHandlers[e.type];
+        handler?.(e.data);
+      }),
+      workspace.onDidChangeTextDocument((e) => {
+        if (e.document !== document) return;
+        debouncedUpdate();
+      }),
+      vscodeWindow.onDidChangeTextEditorSelection((e) => {
+        if (e.textEditor.document !== document) return;
+        debouncedUpdateCursor();
+      }),
+      vscodeWindow.onDidChangeActiveColorTheme(updateTheme),
+      workspace.onDidChangeConfiguration((e) => {
+        if (e.affectsConfiguration('markmap.defaultOptions')) updateOptions();
+        if (e.affectsConfiguration('markmap.customCSS')) updateCSS();
+      }),
+    ];
+    webviewPanel.onDidDispose(() => {
+      disposables.forEach((disposable) => disposable.dispose());
     });
   }
 }
 
 export function activate(context: ExtensionContext) {
+  const markmapEditor = new MarkmapEditor(context);
   context.subscriptions.push(
     commands.registerCommand(`${PREFIX}.open`, (uri?: Uri) => {
       uri ??= vscodeWindow.activeTextEditor?.document.uri;
@@ -325,7 +328,6 @@ export function activate(context: ExtensionContext) {
       );
     }),
   );
-  const markmapEditor = new MarkmapEditor(context);
   context.subscriptions.push(
     vscodeWindow.registerCustomEditorProvider(VIEW_TYPE, markmapEditor, {
       webviewOptions: { retainContextWhenHidden: true },

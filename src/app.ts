@@ -12,7 +12,10 @@ const vscode = acquireVsCodeApi();
 let firstTime = true;
 let root: INode | undefined;
 let style: HTMLStyleElement;
-let activeEl: Element | undefined;
+let active: {
+  node: INode;
+  el: Element;
+} | undefined;
 
 const handlers = {
   async setData(data: { root?: INode; jsonOptions?: IMarkmapJSONOptions }) {
@@ -23,8 +26,8 @@ const handlers = {
     }
   },
   setCursor(line: number) {
-    const active = root && findActiveNode(line);
-    if (active) highlightNode(active);
+    const node = root && findActiveNode(line);
+    if (node) highlightNode(node);
   },
   setCSS(data: string) {
     if (!style) {
@@ -39,6 +42,10 @@ const handlers = {
   downloadSvg(path: string) {
     const content = new XMLSerializer().serializeToString(mm.svg.node());
     vscode.postMessage({ type: 'downloadSvg', data: { content, path } });
+  },
+  toggleNode(recursive: boolean) {
+    if (!active) return;
+    mm.toggleNode(active.node, recursive);
   },
 };
 window.addEventListener('message', (e) => {
@@ -139,14 +146,15 @@ function highlightNode(node: INode) {
     bottom: 80,
   });
   const g = mm.findElement(node)?.g;
-  activeEl = g?.querySelector('foreignObject');
+  const el = g?.querySelector('foreignObject');
+  active = el && { el, node };
 }
 
 function checkHighlight() {
-  if (!activeEl) {
+  if (!active) {
     highlightEl.remove();
   } else {
-    const rect = activeEl.getBoundingClientRect();
+    const rect = active.el.getBoundingClientRect();
     highlightEl.setAttribute(
       'style',
       `--mm-highlight-x:${rect.x}px;--mm-highlight-y:${rect.y}px;--mm-highlight-width:${rect.width}px;--mm-highlight-height:${rect.height}px`,

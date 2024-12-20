@@ -127,7 +127,7 @@
     "husky": "^8.0.3",
     "lodash.debounce": "^4.0.8",
     "markmap-common": "0.18.0",
-    "markmap-lib": "0.18.0",
+    "markmap-lib": "0.18.1",
     "markmap-render": "0.18.0",
     "markmap-toolbar": "0.18.0",
     "markmap-view": "0.18.0",

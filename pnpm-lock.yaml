@@ -42,8 +42,8 @@ importers:
         specifier: 0.18.0
         version: 0.18.0
       markmap-lib:
-        specifier: 0.18.0
-        version: 0.18.0(markmap-common@0.18.0)
+        specifier: 0.18.1
+        version: 0.18.1(markmap-common@0.18.0)
       markmap-render:
         specifier: 0.18.0
         version: 0.18.0(markmap-common@0.18.0)
@@ -2676,8 +2676,8 @@ packages:
     peerDependencies:
       markmap-common: '*'
 
-  markmap-lib@0.18.0:
-    resolution: {integrity: sha512-5VHUoMFrDdvB2HYBG8X6r910gw8jng+xtT69BnQSF7zMlTgt1rgPn3LmhjgfklitOo5I1i8O1QR4V9Ao+Hi+7g==}
+  markmap-lib@0.18.1:
+    resolution: {integrity: sha512-48j/8+o6X0E0zZCDZwokJA7swD4P0pEsULeW3BbbDlKoCP3FwrQvFWU6V8tJ+G579bdZXGk+Nh9uU5uB1Ql0vg==}
     peerDependencies:
       markmap-common: '*'
 
@@ -6789,7 +6789,7 @@ snapshots:
       cheerio: 1.0.0
       markmap-common: 0.18.0
 
-  markmap-lib@0.18.0(markmap-common@0.18.0):
+  markmap-lib@0.18.1(markmap-common@0.18.0):
     dependencies:
       '@babel/runtime': 7.22.6
       '@vscode/markdown-it-katex': 1.1.1

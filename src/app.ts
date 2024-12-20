@@ -1,6 +1,7 @@
 import type { INode } from 'markmap-common';
 import { Toolbar } from 'markmap-toolbar';
 import {
+  defaultOptions,
   deriveOptions,
   type IMarkmapJSONOptions,
   type Markmap,
@@ -14,14 +15,17 @@ let root: INode | undefined;
 let style: HTMLStyleElement;
 let active:
   | {
-      node: INode;
-      el: Element;
-    }
+    node: INode;
+    el: Element;
+  }
   | undefined;
 
 const handlers = {
   async setData(data: { root?: INode; jsonOptions?: IMarkmapJSONOptions }) {
-    await mm.setData((root = data.root), deriveOptions(data.jsonOptions) || {});
+    await mm.setData((root = data.root), {
+      ...defaultOptions,
+      ...deriveOptions(data.jsonOptions),
+    });
     if (firstTime) {
       mm.fit();
       firstTime = false;

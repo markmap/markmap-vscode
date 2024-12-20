@@ -1,7 +1,7 @@
 import debounce from 'lodash.debounce';
 import { JSItem, type CSSItem } from 'markmap-common';
 import { fillTemplate } from 'markmap-render';
-import { defaultOptions, type IMarkmapJSONOptions } from 'markmap-view';
+import { type IMarkmapJSONOptions } from 'markmap-view';
 import {
   ColorThemeKind,
   CustomTextEditorProvider,
@@ -49,7 +49,7 @@ async function writeFile(targetUri: Uri, text: string) {
 class MarkmapEditor implements CustomTextEditorProvider {
   private webviewPanelMap = new Map<TextDocument, WebviewPanel>();
 
-  constructor(private context: ExtensionContext) { }
+  constructor(private context: ExtensionContext) {}
 
   private resolveAssetPath(relPath: string) {
     return Utils.joinPath(this.context.extensionUri, relPath);
@@ -165,7 +165,6 @@ class MarkmapEditor implements CustomTextEditorProvider {
         data: {
           root,
           jsonOptions: {
-            ...defaultOptions,
             ...globalOptions,
             ...(frontmatter as any)?.markmap,
           },
@@ -193,11 +192,11 @@ class MarkmapEditor implements CustomTextEditorProvider {
         styles: [
           ...(customCSS
             ? [
-              {
-                type: 'style',
-                data: customCSS,
-              } as CSSItem,
-            ]
+                {
+                  type: 'style',
+                  data: customCSS,
+                } as CSSItem,
+              ]
             : []),
         ],
         scripts: [

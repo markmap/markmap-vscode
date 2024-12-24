@@ -15,17 +15,28 @@ let root: INode | undefined;
 let style: HTMLStyleElement;
 let active:
   | {
-    node: INode;
-    el: Element;
-  }
+      node: INode;
+      el: Element;
+    }
   | undefined;
+const activeNodeOptions: {
+  placement?: 'center' | 'visible';
+} = {};
 
 const handlers = {
-  async setData(data: { root?: INode; jsonOptions?: IMarkmapJSONOptions }) {
+  async setData(data: {
+    root?: INode;
+    jsonOptions?: IMarkmapJSONOptions & {
+      activeNode?: {
+        placement?: 'center' | 'visible';
+      };
+    };
+  }) {
     await mm.setData((root = data.root), {
       ...defaultOptions,
       ...deriveOptions(data.jsonOptions),
     });
+    activeNodeOptions.placement = data.jsonOptions?.activeNode?.placement;
     if (firstTime) {
       mm.fit();
       firstTime = false;
@@ -170,8 +181,10 @@ function findActiveNode({
   return best && { node: best, needRerender };
 }
 
-function highlightNode(node: INode) {
-  mm.ensureView(node, {
+async function highlightNode(node: INode) {
+  await mm[
+    activeNodeOptions.placement === 'center' ? 'centerNode' : 'ensureVisible'
+  ](node, {
     bottom: 80,
   });
   const g = mm.findElement(node)?.g;

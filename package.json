@@ -102,7 +102,7 @@
     }
   },
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "vscode:prepublish": "run-s build",
     "clean": "del-cli dist",
     "build:js": "rollup -c && node dist/postbuild.js",
@@ -123,15 +123,15 @@
     "@types/node": "^20.4.2",
     "@types/vscode": "~1.75.0",
     "@types/vscode-webview": "^1.57.5",
-    "del-cli": "^5.1.0",
-    "husky": "^8.0.3",
+    "del-cli": "^6.0.0",
+    "husky": "^9.1.7",
     "lodash.debounce": "^4.0.8",
     "markmap-common": "0.18.0",
-    "markmap-lib": "0.18.1",
-    "markmap-render": "0.18.0",
-    "markmap-toolbar": "0.18.0",
-    "markmap-view": "0.18.0",
-    "read-pkg-up": "^10.0.0",
+    "markmap-lib": "0.18.3",
+    "markmap-render": "0.18.3",
+    "markmap-toolbar": "0.18.3",
+    "markmap-view": "0.18.3",
+    "read-package-up": "^11.0.0",
     "vscode-uri": "^3.0.7"
   }
 }

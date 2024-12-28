@@ -1,4 +1,4 @@
-import type { INode } from 'markmap-common';
+import { IDeferred, defer, type INode } from 'markmap-common';
 import { Toolbar } from 'markmap-toolbar';
 import {
   defaultOptions,
@@ -22,6 +22,7 @@ let active:
 const activeNodeOptions: {
   placement?: 'center' | 'visible';
 } = {};
+let loading: IDeferred<void> | undefined;
 
 const handlers = {
   async setData(data: {
@@ -32,17 +33,20 @@ const handlers = {
       };
     };
   }) {
+    loading = defer();
     await mm.setData((root = data.root), {
       ...defaultOptions,
       ...deriveOptions(data.jsonOptions),
     });
     activeNodeOptions.placement = data.jsonOptions?.activeNode?.placement;
     if (firstTime) {
-      mm.fit();
+      await mm.fit();
       firstTime = false;
     }
+    loading.resolve();
   },
   async setCursor(options: { line: number; autoExpand?: boolean }) {
+    await loading?.promise;
     const result = root && findActiveNode(options);
     if (!result) return;
     const { node, needRerender } = result;

@@ -41,7 +41,7 @@ export default defineConfig([
     plugins: definePlugins({
       replaceValues,
     }),
-    external: ['markmap-common', 'markmap-toolbar', 'markmap-view'],
+    external: ['markmap-toolbar', 'markmap-view'],
     output: {
       format: 'iife',
       dir: 'dist',

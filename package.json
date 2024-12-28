@@ -103,11 +103,11 @@
   },
   "scripts": {
     "prepare": "husky",
-    "vscode:prepublish": "run-s build",
+    "vscode:prepublish": "pnpm build",
     "clean": "del-cli dist",
     "build:js": "rollup -c && node dist/postbuild.js",
-    "build": "run-s lint clean build:js",
-    "lint": "eslint --ext .ts,.tsx ."
+    "build": "pnpm lint && pnpm clean && pnpm build:js",
+    "lint": "eslint"
   },
   "repository": "https://github.com/gera2ld/markmap-vscode",
   "main": "dist/extension.js",
@@ -116,15 +116,28 @@
     "dist"
   ],
   "devDependencies": {
+    "@babel/core": "^7.23.5",
+    "@babel/plugin-transform-runtime": "^7.23.4",
+    "@babel/preset-env": "^7.23.5",
+    "@babel/preset-typescript": "^7.23.3",
     "@babel/runtime": "^7.22.6",
-    "@gera2ld/plaid": "~2.7.0",
-    "@gera2ld/plaid-rollup": "~2.7.0",
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@rollup/plugin-json": "^6.0.1",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
     "@types/lodash.debounce": "^4.0.7",
     "@types/node": "^20.4.2",
     "@types/vscode": "~1.75.0",
     "@types/vscode-webview": "^1.57.5",
     "del-cli": "^6.0.0",
+    "eslint": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "globals": "^15.14.0",
     "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
     "lodash.debounce": "^4.0.8",
     "markmap-common": "0.18.4",
     "markmap-lib": "0.18.4",
@@ -132,6 +145,15 @@
     "markmap-toolbar": "0.18.4",
     "markmap-view": "0.18.4",
     "read-package-up": "^11.0.0",
+    "rollup": "^4.6.1",
+    "rollup-plugin-postcss": "^4.0.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.2",
     "vscode-uri": "^3.0.7"
+  },
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix"
+    ]
   }
 }

@@ -39,7 +39,7 @@ async function writeFile(targetUri: Uri, text: string) {
   const data = encoder.encode(text);
   try {
     await workspace.fs.writeFile(targetUri, data);
-  } catch (e) {
+  } catch {
     vscodeWindow.showErrorMessage(
       `Cannot write file "${targetUri.toString()}"!`,
     );

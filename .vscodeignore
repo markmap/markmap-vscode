@@ -5,11 +5,10 @@ pnpm-lock.yaml
 rollup.conf.mjs
 src/**
 tsconfig.json
-.babelrc.js
+babel.config.cjs
+eslint.config.mjs
 .browserslistrc
 .editorconfig
-.eslintignore
-.eslintrc.js
 .github/**
 .gitignore
 .husky/**

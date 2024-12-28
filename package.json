@@ -126,11 +126,11 @@
     "del-cli": "^6.0.0",
     "husky": "^9.1.7",
     "lodash.debounce": "^4.0.8",
-    "markmap-common": "0.18.0",
-    "markmap-lib": "0.18.3",
-    "markmap-render": "0.18.3",
-    "markmap-toolbar": "0.18.3",
-    "markmap-view": "0.18.3",
+    "markmap-common": "0.18.4",
+    "markmap-lib": "0.18.4",
+    "markmap-render": "0.18.4",
+    "markmap-toolbar": "0.18.4",
+    "markmap-view": "0.18.4",
     "read-package-up": "^11.0.0",
     "vscode-uri": "^3.0.7"
   }

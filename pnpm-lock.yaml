@@ -39,20 +39,20 @@ importers:
         specifier: ^4.0.8
         version: 4.0.8
       markmap-common:
-        specifier: 0.18.0
-        version: 0.18.0
+        specifier: 0.18.4
+        version: 0.18.4
       markmap-lib:
-        specifier: 0.18.3
-        version: 0.18.3(markmap-common@0.18.0)
+        specifier: 0.18.4
+        version: 0.18.4(markmap-common@0.18.4)
       markmap-render:
-        specifier: 0.18.3
-        version: 0.18.3(markmap-common@0.18.0)
+        specifier: 0.18.4
+        version: 0.18.4(markmap-common@0.18.4)
       markmap-toolbar:
-        specifier: 0.18.3
-        version: 0.18.3(markmap-common@0.18.0)
+        specifier: 0.18.4
+        version: 0.18.4(markmap-common@0.18.4)
       markmap-view:
-        specifier: 0.18.3
-        version: 0.18.3(markmap-common@0.18.0)
+        specifier: 0.18.4
+        version: 0.18.4(markmap-common@0.18.4)
       read-package-up:
         specifier: ^11.0.0
         version: 11.0.0
@@ -2615,31 +2615,31 @@ packages:
     resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
     hasBin: true
 
-  markmap-common@0.18.0:
-    resolution: {integrity: sha512-+amX+Be8HlxOIa2Cfhil+1e64QP6pa9tWP+bimgb4tvjUJQxTYAZgr28rn2lv2+JeuoZLqo0ovUqR7EJMyWkZw==}
+  markmap-common@0.18.4:
+    resolution: {integrity: sha512-7fmKh/Eie8YtMutOr+//rm7/5DFbeATz3qkPTJJAgCCtUCodGn3hF7vn0TIXNs4DvaSuKUvk0JTPvSakzBlHeQ==}
 
-  markmap-html-parser@0.18.2:
-    resolution: {integrity: sha512-DmMQovhUaxT53RINoJTuVZk2RAeVBous6fnDbLxJ7FQ1lvK5MDxxWc5FMJ54Vshz2e8mdF6mhhvyvAUU3npNqA==}
+  markmap-html-parser@0.18.4:
+    resolution: {integrity: sha512-elMWtRB/i7BdR+ZF4NgwrDEAAR6i+vtCeH1uJAKW355RXlpVF9RxP3dUVOmDBuBMZVFvDHQL3b6+uHSZQBrEGg==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-lib@0.18.3:
-    resolution: {integrity: sha512-bqbslGjJY352jF7lW/TwNIKt3BYABKpaeyx/Ks8ay5KP8y74MgRCcn9fFzVn7JEHmA4tyqMyXj2jGHOY7kbmkQ==}
+  markmap-lib@0.18.4:
+    resolution: {integrity: sha512-YOqMCWoceYf26KrKGD88oTRuuhsghtDeJd5qzmngdH0FbSLhXABG/B6tqivbjQ+Np2TpfF/VqifBS9i4ADQEgw==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-render@0.18.3:
-    resolution: {integrity: sha512-hgNzWC+4uarQHudgYbpMW+1Vve9qmrCnuF83o16XIze/kpsTMrndOkTTmPAv/mjUmu0Mnt7414XmownM1F0mew==}
+  markmap-render@0.18.4:
+    resolution: {integrity: sha512-XqS/wjTNUlSNabhmGa0pRjFggyfTkDXYfgpPBLrE/PHER82d8LLV6By6lb7fbuiSmZ/GuEhwDD7Dxoa0aQhHVA==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-toolbar@0.18.3:
-    resolution: {integrity: sha512-eWgrPjGqJAbb98zOBEEBmYvnskYkrj/YkQJhc14eGLmK3lfUgtfw7NQGXPzuVXqAUwKFTSL/8/MFR2miRTd5Cw==}
+  markmap-toolbar@0.18.4:
+    resolution: {integrity: sha512-VdwIWc5dNYsAHgTiGgG0kwiw7x9QExP0EanLSvp6pV48kx7qhuSiwhSZplWFOcwVXpJD/JYh37mvcZ1tB6Ycog==}
     peerDependencies:
       markmap-common: '*'
 
-  markmap-view@0.18.3:
-    resolution: {integrity: sha512-7zTGgR0RJ6kzDFyeh65Oz1DvUN1XdKjaIvOCiYCU0Ys5l9mary5YrdZoSlMphPn4nRX3qTiaZjk4LCw7/K4ZiQ==}
+  markmap-view@0.18.4:
+    resolution: {integrity: sha512-CsaecCTU/qS/ycNiEWpWh/lOEpXe6st7BncIFpGH5sguSDBFUE4h99vAd67fdKyDA5x0CkjS/XSlXp+/EKKb+A==}
     peerDependencies:
       markmap-common: '*'
 
@@ -6635,19 +6635,19 @@ snapshots:
       punycode.js: 2.3.1
       uc.micro: 2.1.0
 
-  markmap-common@0.18.0:
+  markmap-common@0.18.4:
     dependencies:
       '@babel/runtime': 7.22.6
       '@gera2ld/jsx-dom': 2.2.2
       npm2url: 0.2.4
 
-  markmap-html-parser@0.18.2(markmap-common@0.18.0):
+  markmap-html-parser@0.18.4(markmap-common@0.18.4):
     dependencies:
       '@babel/runtime': 7.22.6
       cheerio: 1.0.0
-      markmap-common: 0.18.0
+      markmap-common: 0.18.4
 
-  markmap-lib@0.18.3(markmap-common@0.18.0):
+  markmap-lib@0.18.4(markmap-common@0.18.4):
     dependencies:
       '@babel/runtime': 7.22.6
       '@vscode/markdown-it-katex': 1.1.1
@@ -6658,32 +6658,32 @@ snapshots:
       markdown-it-mark: 4.0.0
       markdown-it-sub: 2.0.0
       markdown-it-sup: 2.0.0
-      markmap-common: 0.18.0
-      markmap-html-parser: 0.18.2(markmap-common@0.18.0)
-      markmap-view: 0.18.3(markmap-common@0.18.0)
+      markmap-common: 0.18.4
+      markmap-html-parser: 0.18.4(markmap-common@0.18.4)
+      markmap-view: 0.18.4(markmap-common@0.18.4)
       prismjs: 1.29.0
       yaml: 2.6.1
 
-  markmap-render@0.18.3(markmap-common@0.18.0):
+  markmap-render@0.18.4(markmap-common@0.18.4):
     dependencies:
       '@babel/runtime': 7.22.6
-      markmap-common: 0.18.0
-      markmap-view: 0.18.3(markmap-common@0.18.0)
+      markmap-common: 0.18.4
+      markmap-view: 0.18.4(markmap-common@0.18.4)
 
-  markmap-toolbar@0.18.3(markmap-common@0.18.0):
+  markmap-toolbar@0.18.4(markmap-common@0.18.4):
     dependencies:
       '@babel/runtime': 7.22.6
       '@gera2ld/jsx-dom': 2.2.2
-      markmap-common: 0.18.0
+      markmap-common: 0.18.4
 
-  markmap-view@0.18.3(markmap-common@0.18.0):
+  markmap-view@0.18.4(markmap-common@0.18.4):
     dependencies:
       '@babel/runtime': 7.22.6
       '@gera2ld/jsx-dom': 2.2.2
       '@types/d3': 7.4.3
       d3: 7.9.0
       d3-flextree: 2.1.2
-      markmap-common: 0.18.0
+      markmap-common: 0.18.4
 
   mdn-data@2.0.14: {}
 

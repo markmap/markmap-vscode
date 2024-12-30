@@ -38,6 +38,21 @@ const handlers = {
       ...defaultOptions,
       ...deriveOptions(data.jsonOptions),
     });
+    mm.g
+      .selectAll<SVGGElement, INode>(function () {
+        const nodes = Array.from(this.childNodes) as Element[];
+        return nodes.filter((el) => el.tagName === 'g') as SVGGElement[];
+      })
+      .on(
+        'dblclick.focus',
+        (e, d) => {
+          const lines = d.payload?.lines as string | undefined;
+          const line = +lines?.split(',')[0];
+          if (!isNaN(line))
+            vscode.postMessage({ type: 'setFocus', data: line });
+        },
+        true,
+      );
     activeNodeOptions.placement = data.jsonOptions?.activeNode?.placement;
     if (firstTime) {
       await mm.fit();

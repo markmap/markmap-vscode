@@ -6,6 +6,9 @@ import {
   ColorThemeKind,
   CustomTextEditorProvider,
   ExtensionContext,
+  Position,
+  Selection,
+  TabInputText,
   TextDocument,
   Uri,
   ViewColumn,
@@ -123,6 +126,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
     };
     let globalOptions: IMarkmapJSONOptions & {
       autoExpand?: boolean;
+      htmlParser?: unknown;
     };
     let customCSS: string;
     const updateOptions = () => {
@@ -287,6 +291,22 @@ class MarkmapEditor implements CustomTextEditorProvider {
       openFile(relPath: string) {
         const filePath = Utils.joinPath(Utils.dirname(document.uri), relPath);
         commands.executeCommand('vscode.open', filePath);
+      },
+      async setFocus(line: number) {
+        const viewColumn = vscodeWindow.tabGroups.all
+          .flatMap((group) => group.tabs)
+          .find(
+            (tab) =>
+              tab.input instanceof TabInputText &&
+              tab.group &&
+              tab.input.uri.toString() === document.uri.toString(),
+          )?.group.viewColumn;
+        const editor = await vscodeWindow.showTextDocument(document, {
+          viewColumn,
+        });
+        const pos = new Position(line, 0);
+        editor.selection = new Selection(pos, pos);
+        editor.revealRange(editor.selection);
       },
       log(data: string) {
         logger.appendLine(data);

@@ -1,5 +1,10 @@
 import { buildCSSItem, buildJSItem } from 'markmap-common';
-import { builtInPlugins, IAssets, ITransformPlugin, Transformer } from 'markmap-lib';
+import {
+  builtInPlugins,
+  IAssets,
+  ITransformPlugin,
+  Transformer,
+} from 'markmap-lib';
 import { baseJsPaths } from 'markmap-render';
 
 const TOOLBAR_VERSION = process.env.TOOLBAR_VERSION;

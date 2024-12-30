@@ -19,10 +19,10 @@ async function fetchAssets() {
   transformer.urlBuilder.provider = provider;
   const paths = [
     ...(assets.scripts?.map(
-      (item) => (item.type === 'script' && item.data.src) || ''
+      (item) => (item.type === 'script' && item.data.src) || '',
     ) || []),
     ...(assets.styles?.map(
-      (item) => (item.type === 'stylesheet' && item.data.href) || ''
+      (item) => (item.type === 'stylesheet' && item.data.href) || '',
     ) || []),
   ]
     .filter((url) => url.startsWith(ASSETS_PREFIX))
@@ -32,9 +32,9 @@ async function fetchAssets() {
     paths.map((path) =>
       downloadAsset(
         resolve(ASSETS_PREFIX, path),
-        transformer.urlBuilder.getFullUrl(path, fastest)
-      )
-    )
+        transformer.urlBuilder.getFullUrl(path, fastest),
+      ),
+    ),
   );
 }
 
@@ -52,8 +52,8 @@ async function downloadAsset(fullPath: string, url: string) {
   await mkdir(dirname(fullPath), { recursive: true });
   await finished(
     Readable.fromWeb(res.body as ReadableStream).pipe(
-      createWriteStream(fullPath)
-    )
+      createWriteStream(fullPath),
+    ),
   );
 }
 

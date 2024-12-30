@@ -101,6 +101,11 @@
       }
     }
   },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "scripts": {
     "prepare": "husky",
     "vscode:prepublish": "pnpm build",

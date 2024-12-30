@@ -106,8 +106,9 @@
     "vscode:prepublish": "pnpm build",
     "clean": "del-cli dist",
     "build:js": "rollup -c && node dist/postbuild.js",
-    "build": "pnpm lint && pnpm clean && pnpm build:js",
-    "lint": "eslint"
+    "build": "pnpm lint:fix && pnpm clean && pnpm build:js",
+    "lint": "eslint && prettier --check src",
+    "lint:fix": "eslint --fix && prettier --write src"
   },
   "repository": "https://github.com/gera2ld/markmap-vscode",
   "main": "dist/extension.js",
@@ -153,7 +154,8 @@
   },
   "lint-staged": {
     "*.ts": [
-      "eslint --fix"
+      "eslint --fix",
+      "prettier --write"
     ]
   }
 }

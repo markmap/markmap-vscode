@@ -216,11 +216,14 @@ function checkHighlight() {
     highlightEl.remove();
   } else {
     const rect = active.el.getBoundingClientRect();
+    const padding = 4;
+    const { width } = active.node.state.rect;
+    const scale = (width + padding * 2) / width;
     highlightEl.setAttribute(
       'style',
-      `--mm-highlight-x:${rect.x}px;--mm-highlight-y:${rect.y}px;--mm-highlight-width:${rect.width}px;--mm-highlight-height:${rect.height}px`,
+      `--mm-highlight-x:${rect.x}px;--mm-highlight-y:${rect.y}px;--mm-highlight-width:${rect.width}px;--mm-highlight-height:${rect.height}px;--mm-highlight-scale:${scale}`,
     );
-    document.body.append(highlightEl);
+    if (!highlightEl.parentNode) document.body.append(highlightEl);
   }
   requestAnimationFrame(checkHighlight);
 }

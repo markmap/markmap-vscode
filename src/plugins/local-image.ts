@@ -14,7 +14,7 @@ export default function plugin(resolveUrl: (url: string) => string) {
           (renderAttrs, token) => {
             if (token.tag === 'img') {
               const src = token.attrGet('src');
-              if (src && !src.includes('://')) {
+              if (src && !/^[\w-]+:/.test(src)) {
                 token.attrSet('src', resolveUrl(src));
               }
             }

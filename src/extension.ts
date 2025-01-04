@@ -3,7 +3,6 @@ import { JSItem, type CSSItem } from 'markmap-common';
 import { fillTemplate } from 'markmap-render';
 import { type IMarkmapJSONOptions } from 'markmap-view';
 import {
-  ColorThemeKind,
   CustomTextEditorProvider,
   ExtensionContext,
   Position,
@@ -150,12 +149,8 @@ class MarkmapEditor implements CustomTextEditorProvider {
       });
     };
     const updateTheme = () => {
-      const dark = [ColorThemeKind.Dark, ColorThemeKind.HighContrast].includes(
-        vscodeWindow.activeColorTheme.kind,
-      );
       webviewPanel.webview.postMessage({
-        type: 'setTheme',
-        data: dark,
+        type: 'checkTheme',
       });
     };
     const update = () => {

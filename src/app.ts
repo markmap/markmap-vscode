@@ -75,9 +75,7 @@ const handlers = {
     }
     style.textContent = data || '';
   },
-  setTheme(dark: boolean) {
-    document.documentElement.classList[dark ? 'add' : 'remove']('markmap-dark');
-  },
+  checkTheme,
   downloadSvg(path: string) {
     const content = new XMLSerializer().serializeToString(mm.svg.node());
     vscode.postMessage({ type: 'downloadSvg', data: { content, path } });
@@ -132,11 +130,21 @@ toolbar.setItems([
 ]);
 const highlightEl = document.createElement('div');
 highlightEl.className = 'markmap-highlight-area';
+checkTheme();
+
 setTimeout(() => {
   toolbar.attach(mm);
   document.body.append(toolbar.el);
   checkHighlight();
 });
+
+function checkTheme() {
+  // https://code.visualstudio.com/api/extension-guides/webview#theming-webview-content
+  const isDark = ['vscode-dark', 'vscode-high-contrast'].some((cls) =>
+    document.body.classList.contains(cls),
+  );
+  document.documentElement.classList[isDark ? 'add' : 'remove']('markmap-dark');
+}
 
 function createButton(text: string) {
   const el = document.createElement('div');

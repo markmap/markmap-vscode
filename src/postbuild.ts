@@ -1,37 +1,39 @@
 import { createWriteStream } from 'fs';
 import { mkdir, stat } from 'fs/promises';
+import { extractAssets } from 'markmap-common';
+import { Transformer } from 'markmap-lib';
+import { baseJsPaths } from 'markmap-render';
 import { dirname, resolve } from 'path';
 import { Readable } from 'stream';
-import { ReadableStream } from 'stream/web';
 import { finished } from 'stream/promises';
-import { Transformer } from 'markmap-lib';
-import { ASSETS_PREFIX, getAssets, localProvider } from './util';
+import { ReadableStream } from 'stream/web';
+import { ASSETS_PREFIX, localProvider, toolbarAssets } from './util';
 
 const providerName = 'local-hook';
 
-async function fetchAssets() {
+async function fetchAssets(assetsDir: string) {
   const transformer = new Transformer();
-  const { provider } = transformer.urlBuilder;
-  transformer.urlBuilder.setProvider(providerName, localProvider);
+  transformer.urlBuilder.providers[providerName] = localProvider;
   transformer.urlBuilder.provider = providerName;
-  const { allAssets: assets } = getAssets(transformer);
+  const assets = transformer.getAssets();
   delete transformer.urlBuilder.providers[providerName];
-  transformer.urlBuilder.provider = provider;
-  const paths = [
-    ...(assets.scripts?.map(
-      (item) => (item.type === 'script' && item.data.src) || '',
-    ) || []),
-    ...(assets.styles?.map(
-      (item) => (item.type === 'stylesheet' && item.data.href) || '',
-    ) || []),
-  ]
+  const pluginPaths = extractAssets(assets)
     .filter((url) => url.startsWith(ASSETS_PREFIX))
     .map((url) => url.slice(ASSETS_PREFIX.length));
+  const resources = transformer.plugins.flatMap(
+    (plugin) => plugin.config?.resources || [],
+  );
+  const paths = [
+    ...baseJsPaths,
+    ...pluginPaths,
+    ...resources,
+    ...extractAssets(toolbarAssets),
+  ];
   const fastest = await transformer.urlBuilder.getFastestProvider();
   await Promise.all(
     paths.map((path) =>
       downloadAsset(
-        resolve(ASSETS_PREFIX, path),
+        resolve(assetsDir, path),
         transformer.urlBuilder.getFullUrl(path, fastest),
       ),
     ),
@@ -57,7 +59,7 @@ async function downloadAsset(fullPath: string, url: string) {
   );
 }
 
-fetchAssets().catch((err) => {
+fetchAssets(ASSETS_PREFIX).catch((err) => {
   console.error(err);
   process.exitCode = 1;
 });

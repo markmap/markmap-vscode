@@ -66,7 +66,7 @@ const handlers = {
     if (!result) return;
     const { node, needRerender } = result;
     if (needRerender) await mm.renderData();
-    if (node) highlightNode(node);
+    highlightNode(node);
   },
   setCSS(data: string) {
     if (!style) {
@@ -96,7 +96,7 @@ document.addEventListener('click', (e) => {
     const href = el.getAttribute('href');
     if (href.startsWith('#')) {
       const node = findHeading(href.slice(1));
-      if (node) highlightNode(node);
+      highlightNode(node);
     } else if (!href.includes('://')) {
       vscode.postMessage({
         type: 'openFile',
@@ -128,14 +128,12 @@ toolbar.setItems([
   'editAsText',
   'export',
 ]);
-const highlightEl = document.createElement('div');
-highlightEl.className = 'markmap-highlight-area';
+
 checkTheme();
 
 setTimeout(() => {
   toolbar.attach(mm);
   document.body.append(toolbar.el);
-  checkHighlight();
 });
 
 function checkTheme() {
@@ -208,30 +206,12 @@ function findActiveNode({
   return best && { node: best, needRerender };
 }
 
-async function highlightNode(node: INode) {
+async function highlightNode(node?: INode) {
+  await mm.setHighlight(node);
+  if (!node) return;
   await mm[
     activeNodeOptions.placement === 'center' ? 'centerNode' : 'ensureVisible'
   ](node, {
     bottom: 80,
   });
-  const g = mm.findElement(node)?.g;
-  const el = g?.querySelector('foreignObject');
-  active = el && { el, node };
-}
-
-function checkHighlight() {
-  if (!active) {
-    highlightEl.remove();
-  } else {
-    const rect = active.el.getBoundingClientRect();
-    const padding = 4;
-    const { width } = active.node.state.rect;
-    const scale = (width + padding * 2) / width;
-    highlightEl.setAttribute(
-      'style',
-      `--mm-highlight-x:${rect.x}px;--mm-highlight-y:${rect.y}px;--mm-highlight-width:${rect.width}px;--mm-highlight-height:${rect.height}px;--mm-highlight-scale:${scale}`,
-    );
-    if (!highlightEl.parentNode) document.body.append(highlightEl);
-  }
-  requestAnimationFrame(checkHighlight);
 }

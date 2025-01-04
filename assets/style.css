@@ -23,15 +23,3 @@ body {
   padding-left: 4px;
   padding-right: 4px;
 }
-
-.markmap-highlight-area {
-  --mm-highlight-scale: 1;
-  position: absolute;
-  width: var(--mm-highlight-width);
-  height: var(--mm-highlight-height);
-  left: var(--mm-highlight-x);
-  top: var(--mm-highlight-y);
-  z-index: -1;
-  background: #ff02;
-  transform: scale(var(--mm-highlight-scale));
-}

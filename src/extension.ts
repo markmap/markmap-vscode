@@ -1,6 +1,12 @@
 import debounce from 'lodash.debounce';
-import { JSItem, type CSSItem } from 'markmap-common';
-import { fillTemplate } from 'markmap-render';
+import {
+  buildJSItem,
+  mergeAssets,
+  type CSSItem,
+  type JSItem,
+} from 'markmap-common';
+import { Transformer, builtInPlugins } from 'markmap-lib';
+import { baseJsPaths, fillTemplate } from 'markmap-render';
 import { type IMarkmapJSONOptions } from 'markmap-view';
 import {
   CustomTextEditorProvider,
@@ -19,10 +25,10 @@ import {
 import { Utils } from 'vscode-uri';
 import localImage from './plugins/local-image';
 import {
-  getAssets,
-  getLocalTransformer,
-  mergeAssets,
+  ASSETS_PREFIX,
+  appAssets,
   setExportMode,
+  toolbarAssets,
   transformerExport,
 } from './util';
 
@@ -69,44 +75,57 @@ class MarkmapEditor implements CustomTextEditorProvider {
     webviewPanel.webview.options = {
       enableScripts: true,
     };
-    const resolveUrl = (relPath: string) =>
-      webviewPanel.webview
-        .asWebviewUri(this.resolveAssetPath(relPath))
-        .toString();
-    const transformerLocal = getLocalTransformer([
+    const transformerLocal = new Transformer([
+      ...builtInPlugins,
       localImage((relPath) =>
         webviewPanel.webview
           .asWebviewUri(Utils.joinPath(Utils.dirname(document.uri), relPath))
           .toString(),
       ),
     ]);
-    const { allAssets } = getAssets(transformerLocal);
-    const resolvedAssets = {
-      ...allAssets,
-      styles: allAssets.styles?.map((item) => {
-        if (item.type === 'stylesheet') {
-          return {
-            ...item,
-            data: {
-              href: resolveUrl(item.data.href),
-            },
-          };
-        }
-        return item;
-      }),
-      scripts: allAssets.scripts?.map((item) => {
-        if (item.type === 'script' && item.data.src) {
-          return {
-            ...item,
-            data: {
-              ...item.data,
-              src: resolveUrl(item.data.src),
-            },
-          };
-        }
-        return item;
-      }),
-    };
+    const resolveUrl = (path: string) =>
+      webviewPanel.webview.asWebviewUri(this.resolveAssetPath(path)).toString();
+    const providerName = 'local';
+    transformerLocal.urlBuilder.providers[providerName] = (path: string) =>
+      resolveUrl(`${ASSETS_PREFIX}${path}`);
+    transformerLocal.urlBuilder.provider = providerName;
+    const otherAssets = mergeAssets(
+      {
+        scripts: baseJsPaths.map(buildJSItem),
+      },
+      toolbarAssets,
+    );
+    const resolvedAssets = mergeAssets(
+      {
+        styles: otherAssets.styles?.map((item) =>
+          transformerLocal.resolveCSS(item),
+        ),
+        scripts: otherAssets.scripts?.map((item) =>
+          transformerLocal.resolveJS(item),
+        ),
+      },
+      transformerLocal.getAssets(),
+      {
+        styles: appAssets.styles?.map((item) =>
+          item.type === 'stylesheet'
+            ? {
+                ...item,
+                data: {
+                  href: resolveUrl(item.data.href),
+                },
+              }
+            : item,
+        ),
+        scripts: appAssets.scripts?.map((item) =>
+          item.type === 'script' && item.data.src
+            ? {
+                ...item,
+                data: { src: resolveUrl(item.data.src) },
+              }
+            : item,
+        ),
+      },
+    );
     webviewPanel.webview.html = fillTemplate(undefined, resolvedAssets, {
       baseJs: [],
       urlBuilder: transformerLocal.urlBuilder,
@@ -185,31 +204,46 @@ class MarkmapEditor implements CustomTextEditorProvider {
       };
       const { embedAssets } = jsonOptions as { embedAssets?: boolean };
       setExportMode(embedAssets);
-      let assets = transformerExport.getUsedAssets(features);
-      const { baseAssets, toolbarAssets } = getAssets(transformerExport);
-      assets = mergeAssets(baseAssets, assets, toolbarAssets, {
-        styles: [
-          ...(customCSS
-            ? [
-                {
-                  type: 'style',
-                  data: customCSS,
-                } as CSSItem,
-              ]
-            : []),
-        ],
-        scripts: [
-          {
-            type: 'iife',
-            data: {
-              fn: (r: typeof renderToolbar) => {
-                setTimeout(r);
+      const otherAssets = mergeAssets(
+        {
+          scripts: baseJsPaths.map(buildJSItem),
+        },
+        toolbarAssets,
+      );
+      let assets = mergeAssets(
+        {
+          styles: otherAssets.styles?.map((item) =>
+            transformerExport.resolveCSS(item),
+          ),
+          scripts: otherAssets.scripts?.map((item) =>
+            transformerExport.resolveJS(item),
+          ),
+        },
+        transformerExport.getUsedAssets(features),
+        {
+          styles: [
+            ...(customCSS
+              ? [
+                  {
+                    type: 'style',
+                    data: customCSS,
+                  } as CSSItem,
+                ]
+              : []),
+          ],
+          scripts: [
+            {
+              type: 'iife',
+              data: {
+                fn: (r: typeof renderToolbar) => {
+                  setTimeout(r);
+                },
+                getParams: () => [renderToolbar],
               },
-              getParams: () => [renderToolbar],
             },
-          },
-        ],
-      });
+          ],
+        },
+      );
       if (embedAssets) {
         const [styles, scripts] = await Promise.all([
           Promise.all(

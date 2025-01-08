@@ -56,28 +56,28 @@
     "menus": {
       "commandPalette": [
         {
-          "when": "editorLangId == markdown",
+          "when": "editorLangId == markdown || editorLangId == mdx",
           "command": "markmap-vscode.open"
         },
         {
-          "when": "editorLangId == markdown",
+          "when": "editorLangId == markdown || editorLangId == mdx",
           "command": "markmap-vscode.toggle"
         },
         {
-          "when": "editorLangId == markdown",
+          "when": "editorLangId == markdown || editorLangId == mdx",
           "command": "markmap-vscode.toggle-recursively"
         }
       ],
       "explorer/context": [
         {
-          "when": "resourceLangId == markdown",
+          "when": "resourceLangId == markdown || resourceLangId == mdx",
           "command": "markmap-vscode.open",
           "group": "navigation"
         }
       ],
       "editor/title": [
         {
-          "when": "resourceLangId == markdown && activeEditor == workbench.editors.files.textFileEditor",
+          "when": "activeEditor == workbench.editors.files.textFileEditor && (resourceLangId == markdown || resourceLangId == mdx)",
           "command": "markmap-vscode.open",
           "group": "navigation"
         }

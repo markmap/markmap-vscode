@@ -4,9 +4,7 @@ import { extractAssets } from 'markmap-common';
 import { Transformer } from 'markmap-lib';
 import { baseJsPaths } from 'markmap-render';
 import { dirname, resolve } from 'path';
-import { Readable } from 'stream';
-import { finished } from 'stream/promises';
-import { ReadableStream } from 'stream/web';
+import { pipeline } from 'stream/promises';
 import { ASSETS_PREFIX, localProvider, toolbarAssets } from './util';
 
 const providerName = 'local-hook';
@@ -52,11 +50,7 @@ async function downloadAsset(fullPath: string, url: string) {
   const res = await fetch(url);
   if (!res.ok || !res.body) throw new Error(`Failed to download: ${url}`);
   await mkdir(dirname(fullPath), { recursive: true });
-  await finished(
-    Readable.fromWeb(res.body as ReadableStream).pipe(
-      createWriteStream(fullPath),
-    ),
-  );
+  await pipeline(res.body, createWriteStream(fullPath));
 }
 
 fetchAssets(ASSETS_PREFIX).catch((err) => {

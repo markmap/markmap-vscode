@@ -1,4 +1,4 @@
-import { IDeferred, defer, type INode } from 'markmap-common';
+import { IDeferred, defer, wrapFunction, type INode } from 'markmap-common';
 import { Toolbar } from 'markmap-toolbar';
 import {
   defaultOptions,
@@ -38,21 +38,6 @@ const handlers = {
       ...defaultOptions,
       ...deriveOptions(data.jsonOptions),
     });
-    mm.g
-      .selectAll<SVGGElement, INode>(function () {
-        const nodes = Array.from(this.childNodes) as Element[];
-        return nodes.filter((el) => el.tagName === 'g') as SVGGElement[];
-      })
-      .on(
-        'dblclick.focus',
-        (e, d) => {
-          const lines = d.payload?.lines as string | undefined;
-          const line = +lines?.split(',')[0];
-          if (!isNaN(line))
-            vscode.postMessage({ type: 'setFocus', data: line });
-        },
-        true,
-      );
     activeNodeOptions.placement = data.jsonOptions?.activeNode?.placement;
     if (firstTime) {
       await mm.fit();
@@ -132,9 +117,31 @@ toolbar.setItems([
 checkTheme();
 
 setTimeout(() => {
+  initialize(mm);
   toolbar.attach(mm);
   document.body.append(toolbar.el);
 });
+
+function initialize(mm: Markmap) {
+  mm.renderData = wrapFunction(mm.renderData, async (fn, ...args) => {
+    await fn.call(mm, ...args);
+    mm.g
+      .selectAll<SVGGElement, INode>(function () {
+        const nodes = Array.from(this.childNodes) as Element[];
+        return nodes.filter((el) => el.tagName === 'g') as SVGGElement[];
+      })
+      .on(
+        'dblclick.focus',
+        (e, d) => {
+          const lines = d.payload?.lines as string | undefined;
+          const line = +lines?.split(',')[0];
+          if (!isNaN(line))
+            vscode.postMessage({ type: 'setFocus', data: line });
+        },
+        true,
+      );
+  });
+}
 
 function checkTheme() {
   // https://code.visualstudio.com/api/extension-guides/webview#theming-webview-content

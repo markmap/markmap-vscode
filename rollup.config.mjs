@@ -67,29 +67,16 @@ function definePlugins(options) {
   ].filter(Boolean);
 }
 
+const { packageJson } = await readPackageUp();
 const isProd = process.env.NODE_ENV === 'production';
 const replaceValues = {
   'process.env.TOOLBAR_VERSION': JSON.stringify(
-    await getVersion('markmap-toolbar'),
+    await getVersion('markmap-toolbar')
   ),
 };
 const external = defineExternal(['path', 'vscode']);
 
 export default defineConfig([
-  {
-    input: {
-      extension: 'src/extension.ts',
-      postbuild: 'src/postbuild.ts',
-    },
-    plugins: definePlugins({
-      replaceValues,
-    }),
-    external,
-    output: {
-      format: 'cjs',
-      dir: 'dist',
-    },
-  },
   {
     input: {
       app: 'src/app.ts',
@@ -106,6 +93,36 @@ export default defineConfig([
         'markmap-toolbar': 'markmap',
         'markmap-view': 'markmap',
       },
+    },
+  },
+  {
+    input: {
+      // Must build separately because VSCode web extension only accepts a single file
+      extension: 'src/extension.ts',
+    },
+    plugins: definePlugins({
+      replaceValues,
+    }),
+    external,
+    output: {
+      format: 'cjs',
+      dir: 'dist',
+    },
+  },
+  {
+    input: {
+      postbuild: 'src/postbuild.ts',
+    },
+    plugins: definePlugins({
+      replaceValues,
+    }),
+    external: defineExternal([
+      'path',
+      ...Object.keys(packageJson.devDependencies),
+    ]),
+    output: {
+      format: 'cjs',
+      dir: 'dist',
     },
   },
 ]);

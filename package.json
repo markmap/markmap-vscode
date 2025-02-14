@@ -113,7 +113,8 @@
     "build:js": "rollup -c && node dist/postbuild.js",
     "build": "pnpm lint:fix && pnpm clean && pnpm build:js",
     "lint": "eslint && prettier --check src",
-    "lint:fix": "eslint --fix && prettier --write src"
+    "lint:fix": "eslint --fix && prettier --write src",
+    "dev:browser": "vscode-test-web --extensionDevelopmentPath=. ."
   },
   "repository": "https://github.com/gera2ld/markmap-vscode",
   "main": "dist/extension.js",
@@ -138,6 +139,7 @@
     "@types/node": "^22.13.2",
     "@types/vscode": "~1.75.0",
     "@types/vscode-webview": "^1.57.5",
+    "@vscode/test-web": "*",
     "del-cli": "^6.0.0",
     "eslint": "^9.17.0",
     "eslint-config-prettier": "^9.1.0",
@@ -147,7 +149,7 @@
     "lint-staged": "^15.3.0",
     "lodash.debounce": "^4.0.8",
     "markmap-common": "0.18.9",
-    "markmap-lib": "0.18.10",
+    "markmap-lib": "0.18.11",
     "markmap-render": "0.18.10",
     "markmap-toolbar": "0.18.10",
     "markmap-view": "0.18.10",

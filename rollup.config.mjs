@@ -74,7 +74,6 @@ const replaceValues = {
     await getVersion('markmap-toolbar')
   ),
 };
-const external = defineExternal(['path', 'vscode']);
 
 export default defineConfig([
   {
@@ -103,7 +102,7 @@ export default defineConfig([
     plugins: definePlugins({
       replaceValues,
     }),
-    external,
+    external: defineExternal(['path', 'vscode']),
     output: {
       format: 'cjs',
       dir: 'dist',

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Minimal Mindmap Web App</title>
+  </head>
+  <body>
+    <h1>Mindmap Generator</h1>
+
+    <!-- Prompt input form -->
+    <form id="prompt-form">
+      <label for="promptInput">Enter your custom prompt:</label><br />
+      <textarea
+        id="promptInput"
+        name="prompt"
+        rows="10"
+        cols="80"
+        placeholder="Type your prompt here..."
+      ></textarea><br /><br />
+      <button type="submit">Generate Mindmap</button>
+    </form>
+
+    <hr />
+
+    <!-- Section to display status messages -->
+    <div id="statusMessage"></div>
+
+    <hr />
+
+    <!-- Links to the generated files -->
+    <p>
+      <b>Markdown output:</b>
+      <a href="/mindmap.md" target="_blank">Open mindmap.md</a>
+    </p>
+    <p>
+      <b>Mindmap HTML:</b>
+      <a href="/mindmap.html" target="_blank">Open mindmap.html</a>
+    </p>
+
+    <hr />
+
+    <!-- Option to let users directly edit the existing mindmap.md in the browser -->
+    <h2>Edit Mindmap Markdown</h2>
+    <div>
+      <button id="load-md">Load Current mindmap.md</button>
+      <button id="save-md">Save & Re-Convert mindmap.md</button>
+    </div>
+    <div>
+      <textarea
+        id="md-editor"
+        rows="20"
+        cols="100"
+        style="display:block; width:80%;"
+      ></textarea>
+    </div>
+
+    <script src="main.js"></script>
+  </body>
+</html>

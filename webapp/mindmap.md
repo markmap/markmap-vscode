@@ -1,87 +1,121 @@
 ---
-title: 366 Daily Laws - Robert Greene
+title: Atomic Habits - James Clear
 markmap:
-  colorFreezeLevel: 3
-  maxWidth: 300
+  colorFreezeLevel: 2
 ---
 
-# 📖 **366 Daily Laws**  
-*Power, Seduction, Strategy, Mastery, and Human Nature*  
-
-## 🌟 **Core Themes**  
-- **Power Dynamics** 🏛️  
-- **Strategic Thinking** ♟️  
-- **Self-Mastery** 🧘  
-- **Social Intelligence** 🤝  
-- **Timing & Patience** ⏳  
+# 📚 **Atomic Habits**  
+### *Tiny Changes, Remarkable Results*  
+*"You do not rise to the level of your goals. You fall to the level of your systems."*  
 
 ---
 
-## 📅 **Monthly Breakdown (Key Laws)**  
+## 🧠 **Core Philosophy**  
+### 🔄 **The Compound Effect of Habits**  
+- *1% better every day = 37x better in a year*  
+- *Habits are the compound interest of self-improvement*  
+- *Focus on systems, not goals*  
 
-### 🗓️ **January: Mastering Yourself**  
-- **Law 1 (Jan 1)**: *"Never outshine the master."*  
-  - 🔥 *Why?* "Make those above you feel superior. Do not trigger insecurity."  
-- **Law 5 (Jan 5)**: *"So much depends on reputation—guard it with your life."*  
-  - 📌 *Tactic*: Cultivate an aura of reliability and mystery.  
-
-### 🗓️ **February: The Art of Seduction**  
-- **Law 12 (Feb 12)**: *"Use selective honesty to disarm your victim."*  
-  - � *Example*: Confess a minor flaw to appear trustworthy.  
-- **Law 18 (Feb 18)**: *"Do not build fortresses to protect yourself—isolation is dangerous."*  
-  - ⚠️ *Risk*: Isolation breeds ignorance of threats.  
-
-### 🗓️ **March: Strategy & Warfare**  
-- **Law 33 (Mar 3)**: *"Discover each man’s thumbscrew."*  
-  - 🔍 *Key*: Find leverage—vanity, greed, or fear.  
-- **Law 48 (Mar 18)**: *"Assume formlessness."*  
-  - 🌊 *Analogy*: Be water—adapt to any container.  
+### 🎯 **Why Habits Matter**  
+- **Identity Shift**: *"Every action is a vote for the type of person you wish to become."*  
+- **Automation**: Free up mental energy for creativity.  
+- **Consistency > Intensity**: *"Small habits don’t add up—they compound."*  
 
 ---
 
-## 🧠 **Psychological Tactics (Deep Dive)**  
+## 📊 **The 4 Laws of Behavior Change**  
+*(Framework for building good habits & breaking bad ones)*  
 
-### 🎭 **The 4 Types of Power**  
-| Type          | Icon | Description                  |  
-|---------------|------|------------------------------|  
-| **Boldness**  | 🦁   | "Audacity inspires fear."    |  
-| **Patience**  | 🐢   | "Time is a weapon."          |  
-| **Deception** | 🎭   | "Mask your intentions."      |  
-| **Charisma**  | ✨   | "Draw people in effortlessly." |  
-
-### 💡 **Memory Triggers**  
-- **Visual**: 🕵️ *"Play the spy—observe silently."*  
-- **Metaphor**: 🧩 *"Life is a game of chess, not checkers."*  
+| Law | Good Habit | Bad Habit |  
+|-----|-----------|-----------|  
+| **1. Cue** | Make it obvious | Make it invisible |  
+| **2. Craving** | Make it attractive | Make it unattractive |  
+| **3. Response** | Make it easy | Make it difficult |  
+| **4. Reward** | Make it satisfying | Make it unsatisfying |  
 
 ---
 
-## 🔥 **Critical Quotes (Flashbulb Memory)**  
-- *"The greatest power is the ability to control your own reality."*  
-- *"Mastery is a journey, not a destination."*  
+## 🧩 **1. Make It Obvious (Cue)**  
+### 🔍 **Habit Awareness**  
+- **Habit Scorecard**: Track habits with ✅ (good), ❌ (bad), ➖ (neutral).  
+- *"The most common cues are time and location."*  
+
+### 🏷 **Implementation Intentions**  
+- *"I will [BEHAVIOR] at [TIME] in [LOCATION]."*  
+  - Example: *"I will meditate for 2 mins at 7 AM in my kitchen."*  
+
+### 🌐 **Environment Design**  
+- **Visual Cues**: Place fruits on the counter (healthy snacking).  
+- **Context Shift**: Dedicate spaces for specific habits (e.g., desk = work only).  
 
 ---
 
-## 🛠️ **Actionable Frameworks**  
+## 💖 **2. Make It Attractive (Craving)**  
+### 🎭 **Temptation Bundling**  
+- Pair a habit you *need* with one you *want*.  
+  - Example: *"After I journal (need), I watch Netflix (want)."*  
 
-### 📊 **The 3-Step Strategy Matrix**  
-1. **Assess** (🔍 Scan weaknesses)  
-2. **Adapt** (🔄 Shift tactics)  
-3. **Attack** (⚔️ Strike decisively)  
-
-### 🌱 **Daily Habit Builder**  
-- 🌅 *Morning*: Reflect on one law.  
-- 🌃 *Night*: Journal applications.  
+### 👥 **Social Influence**  
+- **Mimicry**: Join groups where your desired habit is the norm.  
+- *"We imitate habits of 3 groups: close, many, powerful."*  
 
 ---
 
-## 🧩 **Visual Mnemonics**  
-- **Law 6 (Jan 6)**: *"Court attention at all costs."* → 🎪 *"Be the circus ringmaster."*  
-- **Law 29 (Mar 29)**: *"Plan all the way to the end."* → 🗺️ *"Map the entire route."*  
+## 🏋️ **3. Make It Easy (Response)**  
+### ⏳ **The 2-Minute Rule**  
+- *"Downscale habits until they take 2 mins or less."*  
+  - Example: *"Read before bed" → "Read one page."*  
+
+### 📉 **Friction Reduction**  
+- **Good Habits**: Remove barriers (e.g., prep gym clothes the night before).  
+- **Bad Habits**: Add friction (e.g., uninstall social media apps).  
+
+### 🔄 **Habit Stacking**  
+- *"After [CURRENT HABIT], I will [NEW HABIT]."*  
+  - Example: *"After brushing teeth, I will floss."*  
 
 ---
 
-## 📌 **Final Golden Laws**  
-- **Law 366 (Dec 31)**: *"Avoid the false mirror of social media."*  
-  - 💡 *Insight*: "Real power is offline."  
+## 🎁 **4. Make It Satisfying (Reward)**  
+### 📈 **Immediate Reinforcement**  
+- **Tracker**: Use a habit calendar (❌/✅) for visual progress.  
+- *"What is rewarded is repeated; what is punished is avoided."*  
 
-![](https://images-na.ssl-images-amazon.com/images/I/41yafGMO+rL._SX331_BO1,204,203,200_.jpg)
+### ⚖ **Accountability**  
+- **Habit Contract**: Publicly commit to consequences for failure.  
+
+---
+
+## 🔄 **Advanced Tactics**  
+### 🧬 **Genes & Habits**  
+- *"Align habits with your personality for effortless consistency."*  
+
+### 🚧 **Plateau of Latent Potential**  
+- *"Breakthroughs come after the 'Valley of Disappointment.'"*  
+
+### 🔄 **Goldilocks Rule**  
+- *"Habits thrive when challenge is just right—not too hard, not too easy."*  
+
+---
+
+## 🎯 **Key Quotes to Remember**  
+- *"You don’t have to be the victim of your environment. You can be the architect."*  
+- *"Habits are the entry point, not the end point."*  
+- *"The best way to change your identity is to change your habits."*  
+
+---
+
+## 🌟 **Visual Summary**  
+### 🔢 **The Habit Loop**  
+1. **Cue** → 2. **Craving** → 3. **Response** → 4. **Reward**  
+
+### 📌 **Cheat Sheet**  
+| Want to Build a Habit? | Want to Break a Habit? |  
+|------------------------|------------------------|  
+| Make it obvious | Make it invisible |  
+| Make it attractive | Make it unattractive |  
+| Make it easy | Make it difficult |  
+| Make it satisfying | Make it unsatisfying |  
+
+![](https://jamesclear.com/wp-content/uploads/2016/09/habits-identity-1-1024x768.jpg)  
+*"Your habits shape your identity, and your identity shapes your habits."*  

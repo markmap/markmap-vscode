@@ -2,7 +2,7 @@
  * convert.js
  *
  * Usage:
- *   node convert.js path/to/input.md path/to/output.html
+ * node convert.js path/to/input.md path/to/output.html
  *
  * This uses Node ≥18’s built-in fetch. If you're on Node 18+, no need to install node-fetch.
  */
@@ -15,7 +15,7 @@ const { Transformer } = require("markmap-lib");
  * (Node v18+ automatically has fetch in global scope).
  */
 async function fetchText(url) {
-  console.log(`Fetching: ${url}`);
+  console.log(`Workspaceing: ${url}`);
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch ${url}: ${res.status}`);
@@ -52,12 +52,10 @@ ${css}
 <body>
   <svg id="mindmap"></svg>
 
-  <!-- Embed each script as <script>...</script> -->
   ${scripts
     .map((js) => `<script>${js}</script>`)
     .join("\n")}
 
-  <!-- Initialize the Markmap -->
   <script>
     (function() {
       var root = ${JSON.stringify(rootData)};
@@ -121,6 +119,9 @@ svg#mindmap { display: block; width: 100vw; height: 100vh; }
     scripts,
     css: defaultCSS,
     markmapOptions: {
+      // ***** MODIFICATION ADDED HERE *****
+      initialExpandLevel: 1,
+      // ***********************************
       // Put your Markmap config here if you want
       // e.g. "colorFreezeLevel": 2, etc.
     },

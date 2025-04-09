@@ -41,17 +41,34 @@ app.use(express.static(path.join(__dirname, 'public')));
 // GENERATE Mindmap from LLM
 app.post('/generate', async (req, res) => {
     try {
-        const { bookName, authorName, provider, model } = req.body;
-        console.log(`Received generate request: Book="${bookName}", Author="${authorName}", Provider="${provider}", Model="${model}"`);
+        // Extract new parameters: conciseness and wordCount
+        const { bookName, authorName, provider, model, conciseness, wordCount } = req.body;
+        console.log(`Received generate request: Book="${bookName}", Author="${authorName}", Provider="${provider}", Model="${model}", Conciseness="${conciseness}", WordCount="${wordCount || 'Default'}"`);
 
         if (!bookName || !authorName || !provider || !model) {
             console.error('Error: Missing required fields:', req.body);
             return res.status(400).json({ success: false, error: 'Missing bookName, authorName, provider, or model.' });
         }
 
+        // --- Construct the dynamic conciseness note ---
+        let concisenessLevel = conciseness || 'concise'; // Default to concise if not provided
+        let noteText;
+        const targetWordCount = parseInt(wordCount, 10);
+
+        if (!isNaN(targetWordCount) && targetWordCount > 0) {
+            // User specified a word count
+            noteText = `Remember it must be ${concisenessLevel} in ${targetWordCount} words.`;
+        } else {
+            // User did not specify a word count, use default
+            noteText = `Remember it must be ${concisenessLevel} up to 5000 words.`;
+        }
+        // --- End construct dynamic note ---
+
+        // Replace placeholders in the prompt template
         const finalPrompt = basePromptTemplate
             .replace('${bookName}', bookName)
-            .replace('${authorName}', authorName);
+            .replace('${authorName}', authorName)
+            .replace('${concisenessNote}', noteText); // Insert the dynamic note
 
         let client;
         let systemMessage = 'You are a helpful assistant specializing in creating detailed book summary mindmaps in Markdown format, strictly adhering to the output format requirements.';

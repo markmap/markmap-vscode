@@ -9,6 +9,9 @@ const App = () => {
     const [status, setStatus] = React.useState({ message: 'App loaded. Ready to generate or load existing mindmap.', type: 'info' }); // type: 'info', 'success', 'error'
     const [isLoading, setIsLoading] = React.useState(false); // For LLM generation
     const [isEditorLoading, setIsEditorLoading] = React.useState(false); // For loading MD content
+    // --- New state for conciseness options ---
+    const [selectedConciseness, setSelectedConciseness] = React.useState('concise'); // 'concise', 'balanced', 'comprehensive'
+    const [wordCount, setWordCount] = React.useState(''); // Optional word count input
     const [isEditorSaving, setIsEditorSaving] = React.useState(false); // For saving MD content
 
     // State to force iframe refresh (cache busting)
@@ -17,7 +20,7 @@ const App = () => {
     // --- LLM Selection State ---
     const llmOptions = {
         // Define models available for each provider
-        DeepSeek: ['deepseek-chat', /* 'deepseek-coder', */ 'deepseek-math'], // Add/remove models as needed
+        DeepSeek: ['deepseek-chat', 'deepseek-reasoner'], // Add/remove models as needed
         OpenAI: ['gpt-4o-mini', 'gpt-4o'] // Example OpenAI models
     };
     const [selectedProvider, setSelectedProvider] = React.useState(Object.keys(llmOptions)[0]); // Default to first provider
@@ -33,6 +36,15 @@ const App = () => {
 
     const handleModelChange = (e) => {
         setSelectedModel(e.target.value);
+    };
+
+    // --- Handlers for new conciseness options ---
+    const handleConcisenessChange = (e) => {
+        setSelectedConciseness(e.target.value);
+    };
+
+    const handleWordCountChange = (e) => {
+        setWordCount(e.target.value); // Store as string, validation happens backend/before sending
     };
 
     // GENERATE mindmap via backend
@@ -53,7 +65,9 @@ const App = () => {
                     bookName,
                     authorName,
                     provider: selectedProvider,
-                    model: selectedModel
+                    model: selectedModel,
+                    conciseness: selectedConciseness, // Send selected conciseness
+                    wordCount: wordCount, // Send word count (can be empty)
                 }),
             });
             const data = await response.json();
@@ -180,6 +194,24 @@ const App = () => {
                         <select id="modelSelect" value={selectedModel} onChange={handleModelChange} disabled={isLoading} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
                             {llmOptions[selectedProvider].map(model => (<option key={model} value={model}>{model}</option>))}
                         </select>
+                    </div>
+                    {/* Conciseness Mode Selection */}
+                    <div style={{ marginBottom: '15px' }}>
+                        <label htmlFor="concisenessSelect" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Summary Style:</label>
+                        <select id="concisenessSelect" value={selectedConciseness} onChange={handleConcisenessChange} disabled={isLoading} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
+                            <option value="concise">Concise</option>
+                            <option value="balanced">Balanced</option>
+                            <option value="comprehensive">Comprehensive</option>
+                        </select>
+                    </div>
+                    {/* Word Count Input */}
+                    <div style={{ marginBottom: '15px' }}>
+                        <label htmlFor="wordCountInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Target Word Count (Optional):</label>
+                        <input
+                            type="number" id="wordCountInput" name="wordCount" placeholder="e.g., 4000 (default: up to 5000)"
+                            value={wordCount} onChange={handleWordCountChange} disabled={isLoading} min="100" // Optional: basic validation
+                            style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}
+                        />
                     </div>
                     {/* Book Name Input */}
                     <div style={{ marginBottom: '15px' }}>

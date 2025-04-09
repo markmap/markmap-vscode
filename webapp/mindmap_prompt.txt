@@ -10,7 +10,7 @@ No extra characters, text, or commentary are allowed before the opening fence or
 
 **Task:**  
 - Provide a comprehensive and visually rich summary of the book "${bookName}" by "${authorName}". The summary should empower a reader with limited time to grasp the main ideas and insights from the book through a multi-layered markdown format designed to boost readability and memory retention.
-- **Note**: Remember it must be concise.
+
 
 **Content & Style Guidelines:**  
 - **Visual Structure:** Use multiple markdown elements to organize your content clearly.  
@@ -69,3 +69,5 @@ Your final output must strictly adhere to the following format (without any addi
 ```
 
 Before generating your response, double-check that the output contains no text outside the opening ```markdown and closing ``` fences.
+
+** Important Note**: ${concisenessNote}

@@ -40,6 +40,8 @@ deploy_webapp:
     # --- Choose ONE deployment strategy appropriate for your runner/hosting ---
     - echo "Build complete. Runner needs to handle persistent execution."
     - echo "To run manually: cd webapp && node server.js"
+    - npm install -g pm2 # Or ensure it's pre-installed on the runner machine
+    - pm2 restart server.js --name mindmap-webapp || pm2 start server.js --name mindmap-webapp
   environment:
     name: production # Optional: Define environment
     # url: http://your-deployment-url.com # Optional: Link to deployed app

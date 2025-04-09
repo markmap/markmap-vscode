@@ -3,11 +3,63 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mindmap Generator (React)</title>
+    <title>Mindmap Generator</title>
     <link rel="stylesheet" href="/App.css">
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent body scrollbars, let panels handle scroll */
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.5;
+            color: #333;
+        }
+        *, *:before, *:after {
+            box-sizing: inherit; /* Consistent box-sizing */
+        }
+        #root {
+            height: 100%; /* Ensure root div takes full height */
+        }
+        /* Add basic button styling if not in App.css */
+        button {
+            padding: 8px 15px;
+            font-size: 0.95rem;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: background-color 0.2s ease;
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+        button[type="submit"] {
+             background-color: #007bff;
+             color: white;
+             border-color: #007bff;
+        }
+         button[type="submit"]:hover:not(:disabled) {
+             background-color: #0056b3;
+             border-color: #0056b3;
+        }
+        /* Basic styling for non-submit buttons */
+         button:not([type="submit"]) {
+            background-color: #f8f9fa;
+            color: #343a40;
+            border: 1px solid #ced4da;
+         }
+          button:not([type="submit"]):hover:not(:disabled) {
+             background-color: #e2e6ea;
+             border-color: #dae0e5;
+          }
+    </style>
 </head>
 <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

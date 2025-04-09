@@ -8,3 +8,4 @@ node_modules
 output.html
 mindmap.html
 /webapp/mindmap.html
+/webapp/.env

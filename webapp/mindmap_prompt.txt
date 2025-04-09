@@ -1,13 +1,11 @@
-Below is a revised version of the prompt that tightens the output restrictions and explicitly lists valid markdown components. You can use or adapt it as needed:
-
-```
 **CRITICAL OUTPUT REQUIREMENT:**  
 Your entire response MUST consist of one markdown code block. The output MUST begin *exactly* with:
 ```markdown
-```
+
 and end *exactly* with:
+
 ```
-```
+
 No extra characters, text, or commentary are allowed before the opening fence or after the closing fence.
 
 **Task:**  
@@ -17,6 +15,8 @@ Provide a comprehensive and visually rich summary of the book "${bookName}" by "
 - **Visual Structure:** Use multiple markdown elements to organize your content clearly.  
 - **Comprehensive Coverage:** Include key points, detailed explanations, and direct quotations where they reinforce an idea.  
 - **No Extra Non-Markdown Text:** The response must contain only the markdown content enclosed within the code fences.
+- Avoid using ">" in your markdown especially for the qoutes.
+- Avoid using links of images.
 
 **Valid Markdown Components Examples:**  
 - **Headings:**  
@@ -68,6 +68,3 @@ Your final output must strictly adhere to the following format (without any addi
 ```
 
 Before generating your response, double-check that the output contains no text outside the opening ```markdown and closing ``` fences.
-```  
-
-This version explicitly requires that the output start with "```markdown" and end with "```" (with absolutely no other content outside these markers) while also showing examples of valid markdown elements.

@@ -1,17 +1,14 @@
 // FILE: webapp/server.js
-// webapp/server.js
-
-// 1. Require necessary modules FIRST
+// (Keep existing requires and setup for express, bodyParser, fs, path, spawn, OpenAI, dotenv)
 const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
-const path = require('path'); // <-- Add path module
+const path = require('path');
 const { spawn } = require('child_process');
 const OpenAI = require('openai');
-// Best practice: Load environment variables (especially for API keys)
-require('dotenv').config(); // Make sure to install dotenv: npm install dotenv
+require('dotenv').config();
 
-// --- Load Prompt Template from File ---
+// --- Load Prompt Template ---
 const promptFilePath = path.join(__dirname, 'mindmap_prompt.txt');
 let basePromptTemplate;
 try {
@@ -20,78 +17,71 @@ try {
 } catch (err) {
     console.error(`FATAL ERROR: Could not read prompt template file at ${promptFilePath}.`, err);
     console.error("Please ensure 'mindmap_prompt.txt' exists in the 'webapp' directory.");
-    process.exit(1); // Exit if the template can't be loaded
+    process.exit(1);
 }
-// --- End Load Prompt Template ---
 
-// 2. Setup LLM Clients
-// DeepSeek Client (using the OpenAI library structure but configured for DeepSeek)
+// --- LLM Clients ---
 const deepseekClient = new OpenAI({
-  baseURL: 'https://api.deepseek.com',
-  apiKey: process.env.DEEPSEEK_API_KEY || 'sk-eddc594f086142c59e4a306b7160b287', // Use env var or fallback
+    baseURL: process.env.DEEPSEEK_BASE_URL || 'https://api.deepseek.com', // Allow overriding base URL
+    apiKey: process.env.DEEPSEEK_API_KEY,
 });
 
-// OpenAI Client (uses default base URL and expects OPENAI_API_KEY environment variable)
 const openaiClient = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY, // Explicitly use env var
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
-
-// 3. Create the Express app instance NEXT
-const app = express(); // <--- DEFINE APP HERE
-
-// 4. Apply middleware AFTER creating app
+const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static('public')); // Serve static files FROM public directory
+// Serve static files FROM the 'public' directory within 'webapp'
+app.use(express.static(path.join(__dirname, 'public')));
 
-// 5. Define the prompt template variable is now loaded from file above (Step 1 section)
+// --- Routes ---
 
-// 6. Define your routes AFTER creating app and applying middleware
+// GENERATE Mindmap from LLM
 app.post('/generate', async (req, res) => {
     try {
         const { bookName, authorName, provider, model } = req.body;
-        console.log(`Received request: Book="${bookName}", Author="${authorName}", Provider="${provider}", Model="${model}"`);
+        console.log(`Received generate request: Book="${bookName}", Author="${authorName}", Provider="${provider}", Model="${model}"`);
 
         if (!bookName || !authorName || !provider || !model) {
-            console.error('Error: Missing required fields in request body:', req.body);
-            return res.status(400).json({ success: false, error: 'Missing bookName, authorName, provider, or model in request.' });
+            console.error('Error: Missing required fields:', req.body);
+            return res.status(400).json({ success: false, error: 'Missing bookName, authorName, provider, or model.' });
         }
 
-        // Use the template loaded from the file
         const finalPrompt = basePromptTemplate
             .replace('${bookName}', bookName)
             .replace('${authorName}', authorName);
 
-        let completion;
         let client;
-        let systemMessage = 'You are a helpful assistant specializing in creating detailed book summary mindmaps in Markdown format.'; // Default system message
+        let systemMessage = 'You are a helpful assistant specializing in creating detailed book summary mindmaps in Markdown format, strictly adhering to the output format requirements.';
 
-        // Select the appropriate client and model based on provider
         if (provider === 'DeepSeek') {
             client = deepseekClient;
+             if (!process.env.DEEPSEEK_API_KEY) {
+                console.error('Error: DEEPSEEK_API_KEY environment variable is not set.');
+                return res.status(500).json({ success: false, error: 'DeepSeek API key is not configured on the server.' });
+            }
         } else if (provider === 'OpenAI') {
             client = openaiClient;
             if (!process.env.OPENAI_API_KEY) {
-                 console.error('Error: OPENAI_API_KEY environment variable is not set.');
-                 return res.status(500).json({ success: false, error: 'OpenAI API key is not configured on the server.' });
+                console.error('Error: OPENAI_API_KEY environment variable is not set.');
+                return res.status(500).json({ success: false, error: 'OpenAI API key is not configured on the server.' });
             }
         } else {
             console.error(`Error: Unsupported provider "${provider}"`);
             return res.status(400).json({ success: false, error: `Unsupported LLM provider: ${provider}` });
         }
 
-        console.log(`Using provider: ${provider}, model: ${model}`);
-
-        // Make the API call
-        completion = await client.chat.completions.create({
+        console.log(`Calling ${provider} model: ${model}`);
+        const completion = await client.chat.completions.create({
             messages: [
                 { role: 'system', content: systemMessage },
-                { role: 'user', content: finalPrompt }, // Pass the dynamically generated prompt
+                { role: 'user', content: finalPrompt },
             ],
             model: model,
-            max_tokens: 8000,
-            temperature: 0.7,
+            max_tokens: 8000, // Adjust as needed
+            temperature: 0.7, // Adjust creativity
         });
 
         const llmMarkdownOutput = completion.choices[0].message.content;
@@ -101,48 +91,55 @@ app.post('/generate', async (req, res) => {
             throw new Error('LLM returned empty content.');
         }
 
-        // Strict Check for ```markdown
+        // --- Process and Save LLM Output ---
         const trimmedOutput = llmMarkdownOutput.trim();
-        let finalMarkdownContent; // Content to save and convert
+        let fencedMarkdownContent; // Content including fences for conversion
+        let plainMarkdownContent;  // Content without fences for editor
 
-        if (!trimmedOutput.startsWith('```markdown') || !trimmedOutput.endsWith('```')) {
-             console.warn('WARN: LLM output did not strictly start with ```markdown and end with ```. Attempting to extract.');
-             const startIndex = trimmedOutput.indexOf('```markdown');
-             const endIndex = trimmedOutput.lastIndexOf('```');
+        const fenceStart = '```markdown'; // More flexible start check
+        const fenceEnd = '```';
 
-             if (startIndex !== -1 && endIndex > startIndex) {
-                 // Extracted successfully
-                 finalMarkdownContent = trimmedOutput.substring(startIndex, endIndex + 3); // Include fences for convert.js
-                 const plainContent = trimmedOutput.substring(startIndex + '```markdown'.length, endIndex).trim(); // Exclude fences for plain file
-                 fs.writeFileSync('mindmap.md', finalMarkdownContent, 'utf8');
-                 fs.writeFileSync('mindmap-plain.md', plainContent, 'utf8'); // Save extracted plain content
-                 console.log('Saved extracted content to mindmap.md and mindmap-plain.md');
-             } else {
-                 // Extraction failed, save raw for debugging but warn user
-                 console.error('Error: Failed to extract markdown block from LLM output. Saving raw output for debugging.');
-                 finalMarkdownContent = llmMarkdownOutput; // Use raw output for conversion attempt
-                 fs.writeFileSync('mindmap.md', llmMarkdownOutput, 'utf8'); // Save raw for debugging
-                 fs.writeFileSync('mindmap-plain.md', llmMarkdownOutput, 'utf8'); // Save raw plain for debugging
-                 // Don't throw error here, let conversion attempt fail if needed
-             }
+        if (trimmedOutput.startsWith(fenceStart) && trimmedOutput.endsWith(fenceEnd)) {
+             // Output is correctly fenced
+            fencedMarkdownContent = llmMarkdownOutput; // Keep original spacing if needed
+            // Extract plain content: find first newline after ```markdown, take content until last ```
+            const firstNewlineIndex = fencedMarkdownContent.indexOf('\n');
+            const lastFenceIndex = fencedMarkdownContent.lastIndexOf(fenceEnd);
+            if (firstNewlineIndex !== -1 && lastFenceIndex > firstNewlineIndex) {
+                 plainMarkdownContent = fencedMarkdownContent.substring(firstNewlineIndex + 1, lastFenceIndex).trim();
+            } else {
+                // Fallback if structure is slightly off but fences are there
+                 plainMarkdownContent = trimmedOutput.substring(fenceStart.length, trimmedOutput.length - fenceEnd.length).trim();
+                 console.warn("Could not precisely find content between fences, using basic extraction.");
+            }
+            console.log('LLM output correctly fenced. Extracted plain content.');
+
         } else {
-             // Format is correct
-             finalMarkdownContent = llmMarkdownOutput; // Include fences for convert.js
-             const plainContent = trimmedOutput.substring('```markdown'.length, trimmedOutput.length - '```'.length).trim(); // Exclude fences for plain file
-             fs.writeFileSync('mindmap.md', finalMarkdownContent, 'utf8');
-             fs.writeFileSync('mindmap-plain.md', plainContent, 'utf8'); // Save plain content
-             console.log('Saved correctly formatted LLM output to mindmap.md and mindmap-plain.md');
+            console.warn('WARN: LLM output did not strictly start/end with ```markdown ... ```. Saving raw output as plain, conversion might fail.');
+            // Treat the whole output as plain, add fences manually for conversion attempt
+            plainMarkdownContent = llmMarkdownOutput; // Save raw for editor
+            fencedMarkdownContent = `${fenceStart}\n${llmMarkdownOutput}\n${fenceEnd}`; // Add fences for convert.js
         }
-        // End Strict Check
+
+        const mindmapMdPath = path.join(__dirname, 'mindmap.md');
+        const mindmapPlainMdPath = path.join(__dirname, 'mindmap-plain.md');
+        const mindmapHtmlPath = path.join(__dirname, 'mindmap.html');
+
+        fs.writeFileSync(mindmapMdPath, fencedMarkdownContent, 'utf8');
+        console.log(`Saved fenced markdown to: ${mindmapMdPath}`);
+        fs.writeFileSync(mindmapPlainMdPath, plainMarkdownContent, 'utf8');
+        console.log(`Saved plain markdown to: ${mindmapPlainMdPath}`);
+        // --- End Process and Save ---
 
         await runConvertScript('mindmap.md', 'mindmap.html');
-        console.log('Created/Updated mindmap.html in webapp/');
+        console.log(`Generated mindmap HTML: ${mindmapHtmlPath}`);
 
         res.json({ success: true, message: `Mindmap for "${bookName}" generated successfully using ${provider} (${model})!` });
 
     } catch (err) {
-        console.error('Error in /generate route:', err.stack || err); // Log stack trace
+        console.error('Error in /generate route:', err.stack || err);
         let errorMessage = err.message;
+        // Add more specific error handling if needed (e.g., API key errors)
         if (err.response && err.response.data) {
             errorMessage = JSON.stringify(err.response.data);
         } else if (err.status === 401) {
@@ -154,6 +151,7 @@ app.post('/generate', async (req, res) => {
     }
 });
 
+// SAVE Edited Markdown from Editor
 app.post('/save-md', async (req, res) => {
     try {
         const { mdContent } = req.body; // This is the PLAIN markdown from the editor
@@ -161,33 +159,46 @@ app.post('/save-md', async (req, res) => {
             return res.status(400).json({ success: false, error: 'No mdContent provided' });
         }
 
+        console.log("Received plain markdown content from editor for saving.");
+
         // Re-add fences for mindmap.md and conversion
-        const mdWithFences = "```markdown\n" + mdContent + "\n```";
+        const mdWithFences = "```markdown\n" + mdContent.trim() + "\n```"; // Trim just in case
 
-        fs.writeFileSync('mindmap.md', mdWithFences, 'utf8'); // Save with fences for convert.js
-        fs.writeFileSync('mindmap-plain.md', mdContent, 'utf8'); // Save plain content from editor
+        const mindmapMdPath = path.join(__dirname, 'mindmap.md');
+        const mindmapPlainMdPath = path.join(__dirname, 'mindmap-plain.md');
+        const mindmapHtmlPath = path.join(__dirname, 'mindmap.html');
 
+        // Save the plain content received from the editor
+        fs.writeFileSync(mindmapPlainMdPath, mdContent, 'utf8');
+        console.log(`Saved plain markdown to: ${mindmapPlainMdPath}`);
+
+        // Save the content with fences added for conversion
+        fs.writeFileSync(mindmapMdPath, mdWithFences, 'utf8');
+        console.log(`Saved fenced markdown to: ${mindmapMdPath}`);
+
+
+        // Regenerate the HTML from the fenced version
         await runConvertScript('mindmap.md', 'mindmap.html');
-        console.log('Regenerated mindmap.html in webapp/ from editor content');
+        console.log(`Regenerated mindmap HTML: ${mindmapHtmlPath}`);
 
-        res.json({ success: true, message: 'mindmap.md saved and mindmap.html regenerated!' });
+        res.json({ success: true, message: 'Markdown saved and mindmap.html regenerated!' });
     } catch (err) {
         console.error('Error in /save-md:', err.stack || err);
-        res.status(500).json({ success: false, error: err.message });
+        res.status(500).json({ success: false, error: `Save failed: ${err.message}` });
     }
 });
 
-// --- *** NEW ROUTE HANDLER for mindmap.html *** ---
+// SERVE the generated mindmap.html (with cache busting headers)
 app.get('/mindmap.html', (req, res) => {
-    const mindmapPath = path.join(__dirname, 'mindmap.html'); // Path relative to server.js
+    const mindmapPath = path.join(__dirname, 'mindmap.html');
     fs.access(mindmapPath, fs.constants.R_OK, (err) => {
         if (err) {
-            console.error(`Mindmap file not found or not readable: ${mindmapPath}`, err);
-            // Send a simple placeholder HTML
-             res.status(404).send('<!DOCTYPE html><html><head><title>Mindmap Not Found</title><style>body{font-family:sans-serif;padding:20px;color:#555;}</style></head><body><h1>Mindmap Not Generated Yet</h1><p>Please use the form to generate a mindmap first.</p></body></html>');
+            console.error(`Mindmap file not found or not readable: ${mindmapPath}`);
+            // Send a placeholder if not found
+            res.status(404).send('<!DOCTYPE html><html><head><title>Mindmap Not Found</title><style>body{font-family:sans-serif;padding:20px;color:#555;}</style></head><body><h1>Mindmap Not Generated Yet</h1><p>Please use the form to generate a mindmap first, or check server logs.</p></body></html>');
         } else {
             console.log(`Serving mindmap file: ${mindmapPath}`);
-            // Set headers to prevent caching, ensuring the iframe gets the latest version
+            // Set headers to prevent caching
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
@@ -195,36 +206,49 @@ app.get('/mindmap.html', (req, res) => {
         }
     });
 });
-// --- *** END NEW ROUTE HANDLER *** ---
+
+// SERVE the plain markdown content for the editor
+app.get('/mindmap-plain.md', (req, res) => {
+    const plainMdPath = path.join(__dirname, 'mindmap-plain.md');
+     fs.access(plainMdPath, fs.constants.R_OK, (err) => {
+        if (err) {
+            console.warn(`Plain mindmap file not found: ${plainMdPath}. Sending empty.`);
+             // Send empty string or a default message if not found
+            res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
+            res.status(404).send(''); // Send empty on failure
+        } else {
+            console.log(`Serving plain markdown file: ${plainMdPath}`);
+             // Set headers to prevent caching
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+            res.setHeader('Content-Type', 'text/markdown; charset=utf-8'); // Set correct content type
+            res.sendFile(plainMdPath);
+        }
+    });
+});
 
 
-// 7. Define helper functions (like runConvertScript)
+// --- Helper Function ---
 function runConvertScript(inputFile, outputFile) {
     return new Promise((resolve, reject) => {
-        // Ensure convert.js path is resolved correctly from server.js location
         const convertScriptPath = path.resolve(__dirname, 'convert.js');
-        const inputFilePath = path.resolve(__dirname, inputFile); // Ensure absolute paths for spawn
-        const outputFilePath = path.resolve(__dirname, outputFile); // Ensure absolute paths for spawn
+        const inputFilePath = path.resolve(__dirname, inputFile);
+        const outputFilePath = path.resolve(__dirname, outputFile);
 
-        // Check if convert.js exists before attempting to run
         if (!fs.existsSync(convertScriptPath)) {
             const errorMsg = `Convert script not found at ${convertScriptPath}`;
             console.error(errorMsg);
             return reject(new Error(errorMsg));
         }
-         if (!fs.existsSync(inputFilePath)) {
-            const errorMsg = `Input markdown file not found at ${inputFilePath}`;
-            console.error(errorMsg);
-            // Don't reject here, let convert.js handle missing input if preferred, or reject:
-            // return reject(new Error(errorMsg));
-        }
+        // Don't check input here, let convert.js handle it if needed
 
-        console.log(`Running convert script: node "${convertScriptPath}" "${inputFilePath}" "${outputFilePath}"`);
+        console.log(`Running convert script: node "${path.basename(convertScriptPath)}" "${path.basename(inputFilePath)}" "${path.basename(outputFilePath)}"`);
 
         const child = spawn('node', [convertScriptPath, inputFilePath, outputFilePath], {
-            stdio: 'inherit', // Show convert.js output in server console
-            cwd: __dirname, // Run from the webapp directory explicitly
-            shell: false // Better not to use shell unless necessary
+            stdio: 'inherit', // Show convert.js output
+            cwd: __dirname,   // Explicitly set working directory
+            shell: false
         });
 
         child.on('error', (error) => {
@@ -244,15 +268,16 @@ function runConvertScript(inputFile, outputFile) {
     });
 }
 
-// 8. Start the server LAST (no changes needed here)
+// --- Start Server ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Webapp server listening on port ${PORT}`);
     console.log(`Access the app at http://localhost:${PORT}`);
-    if (!process.env.DEEPSEEK_API_KEY && deepseekClient.apiKey === 'sk-eddc594f086142c59e4a306b7160b287') {
-         console.warn('WARN: Using hardcoded DeepSeek API key. Set DEEPSEEK_API_KEY environment variable for security.');
-    }
-    if (!process.env.OPENAI_API_KEY) {
-         console.warn('WARN: OPENAI_API_KEY environment variable is not set. OpenAI requests will fail unless the key is provided elsewhere.');
-    }
+    // Add API key warnings if needed
+     if (!process.env.DEEPSEEK_API_KEY) {
+         console.warn('WARN: DEEPSEEK_API_KEY environment variable is not set. DeepSeek requests may fail.');
+     }
+     if (!process.env.OPENAI_API_KEY) {
+         console.warn('WARN: OPENAI_API_KEY environment variable is not set. OpenAI requests will fail.');
+     }
 });

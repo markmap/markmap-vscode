@@ -1,59 +1,18 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="utf-8" />
-    <title>Minimal Mindmap Web App</title>
-  </head>
-  <body>
-    <h1>Mindmap Generator</h1>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindmap Generator (React)</title>
+    <link rel="stylesheet" href="/App.css">
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
 
-    <!-- Prompt input form -->
-    <form id="prompt-form">
-      <label for="promptInput">Enter your custom prompt:</label><br />
-      <textarea
-        id="promptInput"
-        name="prompt"
-        rows="10"
-        cols="80"
-        placeholder="Type your prompt here..."
-      ></textarea><br /><br />
-      <button type="submit">Generate Mindmap</button>
-    </form>
-
-    <hr />
-
-    <!-- Section to display status messages -->
-    <div id="statusMessage"></div>
-
-    <hr />
-
-    <!-- Links to the generated files -->
-    <p>
-      <b>Markdown output:</b>
-      <a href="/mindmap.md" target="_blank">Open mindmap.md</a>
-    </p>
-    <p>
-      <b>Mindmap HTML:</b>
-      <a href="/mindmap.html" target="_blank">Open mindmap.html</a>
-    </p>
-
-    <hr />
-
-    <!-- Option to let users directly edit the existing mindmap.md in the browser -->
-    <h2>Edit Mindmap Markdown</h2>
-    <div>
-      <button id="load-md">Load Current mindmap.md</button>
-      <button id="save-md">Save & Re-Convert mindmap.md</button>
-    </div>
-    <div>
-      <textarea
-        id="md-editor"
-        rows="20"
-        cols="100"
-        style="display:block; width:80%;"
-      ></textarea>
-    </div>
-
-    <script src="main.js"></script>
-  </body>
+    <script type="text/babel" src="/App.js"></script>
+</body>
 </html>

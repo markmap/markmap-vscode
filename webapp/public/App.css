@@ -1,28 +1,17 @@
-body {
-    font-family: sans-serif;
-    line-height: 1.6;
-    margin: 0;
-    padding: 20px;
-    background-color: #f4f7f6;
-    color: #333;
+/* webapp/public/App.css */
+
+/* Add styling for the input fields if needed */
+input[type="text"] {
+    width: 100%; /* Ensure full width */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border */
+    font-size: 1rem;
+    margin-bottom: 15px; /* Consistent margin */
 }
 
-#root {
-    max-width: 900px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-h1, h2 {
-    color: #2c3e50;
-    border-bottom: 2px solid #e0e0e0;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-
+/* Style labels */
 label {
     display: block;
     margin-bottom: 8px;
@@ -30,84 +19,7 @@ label {
     color: #555;
 }
 
-textarea {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
-    font-size: 1rem;
+/* Adjust form layout if necessary */
+form div { /* Target the divs wrapping label/input */
     margin-bottom: 15px;
-    min-height: 100px; /* Ensure textareas are reasonably tall */
-}
-
-button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background-color 0.2s ease;
-    margin-right: 10px;
-    margin-bottom: 10px; /* Add space below buttons */
-}
-
-button:hover {
-    background-color: #2980b9;
-}
-
-button:disabled {
-    background-color: #bdc3c7;
-    cursor: not-allowed;
-}
-
-hr {
-    border: none;
-    border-top: 1px solid #eee;
-    margin: 30px 0;
-}
-
-.status-message {
-    margin-top: 15px;
-    padding: 10px;
-    border-radius: 4px;
-    font-weight: bold;
-}
-
-.status-message.success {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #a5d6a7;
-}
-
-.status-message.error {
-    background-color: #ffebee;
-    color: #c62828;
-    border: 1px solid #ef9a9a;
-}
-
-.status-message.info {
-    background-color: #e3f2fd;
-    color: #1565c0;
-    border: 1px solid #90caf9;
-}
-
-.links p, .edit-section div {
-     margin-bottom: 15px; /* Space below links and editor buttons */
-}
-
-.links a {
-    color: #3498db;
-    text-decoration: none;
-    margin-left: 5px;
-}
-
-.links a:hover {
-    text-decoration: underline;
-}
-
-.edit-buttons button {
-     margin-bottom: 15px; /* Space between buttons and editor */
 }

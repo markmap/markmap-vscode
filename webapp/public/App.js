@@ -1,9 +1,11 @@
-// Note: This uses JSX and needs Babel to run in the browser (as configured in index.html)
-// For production, you'd compile this file.
+// webapp/public/App.js
 
 const App = () => {
     // --- State Variables ---
-    const [prompt, setPrompt] = React.useState('');
+    // Remove the old 'prompt' state
+    // const [prompt, setPrompt] = React.useState('');
+    const [bookName, setBookName] = React.useState(''); // New state for book name
+    const [authorName, setAuthorName] = React.useState(''); // New state for author name
     const [editorContent, setEditorContent] = React.useState('');
     const [status, setStatus] = React.useState({ message: '', type: '' }); // type: 'info', 'success', 'error'
     const [isLoading, setIsLoading] = React.useState(false);
@@ -15,8 +17,9 @@ const App = () => {
     // Handle prompt generation
     const handleGenerate = async (e) => {
         e.preventDefault(); // Prevent default form submission
-        if (!prompt.trim()) {
-            setStatus({ message: 'Please enter a prompt first.', type: 'error' });
+        // Validate new inputs
+        if (!bookName.trim() || !authorName.trim()) {
+            setStatus({ message: 'Please enter both Book Name and Author Name.', type: 'error' });
             return;
         }
         setIsLoading(true);
@@ -26,7 +29,8 @@ const App = () => {
             const response = await fetch('/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt }),
+                // Send bookName and authorName instead of the old prompt
+                body: JSON.stringify({ bookName, authorName }),
             });
             const data = await response.json();
 
@@ -105,8 +109,40 @@ const App = () => {
         <div>
             <h1>Mindmap Generator</h1>
 
-            {/* Prompt Form */}
+            {/* Input Form */}
             <form onSubmit={handleGenerate}>
+                {/* Book Name Input */}
+                <div style={{ marginBottom: '15px' }}> {/* Added margin */}
+                    <label htmlFor="bookNameInput">Book Name:</label>
+                    <input
+                        type="text"
+                        id="bookNameInput"
+                        name="bookName"
+                        placeholder="e.g., Atomic Habits"
+                        value={bookName}
+                        onChange={(e) => setBookName(e.target.value)}
+                        disabled={isLoading}
+                        style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }} // Basic styling
+                    />
+                </div>
+
+                {/* Author Name Input */}
+                 <div style={{ marginBottom: '15px' }}> {/* Added margin */}
+                    <label htmlFor="authorNameInput">Author Name:</label>
+                    <input
+                        type="text"
+                        id="authorNameInput"
+                        name="authorName"
+                        placeholder="e.g., James Clear"
+                        value={authorName}
+                        onChange={(e) => setAuthorName(e.target.value)}
+                        disabled={isLoading}
+                        style={{ width: '100%', padding: '10px', boxSizing: 'border-box' }} // Basic styling
+                    />
+                 </div>
+
+                 {/* Removed the large textarea */}
+                {/*
                 <label htmlFor="promptInput">Enter your custom prompt:</label>
                 <textarea
                     id="promptInput"
@@ -117,7 +153,8 @@ const App = () => {
                     onChange={(e) => setPrompt(e.target.value)}
                     disabled={isLoading}
                 />
-                <button type="submit" disabled={isLoading}>
+                 */}
+                <button type="submit" disabled={isLoading || !bookName.trim() || !authorName.trim()}>
                     {isLoading ? 'Generating...' : 'Generate Mindmap'}
                 </button>
             </form>

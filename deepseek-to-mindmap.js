@@ -19,7 +19,7 @@ const openai = new OpenAI({
 });
 
 const prompt = ` 
-I want a comprehensive and visually intriguing summary of "Atomic Habits" book by "James Clear". It must be in a complex multi layered markdown format for maximising readability and memory boost. This markdown is going to be used in "https://markmap.js.org/" to be converted to a visually appealing mindmap. It must incorporate relevant visual elements and different structures such as tables, multi branch, emojies and icons, etc. when is contributing to the readability. 
+I want a comprehensive and visually intriguing summary of "Mindset: The New Psychology of Success" book by "Carol Dweck". It must be in a complex multi layered markdown format for maximising readability and memory boost. This markdown is going to be used in "https://markmap.js.org/" to be converted to a visually appealing mindmap. It must incorporate relevant visual elements and different structures such as tables, multi branch, emojies and icons, etc. when is contributing to the readability. 
 
 The summary must be very comprehensive and quoting the important parts to reinforce why they are important. there must be a good balance between visual and text. 
 

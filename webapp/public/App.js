@@ -9,19 +9,18 @@ const App = () => {
     const [status, setStatus] = React.useState({ message: 'App loaded. Ready to generate or load existing mindmap.', type: 'info' }); // type: 'info', 'success', 'error'
     const [isLoading, setIsLoading] = React.useState(false); // For LLM generation
     const [isEditorLoading, setIsEditorLoading] = React.useState(false); // For loading MD content
-    // --- New state for conciseness options ---
     const [selectedConciseness, setSelectedConciseness] = React.useState('concise'); // 'concise', 'balanced', 'comprehensive'
     const [wordCount, setWordCount] = React.useState(''); // Optional word count input
     const [isEditorSaving, setIsEditorSaving] = React.useState(false); // For saving MD content
-
-    // State to force iframe refresh (cache busting)
     const [mindmapKey, setMindmapKey] = React.useState(Date.now()); // Initialize with timestamp
 
     // --- LLM Selection State ---
     const llmOptions = {
-        // Define models available for each provider
-        DeepSeek: ['deepseek-chat', 'deepseek-reasoner'], // Add/remove models as needed
-        OpenAI: ['gpt-4o-mini', 'gpt-4o'] // Example OpenAI models
+        DeepSeek: ['deepseek-chat', 'deepseek-reasoner'],
+        // --- CHANGE HERE: Updated the OpenAI model names ---
+        OpenAI: ['o4-mini', 'gpt-4.1-mini'] // Was ['gpt-4o-mini', 'gpt-4o']
+        // ----------------------------------------------------
+        // Add Gemini models here later
     };
     const [selectedProvider, setSelectedProvider] = React.useState(Object.keys(llmOptions)[0]); // Default to first provider
     const [selectedModel, setSelectedModel] = React.useState(llmOptions[selectedProvider][0]); // Default to first model of provider
@@ -31,20 +30,19 @@ const App = () => {
     const handleProviderChange = (e) => {
         const newProvider = e.target.value;
         setSelectedProvider(newProvider);
-        setSelectedModel(llmOptions[newProvider][0]); // Reset model
+        setSelectedModel(llmOptions[newProvider][0]); // Reset model to the first available for the new provider
     };
 
     const handleModelChange = (e) => {
         setSelectedModel(e.target.value);
     };
 
-    // --- Handlers for new conciseness options ---
     const handleConcisenessChange = (e) => {
         setSelectedConciseness(e.target.value);
     };
 
     const handleWordCountChange = (e) => {
-        setWordCount(e.target.value); // Store as string, validation happens backend/before sending
+        setWordCount(e.target.value);
     };
 
     // GENERATE mindmap via backend
@@ -65,9 +63,9 @@ const App = () => {
                     bookName,
                     authorName,
                     provider: selectedProvider,
-                    model: selectedModel,
-                    conciseness: selectedConciseness, // Send selected conciseness
-                    wordCount: wordCount, // Send word count (can be empty)
+                    model: selectedModel, // Send the currently selected model name
+                    conciseness: selectedConciseness,
+                    wordCount: wordCount,
                 }),
             });
             const data = await response.json();
@@ -81,7 +79,6 @@ const App = () => {
             setMindmapKey(Date.now()); // Trigger iframe refresh
             setStatus({ message: data.message || `Mindmap generated with ${selectedProvider} (${selectedModel})! View updated.`, type: 'success' });
 
-
         } catch (err) {
             console.error('Generation failed:', err);
             setStatus({ message: `Generation failed: ${err.message}`, type: 'error' });
@@ -93,29 +90,25 @@ const App = () => {
     // LOAD plain markdown content into editor
     const handleLoadEditor = async () => {
         setIsEditorLoading(true);
-        // Don't immediately clear status, wait for fetch result
-        // setStatus({ message: 'Loading mindmap content into editor...', type: 'info' });
         try {
-            // Fetch mindmap-plain.md using cache busting
             const response = await fetch(`/mindmap-plain.md?t=${Date.now()}`);
             if (!response.ok) {
                  if (response.status === 404) {
-                     // File not found is common initially, treat as empty
-                     console.log("mindmap-plain.md not found, editor will be empty.");
-                     setEditorContent('');
-                     setStatus(prev => ({ // Keep previous important status or set info
-                          message: prev.type === 'error' ? prev.message : 'No existing mindmap content found to load into editor.',
-                          type: prev.type === 'error' ? 'error' : 'info'
-                     }));
+                      console.log("mindmap-plain.md not found, editor will be empty.");
+                      setEditorContent('');
+                      setStatus(prev => ({
+                           message: prev.type === 'error' ? prev.message : 'No existing mindmap content found to load into editor.',
+                           type: prev.type === 'error' ? 'error' : 'info'
+                      }));
                  } else {
-                    throw new Error(`Failed to fetch plain markdown: ${response.statusText}`);
+                      throw new Error(`Failed to fetch plain markdown: ${response.statusText}`);
                  }
             } else {
                 const mdContent = await response.text();
                 setEditorContent(mdContent);
-                 setStatus(prev => ({ // Keep previous important status or set success
-                     message: prev.type === 'success' || prev.type === 'error' ? prev.message : 'Loaded mindmap content into editor.',
-                     type: prev.type === 'success' || prev.type === 'error' ? prev.type : 'success'
+                 setStatus(prev => ({
+                      message: prev.type === 'success' || prev.type === 'error' ? prev.message : 'Loaded mindmap content into editor.',
+                      type: prev.type === 'success' || prev.type === 'error' ? prev.type : 'success'
                  }));
             }
         } catch (err) {
@@ -129,7 +122,7 @@ const App = () => {
 
     // SAVE editor content (plain markdown) to server
     const handleSaveEditor = async () => {
-        const plainMdContent = editorContent; // Content from the textarea state
+        const plainMdContent = editorContent;
         if (!plainMdContent.trim()) {
             setStatus({ message: 'Editor is empty. Nothing to save.', type: 'info' });
             return;
@@ -141,7 +134,6 @@ const App = () => {
             const response = await fetch('/save-md', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Send the PLAIN markdown content from the editor state
                 body: JSON.stringify({ mdContent: plainMdContent }),
             });
             const data = await response.json();
@@ -154,7 +146,6 @@ const App = () => {
             setMindmapKey(Date.now()); // Trigger iframe refresh
             setStatus({ message: data.message || 'Editor content saved & mindmap view updated!', type: 'success' });
 
-
         } catch (err) {
             console.error('Save failed:', err);
             setStatus({ message: `Save failed: ${err.message}`, type: 'error' });
@@ -164,17 +155,22 @@ const App = () => {
     };
 
     // --- Effect Hook for Initial Load ---
-    // Load existing editor content and ensure iframe loads on component mount
     React.useEffect(() => {
         handleLoadEditor();
-        setMindmapKey(Date.now()); // Ensure iframe loads initial state correctly
-    }, []); // Empty dependency array = run once on mount
+        setMindmapKey(Date.now());
+    }, []);
 
     // --- Render ---
-    return (
-        // Use flexbox for side-by-side layout that fills viewport height
-        <div style={{ display: 'flex', height: '100vh', fontFamily: 'sans-serif' }}>
+    // Make sure the selectedModel state is updated if the provider changes and the old model isn't valid
+    React.useEffect(() => {
+        if (!llmOptions[selectedProvider].includes(selectedModel)) {
+            setSelectedModel(llmOptions[selectedProvider][0]);
+        }
+    }, [selectedProvider, selectedModel]);
 
+
+    return (
+        <div style={{ display: 'flex', height: '100vh', fontFamily: 'sans-serif' }}>
             {/* Left Panel: Controls & Editor */}
             <div style={{ width: '40%', minWidth: '450px', padding: '20px', borderRight: '1px solid #ccc', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                 <h1 style={{ flexShrink: 0 }}>Mindmap Generator & Editor</h1>
@@ -192,7 +188,8 @@ const App = () => {
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="modelSelect" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Model:</label>
                         <select id="modelSelect" value={selectedModel} onChange={handleModelChange} disabled={isLoading} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
-                            {llmOptions[selectedProvider].map(model => (<option key={model} value={model}>{model}</option>))}
+                             {/* Check if provider exists before mapping */}
+                            {llmOptions[selectedProvider] && llmOptions[selectedProvider].map(model => (<option key={model} value={model}>{model}</option>))}
                         </select>
                     </div>
                     {/* Conciseness Mode Selection */}
@@ -208,20 +205,20 @@ const App = () => {
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="wordCountInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Target Word Count (Optional):</label>
                         <input
-                            type="number" id="wordCountInput" name="wordCount" placeholder="e.g., 4000 (default: up to 5000)"
-                            value={wordCount} onChange={handleWordCountChange} disabled={isLoading} min="100" // Optional: basic validation
+                            type="number" id="wordCountInput" name="wordCount" placeholder="e.g., 4000 (default: model limit)"
+                            value={wordCount} onChange={handleWordCountChange} disabled={isLoading} min="100"
                             style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}
                         />
                     </div>
                     {/* Book Name Input */}
                     <div style={{ marginBottom: '15px' }}>
-                          <label htmlFor="bookNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Book Name:</label>
-                          <input type="text" id="bookNameInput" name="bookName" placeholder="e.g., Atomic Habits" value={bookName} onChange={(e) => setBookName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
+                         <label htmlFor="bookNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Book Name:</label>
+                         <input type="text" id="bookNameInput" name="bookName" placeholder="e.g., Atomic Habits" value={bookName} onChange={(e) => setBookName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
                     </div>
                     {/* Author Name Input */}
                     <div style={{ marginBottom: '15px' }}>
-                          <label htmlFor="authorNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Author Name:</label>
-                          <input type="text" id="authorNameInput" name="authorName" placeholder="e.g., James Clear" value={authorName} onChange={(e) => setAuthorName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
+                         <label htmlFor="authorNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Author Name:</label>
+                         <input type="text" id="authorNameInput" name="authorName" placeholder="e.g., James Clear" value={authorName} onChange={(e) => setAuthorName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
                     </div>
                     <button
                         type="submit"
@@ -239,24 +236,23 @@ const App = () => {
 
                 {/* Status Display */}
                  {status.message && (
-                     <div
-                         style={{
-                             padding: '12px', marginBottom: '15px', borderRadius: '4px', border: '1px solid', flexShrink: 0, // Prevent status shrinking
-                             borderColor: status.type === 'error' ? '#f5c6cb' : (status.type === 'success' ? '#c3e6cb' : '#bee5eb'),
-                             backgroundColor: status.type === 'error' ? '#f8d7da' : (status.type === 'success' ? '#d4edda' : '#d1ecf1'),
-                             color: status.type === 'error' ? '#721c24' : (status.type === 'success' ? '#155724' : '#0c5460'),
-                         }}
-                         className={`status-message ${status.type}`} // Optional class for more styling
-                     >
-                         {status.message}
-                     </div>
+                      <div
+                           style={{
+                                padding: '12px', marginBottom: '15px', borderRadius: '4px', border: '1px solid', flexShrink: 0,
+                                borderColor: status.type === 'error' ? '#f5c6cb' : (status.type === 'success' ? '#c3e6cb' : '#bee5eb'),
+                                backgroundColor: status.type === 'error' ? '#f8d7da' : (status.type === 'success' ? '#d4edda' : '#d1ecf1'),
+                                color: status.type === 'error' ? '#721c24' : (status.type === 'success' ? '#155724' : '#0c5460'),
+                           }}
+                           className={`status-message ${status.type}`}
+                      >
+                           {status.message}
+                      </div>
                  )}
 
                 <hr style={{ margin: '20px 0', flexShrink: 0 }}/>
 
                 {/* Editor Section */}
-                {/* Use flex-grow to make editor take remaining vertical space */}
-                <div className="edit-section" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' /* Ensure minimum height */ }}>
+                <div className="edit-section" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' }}>
                     <h2 style={{ flexShrink: 0, marginBottom: '10px' }}>Edit Mindmap Markdown (Plain Text)</h2>
                     <div className="edit-buttons" style={{ marginBottom: '10px', flexShrink: 0 }}>
                         <button
@@ -268,13 +264,12 @@ const App = () => {
                         </button>
                         <button
                             onClick={handleSaveEditor}
-                            disabled={isEditorSaving || isEditorLoading || !editorContent.trim()} // Disable if saving, loading, or empty
+                            disabled={isEditorSaving || isEditorLoading || !editorContent.trim()}
                             style={{ padding: '8px 12px', cursor: (isEditorSaving || isEditorLoading || !editorContent.trim()) ? 'not-allowed' : 'pointer', backgroundColor: (isEditorSaving || isEditorLoading) ? '#ccc' : '#28a745', color:'white', border:'none' }}
                         >
                             {isEditorSaving ? 'Saving...' : 'Save & Re-Convert'}
                         </button>
                     </div>
-                    {/* Textarea should grow to fill the edit-section */}
                     <div style={{ flexGrow: 1, display: 'flex' }}>
                         <textarea
                             id="md-editor"
@@ -287,8 +282,8 @@ const App = () => {
                                 boxSizing: 'border-box', padding: '10px',
                                 fontFamily: 'monospace', fontSize: '0.9em',
                                 border: '1px solid #ccc', borderRadius: '4px',
-                                flexGrow: 1, // Take available vertical space in its container
-                                resize: 'none' // Disable manual resize handle if desired
+                                flexGrow: 1,
+                                resize: 'none'
                             }}
                         />
                     </div>
@@ -296,21 +291,16 @@ const App = () => {
             </div>
 
             {/* Right Panel: Mindmap View (Iframe) */}
-            <div style={{ width: '60%', height: '100vh', overflow: 'hidden', borderLeft: '1px solid #eee' /* Optional visual separator */ }}>
-                 {/* Iframe displaying the mindmap */}
+            <div style={{ width: '60%', height: '100vh', overflow: 'hidden', borderLeft: '1px solid #eee' }}>
                  <iframe
-                    // Use the key prop with the timestamp to force React to re-create the iframe on change
-                    key={mindmapKey}
-                    // Also include the timestamp in src as a query parameter for robust cache busting
-                    src={`/mindmap.html?v=${mindmapKey}`}
-                    title="Interactive Mindmap Preview"
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                    // sandbox="allow-scripts allow-same-origin" // Consider security implications if uncommenting
+                      key={mindmapKey}
+                      src={`/mindmap.html?v=${mindmapKey}`}
+                      title="Interactive Mindmap Preview"
+                      style={{ width: '100%', height: '100%', border: 'none' }}
                  >
-                     Your browser doesn't support iframes. The mindmap cannot be displayed here.
+                      Your browser doesn't support iframes. The mindmap cannot be displayed here.
                  </iframe>
             </div>
-
         </div>
     );
 };

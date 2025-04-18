@@ -5,3 +5,7 @@ node_modules
 *.vsix
 .vscode-test-web/
 .vscode/settings.json
+output.html
+mindmap.html
+/webapp/mindmap.html
+/webapp/.env

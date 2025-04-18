@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Sign Up - Mindmap App</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.6; padding: 20px; max-width: 500px; margin: 40px auto; background-color: #f4f4f4; }
+        .container { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; color: #333; margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
+        input[type="email"], input[type="password"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button, .google-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            text-align: center;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+        button[type="submit"] { background-color: #007bff; color: white; }
+        button[type="submit"]:hover { background-color: #0056b3; }
+        .google-btn { background-color: #db4437; color: white; }
+        .google-btn:hover { background-color: #c33d2e; }
+        .or-divider { text-align: center; margin: 20px 0; color: #777; }
+        .error-message { color: #dc3545; background-color: #f8d7da; border: 1px solid #f5c6cb; padding: 10px; border-radius: 4px; margin-bottom: 15px; text-align: center; }
+        .toggle-form { text-align: center; margin-top: 20px; }
+        .toggle-form button { background: none; border: none; color: #007bff; cursor: pointer; text-decoration: underline; padding: 0; }
+        #signup-form { display: none; } /* Hidden by default */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login-section">
+            <h1>Login</h1>
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <form id="login-form">
+                <div>
+                    <label for="login-email">Email:</label>
+                    <input type="email" id="login-email" name="username" required>
+                </div>
+                <div>
+                    <label for="login-password">Password:</label>
+                    <input type="password" id="login-password" name="password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+
+            <div class="or-divider">OR</div>
+
+            <a href="/auth/google" class="google-btn">Login with Google</a>
+
+             <div class="toggle-form">
+                Don't have an account? <button type="button" onclick="showSignup()">Sign Up</button>
+            </div>
+        </div>
+
+        <div id="signup-section" style="display: none;">
+            <h1>Sign Up</h1>
+             <div id="signupErrorMessage" class="error-message" style="display: none;"></div>
+
+            <form id="signup-form">
+                 <div>
+                    <label for="signup-name">Name:</label>
+                    <input type="text" id="signup-name" name="name" required>
+                </div>
+                <div>
+                    <label for="signup-email">Email:</label>
+                    <input type="email" id="signup-email" name="username" required>
+                </div>
+                <div>
+                    <label for="signup-password">Password:</label>
+                    <input type="password" id="signup-password" name="password" required>
+                </div>
+                <button type="submit">Sign Up</button>
+            </form>
+
+             <div class="toggle-form">
+                Already have an account? <button type="button" onclick="showLogin()">Login</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/auth/login.js"></script>
+</body>
+</html>

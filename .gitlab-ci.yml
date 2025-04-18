@@ -1,0 +1,47 @@
+# .gitlab-ci.yml - Placed in the ROOT directory
+
+image: node:18 # Use a Node.js image compatible with your project (Node 18+ needed for fetch in convert.js)
+
+stages:
+  - deploy
+
+deploy_webapp:
+  stage: deploy
+  # Optional: Only run on changes to the main branch or specific directories
+  # rules:
+  #   - if: '$CI_COMMIT_BRANCH == "main" || $CI_COMMIT_BRANCH == "master"'
+  #     changes:
+  #       - webapp/**/* # Trigger only if webapp files change
+  #       - .gitlab-ci.yml
+  script:
+    - echo "Deploying webapp..."
+    - cd webapp # Navigate into the webapp directory
+    - echo "Current directory: $(pwd)"
+    - echo "Listing files: $(ls -la)"
+    - echo "Node version: $(node -v)"
+    - echo "NPM version: $(npm -v)"
+    - echo "Installing dependencies using npm ci..."
+    - npm ci # Use 'ci' for faster, deterministic installs based on package-lock.json
+    - echo "Dependencies installed."
+    # --- Deployment Action ---
+    # The following command STARTS the server, but it will only run for the duration of the CI job.
+    # For persistent deployment, you need a runner configured to host Node.js apps
+    # (e.g., using pm2, Docker on a server, Kubernetes, etc.)
+    # Option 1: Run directly (for testing CI step, NOT persistent)
+    # - node server.js
+    # Option 2: Use PM2 (if installed on your runner/server)
+    # - npm install -g pm2 # Or ensure pm2 is pre-installed
+    # - pm2 start server.js --name mindmap-webapp --update-env # Starts or restarts the app
+    # Option 3: Build & Push Docker image (Requires Dockerfile and GitLab Container Registry setup)
+    # See Dockerfile example below. Uncomment and adapt if using Docker.
+    # - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    # - docker build -t $CI_REGISTRY_IMAGE:latest .
+    # - docker push $CI_REGISTRY_IMAGE:latest
+    # --- Choose ONE deployment strategy appropriate for your runner/hosting ---
+    - echo "Build complete. Runner needs to handle persistent execution."
+    - echo "To run manually: cd webapp && node server.js"
+    - npm install -g pm2 # Or ensure it's pre-installed on the runner machine
+    - pm2 restart server.js --name mindmap-webapp || pm2 start server.js --name mindmap-webapp
+  environment:
+    name: production # Optional: Define environment
+    # url: http://your-deployment-url.com # Optional: Link to deployed app

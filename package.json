@@ -148,9 +148,9 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
     "lodash.debounce": "^4.0.8",
-    "markmap-common": "0.18.9",
-    "markmap-lib": "0.18.11",
-    "markmap-render": "0.18.10",
+    "markmap-common": "^0.18.9",
+    "markmap-lib": "^0.18.11",
+    "markmap-render": "^0.18.10",
     "markmap-toolbar": "0.18.10",
     "markmap-view": "0.18.10",
     "read-package-up": "^11.0.0",
@@ -165,5 +165,11 @@
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.2",
+    "node-fetch": "^3.3.2",
+    "openai": "^4.89.0"
   }
 }

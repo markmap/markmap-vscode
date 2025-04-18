@@ -1,0 +1,25 @@
+/* webapp/public/App.css */
+
+/* Add styling for the input fields if needed */
+input[type="text"] {
+    width: 100%; /* Ensure full width */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; /* Include padding and border */
+    font-size: 1rem;
+    margin-bottom: 15px; /* Consistent margin */
+}
+
+/* Style labels */
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Adjust form layout if necessary */
+form div { /* Target the divs wrapping label/input */
+    margin-bottom: 15px;
+}

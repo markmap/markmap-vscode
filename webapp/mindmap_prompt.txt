@@ -1,0 +1,73 @@
+**CRITICAL OUTPUT REQUIREMENT:**  
+Your entire response MUST consist of one markdown code block. The output MUST begin *exactly* with:
+```markdown
+
+and end *exactly* with:
+
+```
+
+No extra characters, text, or commentary are allowed before the opening fence or after the closing fence.
+
+**Task:**  
+- Provide a comprehensive and visually rich summary of the book "${bookName}" by "${authorName}". The summary should empower a reader with limited time to grasp the main ideas and insights from the book through a multi-layered markdown format designed to boost readability and memory retention.
+
+
+**Content & Style Guidelines:**  
+- **Visual Structure:** Use multiple markdown elements to organize your content clearly.  
+- **Comprehensive Coverage:** Include key points, detailed explanations, and direct quotations where they reinforce an idea.  
+- **No Extra Non-Markdown Text:** The response must contain only the markdown content enclosed within the code fences.
+- Avoid using ">" in your markdown especially for the qoutes.
+- Avoid using links of images.
+
+**Valid Markdown Components Examples:**  
+- **Headings:**  
+  ```markdown
+  # Main Title  
+  ## Section Title  
+  ### Subsection Title  
+  ```  
+- **Bullet and Ordered Lists:**  
+  ```markdown
+  - Bullet point 1  
+  - Bullet point 2
+  
+  1. First item  
+  2. Second item  
+  ```  
+- **Tables:**  
+  ```markdown
+  | Feature     | Description              |
+  |-------------|--------------------------|
+  | Readability | High visual clarity      |
+  | Summary     | Comprehensive content    |
+  ```  
+- **Inline Code and Code Blocks:**  
+  ```markdown
+  Use the inline code like `example code`.
+  
+  ```js
+  console.log("Hello, World!");
+  ```
+  ```  
+- **Hyperlinks and Images:**  
+  ```markdown
+  [Visit Markmap](https://markmap.js.org/)
+  
+  ![](https://markmap.js.org/favicon.png)
+  ```  
+- **Emojis and Icons:**  
+  ```markdown
+  - Key insight 🚀  
+  - Remember this ⭐  
+  ```  
+
+**Final Output Structure Reminder:**  
+Your final output must strictly adhere to the following format (without any additional text):
+
+```markdown
+<Your detailed, visually rich markdown summary content goes here>
+```
+
+Before generating your response, double-check that the output contains no text outside the opening ```markdown and closing ``` fences.
+
+** Important Consideration**: ${concisenessNote}

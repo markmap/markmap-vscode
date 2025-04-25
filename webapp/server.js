@@ -32,7 +32,7 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
 
 // --- Routes ---
 
-// GENERATE Mindmap from LLM
+// GENERATE Mindmap from LLM (No changes needed in this route logic itself)
 app.post('/generate', async (req, res) => {
     try {
         const { bookName, authorName, provider, model, conciseness, wordCount } = req.body;
@@ -41,6 +41,11 @@ app.post('/generate', async (req, res) => {
         if (!bookName || !authorName || !provider) {
             console.error('Error: Missing required fields:', { bookName, authorName, provider });
             return res.status(400).json({ success: false, error: 'Missing bookName, authorName, or provider.' });
+        }
+        // *** CHANGE: Ensure model is provided, especially if frontend logic fails ***
+        if (!model) {
+             console.error('Error: Missing required field: model');
+             return res.status(400).json({ success: false, error: 'Missing model selection.' });
         }
 
         // --- Construct the dynamic conciseness note ---
@@ -66,6 +71,7 @@ app.post('/generate', async (req, res) => {
             provider,
             model,
             finalPrompt
+            // No options passed here, so llmService will use config defaults
         );
         // --- End LLM Service Call ---
 
@@ -93,10 +99,10 @@ app.post('/generate', async (req, res) => {
             }
             console.log('LLM output correctly fenced. Extracted plain content.');
         } else {
-            console.warn(`WARN: LLM output did not strictly start/end with markdown fences. Using raw output.`);
-            plainMarkdownContent = llmMarkdownOutput;
-            const startFence = trimmedOutput.match(fenceStartPattern) ? trimmedOutput.match(fenceStartPattern)[0] : '```markdown';
-            fencedMarkdownContent = `${startFence}\n${llmMarkdownOutput.trim()}\n${fenceEnd}`;
+            console.warn(`WARN: LLM output did not strictly start/end with markdown fences. Using raw output and adding fences.`);
+            plainMarkdownContent = llmMarkdownOutput.trim(); // Use the trimmed output directly
+            // Add fences manually
+            fencedMarkdownContent = `\`\`\`markdown\n${plainMarkdownContent}\n\`\`\``;
         }
         const mindmapMdPath = path.join(__dirname, 'mindmap.md');
         const mindmapPlainMdPath = path.join(__dirname, 'mindmap-plain.md');
@@ -114,27 +120,35 @@ app.post('/generate', async (req, res) => {
 
     } catch (err) {
         console.error('Error in /generate route:', err.stack || err);
-        res.status(500).json({ success: false, error: `Generation failed: ${err.message}` });
+        // Ensure a user-friendly error message is sent back
+        const userErrorMessage = err.message.startsWith('API call to') || err.message.startsWith('Unsupported LLM provider') || err.message.startsWith('LLM Service returned')
+            ? err.message
+            : `Generation failed due to an internal server error. Check server logs.`;
+        res.status(500).json({ success: false, error: userErrorMessage });
     }
 });
 
-// SAVE Edited Markdown from Editor
+// SAVE Edited Markdown from Editor (No changes needed here)
 app.post('/save-md', async (req, res) => {
-    // (This route handler remains the same as before)
     try {
         const { mdContent } = req.body;
         if (mdContent === undefined || mdContent === null) {
             return res.status(400).json({ success: false, error: 'No mdContent provided' });
         }
         console.log("Received plain markdown content from editor for saving.");
-        const mdWithFences = "```markdown\n" + mdContent.trim() + "\n```";
+        // Ensure content is trimmed before adding fences
+        const trimmedMdContent = mdContent.trim();
+        const mdWithFences = "```markdown\n" + trimmedMdContent + "\n```";
         const mindmapMdPath = path.join(__dirname, 'mindmap.md');
         const mindmapPlainMdPath = path.join(__dirname, 'mindmap-plain.md');
         const mindmapHtmlPath = path.join(__dirname, 'mindmap.html');
-        fs.writeFileSync(mindmapPlainMdPath, mdContent, 'utf8');
+        // Save the trimmed plain content
+        fs.writeFileSync(mindmapPlainMdPath, trimmedMdContent, 'utf8');
         console.log(`Saved plain markdown to: ${mindmapPlainMdPath}`);
+        // Save the fenced content
         fs.writeFileSync(mindmapMdPath, mdWithFences, 'utf8');
         console.log(`Saved fenced markdown to: ${mindmapMdPath}`);
+
         await runConvertScript('mindmap.md', 'mindmap.html');
         console.log(`Regenerated mindmap HTML: ${mindmapHtmlPath}`);
         res.json({ success: true, message: 'Markdown saved and mindmap.html regenerated!' });
@@ -144,9 +158,8 @@ app.post('/save-md', async (req, res) => {
     }
 });
 
-// SERVE the generated mindmap.html
+// SERVE the generated mindmap.html (No changes needed here)
 app.get('/mindmap.html', (req, res) => {
-    // (This route handler remains the same as before)
     const mindmapPath = path.join(__dirname, 'mindmap.html');
     fs.access(mindmapPath, fs.constants.R_OK, (err) => {
         if (err) {
@@ -162,15 +175,14 @@ app.get('/mindmap.html', (req, res) => {
     });
 });
 
-// SERVE the plain markdown content for the editor
+// SERVE the plain markdown content for the editor (No changes needed here)
 app.get('/mindmap-plain.md', (req, res) => {
-    // (This route handler remains the same as before)
      const plainMdPath = path.join(__dirname, 'mindmap-plain.md');
      fs.access(plainMdPath, fs.constants.R_OK, (err) => {
         if (err) {
             console.warn(`Plain mindmap file not found: ${plainMdPath}. Sending empty.`);
             res.setHeader('Content-Type', 'text/markdown; charset=utf-8');
-            res.status(404).send('');
+            res.status(404).send(''); // Send empty string with 404 if not found
         } else {
             console.log(`Serving plain markdown file: ${plainMdPath}`);
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
@@ -183,9 +195,8 @@ app.get('/mindmap-plain.md', (req, res) => {
 });
 
 
-// --- Helper Function ---
+// --- Helper Function --- (No changes needed here)
 function runConvertScript(inputFile, outputFile) {
-    // (This helper function remains the same as before)
     return new Promise((resolve, reject) => {
         const convertScriptPath = path.resolve(__dirname, 'convert.js');
         const inputFilePath = path.resolve(__dirname, inputFile);
@@ -197,9 +208,9 @@ function runConvertScript(inputFile, outputFile) {
         }
         console.log(`Running convert script: node "${path.basename(convertScriptPath)}" "${path.basename(inputFilePath)}" "${path.basename(outputFilePath)}"`);
         const child = spawn('node', [convertScriptPath, inputFilePath, outputFilePath], {
-            stdio: 'inherit',
-            cwd: __dirname,
-            shell: false
+            stdio: 'inherit', // Show output/errors from convert.js
+            cwd: __dirname,   // Ensure correct working directory
+            shell: false      // Recommended for security and consistency
         });
         child.on('error', (error) => {
             console.error('Failed to start convert.js process:', error);

@@ -4,7 +4,7 @@ const OpenAI = require('openai');
 const deepSeekConfig = require('../config/llm/deepseek.config');
 const openAIConfig = require('../config/llm/openai.config');
 // *** CHANGE: Require the renamed google config ***
-const googleConfig = require('../config/llm/google.config');
+const googleConfig = require('../config/llm/google.config'); // Changed from gemini.config.js
 
 // --- Initialize Clients ---
 
@@ -28,14 +28,14 @@ if (deepSeekConfig.apiKey) {
     console.warn("LLM Service: DeepSeek client not initialized due to missing API key.");
 }
 
-// *** CHANGE: Initialize Google Client using OpenAI SDK ***
+// *** CHANGE: Initialize Google Client using OpenAI SDK structure ***
 let googleClientInstance;
 if (googleConfig.apiKey) {
     googleClientInstance = new OpenAI({
-        apiKey: googleConfig.apiKey, // Uses GEMINI_API_KEY from .env
-        baseURL: googleConfig.baseURL, // Uses the specific Google endpoint
+        apiKey: googleConfig.apiKey, // Uses GEMINI_API_KEY from .env via google.config.js
+        baseURL: googleConfig.baseURL, // Uses the specific Google endpoint from google.config.js
     });
-    console.log("LLM Service: Google client initialized using OpenAI compatibility.")
+    console.log("LLM Service: Google client initialized using OpenAI compatibility layer.")
 } else {
     console.warn("LLM Service: Google client not initialized due to missing GEMINI_API_KEY.");
 }
@@ -57,7 +57,7 @@ async function generateMindmapContent(provider, model, prompt, options = {}) {
 
     let client;
     let config;
-    // *** CHANGE: Updated system message slightly ***
+    // System message can remain generic or be slightly adapted
     let systemMessage = 'You are a helpful assistant specializing in creating detailed book summary mindmaps in Markdown format, strictly adhering to the output format requirements provided in the user prompt.';
 
     switch (provider) {
@@ -75,9 +75,10 @@ async function generateMindmapContent(provider, model, prompt, options = {}) {
         case 'Google':
             if (!googleClientInstance) throw new Error("Google client is not initialized. Check GEMINI_API_KEY.");
             client = googleClientInstance;
-            config = googleConfig;
+            config = googleConfig; // Use the loaded googleConfig
             break;
         default:
+            // *** CHANGE: This is where the original error likely came from ***
             throw new Error(`Unsupported LLM provider: ${provider}`);
     }
 
@@ -94,9 +95,8 @@ async function generateMindmapContent(provider, model, prompt, options = {}) {
     };
 
     // --- Conditionally add TEMPERATURE ---
-    // Check if it's the specific o4-mini model which restricts temperature
-    if (!(provider === 'OpenAI' && finalModel === 'o4-mini')) { // Assuming o4-mini is still relevant
-        // For all models *except* o4-mini, add temperature if it's defined
+    // Check if it's the specific o4-mini model which restricts temperature (keep this logic)
+    if (!(provider === 'OpenAI' && finalModel === 'o4-mini')) { // Assuming o4-mini is still relevant name
         if (finalParams.temperature !== undefined && finalParams.temperature !== null) {
             apiPayloadParams.temperature = finalParams.temperature;
         }
@@ -107,26 +107,25 @@ async function generateMindmapContent(provider, model, prompt, options = {}) {
 
 
     // --- Conditionally add MAX_TOKENS or MAX_COMPLETION_TOKENS ---
-    // Check if it's the specific o4-mini model which uses a different token parameter name
+    // Check if it's the specific o4-mini model which uses a different token parameter name (keep this logic)
     if (provider === 'OpenAI' && finalModel === 'o4-mini') {
         console.log(`LLM Service: Adjusting token param for o4-mini. Using 'max_completion_tokens'.`);
         if (finalParams.max_tokens !== undefined && finalParams.max_tokens !== null) {
             apiPayloadParams.max_completion_tokens = finalParams.max_tokens; // Use the correct parameter name
         }
     }
-    // *** CHANGE: Potentially adjust token handling for Google/Gemini if needed ***
-    // If Gemini's OpenAI endpoint doesn't support 'max_tokens', remove or adjust this 'else' block
-    // For now, assuming it might work like other compatible APIs:
-    else if (provider !== 'Google') { // Example: Exclude Google IF max_tokens is problematic
+    // *** CHANGE: Handle max_tokens for Google provider carefully ***
+    // Check if max_tokens is defined in finalParams AND if the provider isn't Google (as it might not be supported/needed)
+    else if (provider !== 'Google' && finalParams.max_tokens !== undefined && finalParams.max_tokens !== null) {
          // For other models (DeepSeek, standard OpenAI), use max_tokens if available
-         if (finalParams.max_tokens !== undefined && finalParams.max_tokens !== null) {
-            apiPayloadParams.max_tokens = finalParams.max_tokens;
-         }
-    } else {
-        console.log(`LLM Service: Note - 'max_tokens' handling for Google provider via OpenAI compatibility layer might vary. Check API docs if issues arise. Currently NOT sending max_tokens.`);
-        // If you find 'max_tokens' *is* supported by the Gemini endpoint, you can add it back here:
+         apiPayloadParams.max_tokens = finalParams.max_tokens;
+    } else if (provider === 'Google') {
+        // Optionally add max_tokens for Google if you confirm it works via the compatibility endpoint
         // if (finalParams.max_tokens !== undefined && finalParams.max_tokens !== null) {
         //    apiPayloadParams.max_tokens = finalParams.max_tokens;
+        //    console.log(`LLM Service: Including 'max_tokens' for Google provider.`);
+        // } else {
+           console.log(`LLM Service: Not including 'max_tokens' parameter for Google provider (may be unsupported/implicit via compatibility endpoint).`);
         // }
     }
     // --- End Token Handling ---
@@ -157,7 +156,7 @@ async function generateMindmapContent(provider, model, prompt, options = {}) {
         // Add else if block here for providers with different API call structures if needed later
 
     } catch (error) {
-        // (Error logging remains the same as previous version)
+        // --- CHANGE: Update error logging for Google provider ---
         let errorMessage = error.message;
         let statusCode = error.status || 'N/A';
 
@@ -170,9 +169,12 @@ async function generateMindmapContent(provider, model, prompt, options = {}) {
             console.error(`LLM Service Error (APIError): Provider ${provider}, Status ${statusCode}, Code ${error.code}, Type: ${error.type}, Message: ${error.message}`);
         } else {
             console.error(`LLM Service Error (${provider} - ${finalModel}): Status ${statusCode}, Message: ${error.message}`);
+            // Explicitly mention GEMINI_API_KEY for Google 401 errors
             if (statusCode === 401) errorMessage = `Authentication error (Provider: ${provider}). Check API Key (${provider === 'Google' ? 'GEMINI_API_KEY' : provider.toUpperCase() + '_API_KEY'}).`;
             else if (statusCode === 429) errorMessage = `Rate limit exceeded or quota reached (Provider: ${provider}).`;
             else if (statusCode === 400 && error.message.includes('model not found')) errorMessage = `Invalid or unavailable model selected for ${provider}: ${finalModel}`;
+            // Add specific check for Google 400 if needed, e.g., unsupported features via compatibility layer
+            else if (provider === 'Google' && statusCode === 400) errorMessage = `Bad request (Status 400, Provider: Google). Check parameters, model compatibility, or feature support via the OpenAI endpoint. Original: ${error.message}`;
             else if (statusCode === 400) errorMessage = `Bad request (Status 400, Provider: ${provider}). Check parameters or model compatibility. Original: ${error.message}`;
         }
 

@@ -15,24 +15,30 @@ const App = () => {
     const [mindmapKey, setMindmapKey] = React.useState(Date.now()); // Initialize with timestamp
 
     // --- LLM Selection State ---
+    // *** CHANGE: Add Google provider and its models ***
     const llmOptions = {
         DeepSeek: ['deepseek-chat', 'deepseek-reasoner'],
-        // --- CHANGE HERE: Updated the OpenAI model names ---
-        OpenAI: ['o4-mini', 'gpt-4.1-mini'], // Was ['gpt-4o-mini', 'gpt-4o']
+        OpenAI: ['o4-mini', 'gpt-4.1-mini'], // Kept previous OpenAI models
         Google: [ // Add the new provider key
             "gemini-2.5-flash-preview-04-17", // Add the specific model names
             "gemini-2.5-pro-exp-03-25"
         ]
     };
-    const [selectedProvider, setSelectedProvider] = React.useState(Object.keys(llmOptions)[0]); // Default to first provider
-    const [selectedModel, setSelectedModel] = React.useState(llmOptions[selectedProvider][0]); // Default to first model of provider
+    // Ensure default provider exists, default to first if not
+    const defaultProvider = Object.keys(llmOptions)[0];
+    const [selectedProvider, setSelectedProvider] = React.useState(defaultProvider);
+    // Ensure default model exists for the default provider
+    const defaultModel = llmOptions[defaultProvider]?.[0] || '';
+    const [selectedModel, setSelectedModel] = React.useState(defaultModel);
 
     // --- Handlers ---
 
     const handleProviderChange = (e) => {
         const newProvider = e.target.value;
         setSelectedProvider(newProvider);
-        setSelectedModel(llmOptions[newProvider][0]); // Reset model to the first available for the new provider
+        // *** CHANGE: Ensure the default model is selected correctly for the new provider ***
+        const newDefaultModel = llmOptions[newProvider]?.[0] || '';
+        setSelectedModel(newDefaultModel);
     };
 
     const handleModelChange = (e) => {
@@ -54,6 +60,11 @@ const App = () => {
             setStatus({ message: 'Please enter both Book Name and Author Name.', type: 'error' });
             return;
         }
+        // *** CHANGE: Ensure a model is actually selected, especially after provider change ***
+        if (!selectedModel) {
+            setStatus({ message: `Please select a model for the ${selectedProvider} provider.`, type: 'error' });
+            return;
+        }
         setIsLoading(true);
         setStatus({ message: `Generating mindmap using ${selectedProvider} (${selectedModel})... Please wait.`, type: 'info' });
 
@@ -73,6 +84,7 @@ const App = () => {
             const data = await response.json();
 
             if (!response.ok || !data.success) {
+                // *** CHANGE: Display backend error message directly ***
                 throw new Error(data.error || `Server error: ${response.statusText}`);
             }
 
@@ -83,13 +95,14 @@ const App = () => {
 
         } catch (err) {
             console.error('Generation failed:', err);
+            // Display the error message caught from the fetch or backend
             setStatus({ message: `Generation failed: ${err.message}`, type: 'error' });
         } finally {
             setIsLoading(false);
         }
     };
 
-    // LOAD plain markdown content into editor
+    // LOAD plain markdown content into editor (No changes needed here)
     const handleLoadEditor = async () => {
         setIsEditorLoading(true);
         try {
@@ -122,7 +135,7 @@ const App = () => {
         }
     };
 
-    // SAVE editor content (plain markdown) to server
+    // SAVE editor content (plain markdown) to server (No changes needed here)
     const handleSaveEditor = async () => {
         const plainMdContent = editorContent;
         if (!plainMdContent.trim()) {
@@ -156,19 +169,27 @@ const App = () => {
         }
     };
 
-    // --- Effect Hook for Initial Load ---
+    // --- Effect Hook for Initial Load --- (No changes needed here)
     React.useEffect(() => {
         handleLoadEditor();
         setMindmapKey(Date.now());
     }, []);
 
-    // --- Render ---
+    // --- Effect Hook to Ensure Model Selection is Valid ---
     // Make sure the selectedModel state is updated if the provider changes and the old model isn't valid
     React.useEffect(() => {
-        if (!llmOptions[selectedProvider].includes(selectedModel)) {
-            setSelectedModel(llmOptions[selectedProvider][0]);
+        // Check if the current provider exists and has models
+        if (llmOptions[selectedProvider] && llmOptions[selectedProvider].length > 0) {
+            // Check if the currently selected model is NOT in the list for the selected provider
+            if (!llmOptions[selectedProvider].includes(selectedModel)) {
+                // If invalid, set the model to the first one available for the new provider
+                setSelectedModel(llmOptions[selectedProvider][0]);
+            }
+        } else {
+             // If the provider has no models listed (error case), clear the selected model
+             setSelectedModel('');
         }
-    }, [selectedProvider, selectedModel]);
+    }, [selectedProvider, selectedModel]); // Rerun when provider or model changes
 
 
     return (
@@ -182,6 +203,7 @@ const App = () => {
                     {/* LLM Provider Selection */}
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="providerSelect" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LLM Provider:</label>
+                        {/* *** CHANGE: Ensure dropdown maps over the updated llmOptions keys *** */}
                         <select id="providerSelect" value={selectedProvider} onChange={handleProviderChange} disabled={isLoading} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
                             {Object.keys(llmOptions).map(provider => (<option key={provider} value={provider}>{provider}</option>))}
                         </select>
@@ -189,12 +211,17 @@ const App = () => {
                     {/* LLM Model Selection */}
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="modelSelect" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Model:</label>
-                        <select id="modelSelect" value={selectedModel} onChange={handleModelChange} disabled={isLoading} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
-                             {/* Check if provider exists before mapping */}
-                            {llmOptions[selectedProvider] && llmOptions[selectedProvider].map(model => (<option key={model} value={model}>{model}</option>))}
+                        {/* *** CHANGE: Ensure dropdown maps models for the *selected* provider, handling potential empty list *** */}
+                        <select id="modelSelect" value={selectedModel} onChange={handleModelChange} disabled={isLoading || !llmOptions[selectedProvider] || llmOptions[selectedProvider].length === 0} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
+                            {/* Check if provider exists and has models before mapping */}
+                            {llmOptions[selectedProvider] && llmOptions[selectedProvider].length > 0 ? (
+                                llmOptions[selectedProvider].map(model => (<option key={model} value={model}>{model}</option>))
+                            ) : (
+                                <option value="" disabled>No models available</option>
+                            )}
                         </select>
                     </div>
-                    {/* Conciseness Mode Selection */}
+                    {/* Conciseness Mode Selection (No changes needed) */}
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="concisenessSelect" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Summary Style:</label>
                         <select id="concisenessSelect" value={selectedConciseness} onChange={handleConcisenessChange} disabled={isLoading} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
@@ -203,7 +230,7 @@ const App = () => {
                             <option value="comprehensive">Comprehensive</option>
                         </select>
                     </div>
-                    {/* Word Count Input */}
+                    {/* Word Count Input (No changes needed) */}
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="wordCountInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Target Word Count (Optional):</label>
                         <input
@@ -212,22 +239,22 @@ const App = () => {
                             style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}
                         />
                     </div>
-                    {/* Book Name Input */}
+                    {/* Book Name Input (No changes needed) */}
                     <div style={{ marginBottom: '15px' }}>
                          <label htmlFor="bookNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Book Name:</label>
                          <input type="text" id="bookNameInput" name="bookName" placeholder="e.g., Atomic Habits" value={bookName} onChange={(e) => setBookName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
                     </div>
-                    {/* Author Name Input */}
+                    {/* Author Name Input (No changes needed) */}
                     <div style={{ marginBottom: '15px' }}>
                          <label htmlFor="authorNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Author Name:</label>
                          <input type="text" id="authorNameInput" name="authorName" placeholder="e.g., James Clear" value={authorName} onChange={(e) => setAuthorName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
                     </div>
                     <button
                         type="submit"
-                        disabled={isLoading || !bookName.trim() || !authorName.trim()}
+                        disabled={isLoading || !bookName.trim() || !authorName.trim() || !selectedModel} // Also disable if no model is selected
                         style={{
                             padding: '10px 15px',
-                            cursor: (isLoading || !bookName.trim() || !authorName.trim()) ? 'not-allowed' : 'pointer',
+                            cursor: (isLoading || !bookName.trim() || !authorName.trim() || !selectedModel) ? 'not-allowed' : 'pointer',
                             backgroundColor: isLoading ? '#ccc' : '#007bff',
                             color: 'white', border: 'none', borderRadius: '4px', fontSize: '1rem'
                         }}
@@ -236,7 +263,7 @@ const App = () => {
                     </button>
                 </form>
 
-                {/* Status Display */}
+                {/* Status Display (No changes needed) */}
                  {status.message && (
                       <div
                            style={{
@@ -253,7 +280,7 @@ const App = () => {
 
                 <hr style={{ margin: '20px 0', flexShrink: 0 }}/>
 
-                {/* Editor Section */}
+                {/* Editor Section (No changes needed) */}
                 <div className="edit-section" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' }}>
                     <h2 style={{ flexShrink: 0, marginBottom: '10px' }}>Edit Mindmap Markdown (Plain Text)</h2>
                     <div className="edit-buttons" style={{ marginBottom: '10px', flexShrink: 0 }}>
@@ -292,7 +319,7 @@ const App = () => {
                 </div>
             </div>
 
-            {/* Right Panel: Mindmap View (Iframe) */}
+            {/* Right Panel: Mindmap View (Iframe) (No changes needed) */}
             <div style={{ width: '60%', height: '100vh', overflow: 'hidden', borderLeft: '1px solid #eee' }}>
                  <iframe
                       key={mindmapKey}
@@ -307,7 +334,7 @@ const App = () => {
     );
 };
 
-// --- Mount the App ---
+// --- Mount the App --- (No changes needed here)
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
 root.render(<App />);

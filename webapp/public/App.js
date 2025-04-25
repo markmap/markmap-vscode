@@ -18,9 +18,11 @@ const App = () => {
     const llmOptions = {
         DeepSeek: ['deepseek-chat', 'deepseek-reasoner'],
         // --- CHANGE HERE: Updated the OpenAI model names ---
-        OpenAI: ['o4-mini', 'gpt-4.1-mini'] // Was ['gpt-4o-mini', 'gpt-4o']
-        // ----------------------------------------------------
-        // Add Gemini models here later
+        OpenAI: ['o4-mini', 'gpt-4.1-mini'], // Was ['gpt-4o-mini', 'gpt-4o']
+        Google: [ // Add the new provider key
+            "gemini-2.5-flash-preview-04-17", // Add the specific model names
+            "gemini-2.5-pro-exp-03-25"
+        ]
     };
     const [selectedProvider, setSelectedProvider] = React.useState(Object.keys(llmOptions)[0]); // Default to first provider
     const [selectedModel, setSelectedModel] = React.useState(llmOptions[selectedProvider][0]); // Default to first model of provider

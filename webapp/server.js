@@ -229,5 +229,8 @@ app.listen(PORT, () => {
     if (!process.env.OPENAI_API_KEY) {
        console.warn('WARN: OPENAI_API_KEY environment variable is not set. OpenAI requests will fail.');
     }
-    // Add Gemini warning when relevant
+    // *** CHANGE: Add Gemini/Google warning ***
+    if (!process.env.GEMINI_API_KEY) {
+       console.warn('WARN: GEMINI_API_KEY environment variable is not set. Google provider requests will fail.');
+    }
 });

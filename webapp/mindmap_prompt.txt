@@ -13,6 +13,7 @@ No extra characters, text, or commentary are allowed before the opening fence or
 
 
 **Content & Style Guidelines:**  
+- All indentation should start with no space from the left
 - **Visual Structure:** Use multiple markdown elements to organize your content clearly.  
 - **Comprehensive Coverage:** Include key points, detailed explanations, and direct quotations where they reinforce an idea.  
 - **No Extra Non-Markdown Text:** The response must contain only the markdown content enclosed within the code fences.

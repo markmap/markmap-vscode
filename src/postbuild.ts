@@ -1,10 +1,10 @@
-import { createWriteStream } from 'fs';
-import { mkdir, stat } from 'fs/promises';
+import { createWriteStream } from 'node:fs';
+import { mkdir, stat } from 'node:fs/promises';
 import { extractAssets } from 'markmap-common';
 import { Transformer } from 'markmap-lib';
 import { baseJsPaths } from 'markmap-render';
-import { dirname, resolve } from 'path';
-import { pipeline } from 'stream/promises';
+import { dirname, resolve } from 'node:path';
+import { pipeline } from 'node:stream/promises';
 import { ASSETS_PREFIX, localProvider, toolbarAssets } from './util';
 
 const providerName = 'local-hook';

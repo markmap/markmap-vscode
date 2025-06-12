@@ -16,18 +16,18 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
       - name: Install deps
         run: pnpm i
       - name: Publish to Open VSX Registry
         continue-on-error: true
-        uses: HaaLeo/publish-vscode-extension@v1
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.OVSX_TOKEN }}
           dependencies: false
       - name: Publish to Visual Studio Marketplace
         continue-on-error: true
-        uses: HaaLeo/publish-vscode-extension@v1
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VSCE_TOKEN }}
           dependencies: false

@@ -9,8 +9,8 @@ const openAIConfig = {
     defaultModel: 'gpt-4.1-mini', // Was 'gpt-4o-mini'
     // --------------------------------------------------
     defaultParams: {
-        max_tokens: 4096,
-        temperature: 0.7,
+        // max_tokens: 4096,
+        // temperature: 0.7,
         // Add other default parameters if needed
     },
     apiType: 'openai', // Standard OpenAI API

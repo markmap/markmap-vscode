@@ -17,12 +17,13 @@ const App = () => {
     // --- LLM Selection State ---
     // *** CHANGE: Add Google provider and its models ***
     const llmOptions = {
-        DeepSeek: ['deepseek-chat', 'deepseek-reasoner'],
-        OpenAI: ['o4-mini', 'gpt-4.1-mini'], // Kept previous OpenAI models
         Google: [ // Add the new provider key
-            "gemini-2.5-flash-preview-04-17", // Add the specific model names
-            "gemini-2.5-pro-exp-03-25"
-        ]
+            "gemini-2.5-flash", // Add the specific model names
+            "gemini-2.5-pro"
+        ],
+        DeepSeek: ['deepseek-chat', 'deepseek-reasoner'],
+        OpenAI: ['gpt-5-mini', 'o4-mini', 'gpt-4.1-mini'], // Kept previous OpenAI models
+        
     };
     // Ensure default provider exists, default to first if not
     const defaultProvider = Object.keys(llmOptions)[0];

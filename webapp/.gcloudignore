@@ -1,0 +1,12 @@
+# This file prevents unnecessary files from being uploaded to GCP.
+
+# Ignore the node_modules folder. App Engine will run 'npm install' on the server.
+node_modules/
+
+# Ignore local environment files and logs
+.env
+*.log
+npm-debug.log*
+
+# Ignore system files
+.DS_Store

@@ -11,7 +11,4 @@ env_variables:
   GOOGLE_CLIENT_SECRET: 'projects/977175146736/secrets/GOOGLE_CLIENT_SECRET/versions/latest'
   
 # This section gives App Engine permission to access Secret Manager
-entrypoint: |-
-  npm-run-path exec -- \
-  gcloud-secret-env -- \
-  npm start
+entrypoint: npm start

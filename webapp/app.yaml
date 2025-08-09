@@ -3,12 +3,10 @@ instance_class: F2
 
 env_variables:
   NODE_ENV: 'production'
-  # The names here (e.g., GEMINI_API_KEY) MUST match what your code expects (process.env.GEMINI_API_KEY)
-  GEMINI_API_KEY: 'projects/977175146736/secrets/GEMINI_API_KEY/versions/latest'
-  OPENAI_API_KEY: 'projects/977175146736/secrets/OPENAI_API_KEY/versions/latest'
-  DEEPSEEK_API_KEY: 'projects/977175146736/secrets/DEEPSEEK_API_KEY/versions/latest'
-  GOOGLE_CLIENT_ID: 'projects/977175146736/secrets/GOOGLE_CLIENT_ID/versions/latest'
-  GOOGLE_CLIENT_SECRET: 'projects/977175146736/secrets/GOOGLE_CLIENT_SECRET/versions/latest'
-  
-# This section gives App Engine permission to access Secret Manager
+  # --- CHANGE: Set the GCP_PROJECT ID ---
+  # The secretService will use this to construct the full secret path.
+  # Replace 'your-gcp-project-id' with your actual Google Cloud Project ID.
+  GCP_PROJECT: '977175146736'
+
+# The entrypoint tells App Engine how to start your application.
 entrypoint: npm start

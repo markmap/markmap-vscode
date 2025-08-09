@@ -9,9 +9,21 @@ const { spawn } = require('child_process');
 // It will load the ./webapp/.env file
 require('dotenv').config();
 
-// --- Import the LLM Service ---
-// Path is now relative to webapp/server.js
-const { generateMindmapContent } = require('./services/llmService.js');
+// --- Import Secret Service and Load Secrets ---
+const { loadSecretsIntoEnv } = require('./services/secretService.js');
+
+// Define the list of secret keys your application needs
+const secretKeys = ['OPENAI_API_KEY', 'GEMINI_API_KEY', 'DEEPSEEK_API_KEY'];
+
+// --- Main Application Start ---
+async function startServer() {
+    // Load secrets from GCP Secret Manager.
+    // This will only run if GCP_PROJECT is set and the keys are not already in the environment.
+    await loadSecretsIntoEnv(secretKeys);
+
+    // --- Dynamically Import Services AFTER secrets are loaded ---
+    // This ensures that when llmService is initialized, the environment variables are already set.
+    const { generateMindmapContent } = require('./services/llmService.js');
 
 // --- Load Prompt Template ---
 const promptFilePath = path.join(__dirname, 'mindmap_prompt.txt');
@@ -104,16 +116,18 @@ app.post('/generate', async (req, res) => {
             // Add fences manually
             fencedMarkdownContent = `\`\`\`markdown\n${plainMarkdownContent}\n\`\`\``;
         }
-        const mindmapMdPath = path.join(__dirname, 'mindmap.md');
-        const mindmapPlainMdPath = path.join(__dirname, 'mindmap-plain.md');
-        const mindmapHtmlPath = path.join(__dirname, 'mindmap.html');
+        // --- CHANGE: Use the /tmp directory for writable storage on App Engine ---
+        const tempDir = '/tmp';
+        const mindmapMdPath = path.join(tempDir, 'mindmap.md');
+        const mindmapPlainMdPath = path.join(tempDir, 'mindmap-plain.md');
+        const mindmapHtmlPath = path.join(tempDir, 'mindmap.html');
         fs.writeFileSync(mindmapMdPath, fencedMarkdownContent, 'utf8');
         console.log(`Saved fenced markdown to: ${mindmapMdPath}`);
         fs.writeFileSync(mindmapPlainMdPath, plainMarkdownContent, 'utf8');
         console.log(`Saved plain markdown to: ${mindmapPlainMdPath}`);
         // --- End Process and Save ---
 
-        await runConvertScript('mindmap.md', 'mindmap.html');
+        await runConvertScript(mindmapMdPath, mindmapHtmlPath);
         console.log(`Generated mindmap HTML: ${mindmapHtmlPath}`);
 
         res.json({ success: true, message: `Mindmap for "${bookName}" generated successfully using ${provider} (${model || 'Default'})!` });
@@ -139,9 +153,11 @@ app.post('/save-md', async (req, res) => {
         // Ensure content is trimmed before adding fences
         const trimmedMdContent = mdContent.trim();
         const mdWithFences = "```markdown\n" + trimmedMdContent + "\n```";
-        const mindmapMdPath = path.join(__dirname, 'mindmap.md');
-        const mindmapPlainMdPath = path.join(__dirname, 'mindmap-plain.md');
-        const mindmapHtmlPath = path.join(__dirname, 'mindmap.html');
+        // --- CHANGE: Use the /tmp directory for writable storage on App Engine ---
+        const tempDir = '/tmp';
+        const mindmapMdPath = path.join(tempDir, 'mindmap.md');
+        const mindmapPlainMdPath = path.join(tempDir, 'mindmap-plain.md');
+        const mindmapHtmlPath = path.join(tempDir, 'mindmap.html');
         // Save the trimmed plain content
         fs.writeFileSync(mindmapPlainMdPath, trimmedMdContent, 'utf8');
         console.log(`Saved plain markdown to: ${mindmapPlainMdPath}`);
@@ -149,7 +165,7 @@ app.post('/save-md', async (req, res) => {
         fs.writeFileSync(mindmapMdPath, mdWithFences, 'utf8');
         console.log(`Saved fenced markdown to: ${mindmapMdPath}`);
 
-        await runConvertScript('mindmap.md', 'mindmap.html');
+        await runConvertScript(mindmapMdPath, mindmapHtmlPath);
         console.log(`Regenerated mindmap HTML: ${mindmapHtmlPath}`);
         res.json({ success: true, message: 'Markdown saved and mindmap.html regenerated!' });
     } catch (err) {
@@ -160,16 +176,34 @@ app.post('/save-md', async (req, res) => {
 
 // SERVE the generated mindmap.html (No changes needed here)
 app.get('/mindmap.html', (req, res) => {
-    const mindmapPath = path.join(__dirname, 'mindmap.html');
+    const mindmapPath = path.join('/tmp', 'mindmap.html');
     fs.access(mindmapPath, fs.constants.R_OK, (err) => {
         if (err) {
             console.error(`Mindmap file not found or not readable: ${mindmapPath}`);
-            res.status(404).send('<!DOCTYPE html><html><head><title>Mindmap Not Found</title><style>body{font-family:sans-serif;padding:20px;color:#555;}</style></head><body><h1>Mindmap Not Generated Yet</h1><p>Please use the form to generate a mindmap first, or check server logs.</p></body></html>');
+            // If the file doesn't exist, send a placeholder HTML.
+            const placeholderHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mindmap Not Found</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; color: #555; text-align: center; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Mindmap Not Generated Yet</h1>
+    <p>Please use the form on the main page to generate a mindmap first.</p>
+</body>
+</html>`;
+            res.status(404).send(placeholderHtml);
         } else {
             console.log(`Serving mindmap file: ${mindmapPath}`);
+            // Set headers to prevent caching
             res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
+            // Send the file from the /tmp directory
             res.sendFile(mindmapPath);
         }
     });
@@ -177,7 +211,8 @@ app.get('/mindmap.html', (req, res) => {
 
 // SERVE the plain markdown content for the editor (No changes needed here)
 app.get('/mindmap-plain.md', (req, res) => {
-     const plainMdPath = path.join(__dirname, 'mindmap-plain.md');
+     // --- CHANGE: Use the /tmp directory for writable storage on App Engine ---
+     const plainMdPath = path.join('/tmp', 'mindmap-plain.md');
      fs.access(plainMdPath, fs.constants.R_OK, (err) => {
         if (err) {
             console.warn(`Plain mindmap file not found: ${plainMdPath}. Sending empty.`);
@@ -198,9 +233,10 @@ app.get('/mindmap-plain.md', (req, res) => {
 // --- Helper Function --- (No changes needed here)
 function runConvertScript(inputFile, outputFile) {
     return new Promise((resolve, reject) => {
-        const convertScriptPath = path.resolve(__dirname, 'convert.js');
-        const inputFilePath = path.resolve(__dirname, inputFile);
-        const outputFilePath = path.resolve(__dirname, outputFile);
+        // --- CHANGE: Adjust paths for /tmp directory ---
+        const convertScriptPath = path.resolve(__dirname, 'convert.js'); // This script is in the workspace
+        const inputFilePath = path.resolve('/tmp', inputFile); // Input is in /tmp
+        const outputFilePath = path.resolve('/tmp', outputFile); // Output is in /tmp
         if (!fs.existsSync(convertScriptPath)) {
             const errorMsg = `Convert script not found at ${convertScriptPath}`;
             console.error(errorMsg);
@@ -209,7 +245,8 @@ function runConvertScript(inputFile, outputFile) {
         console.log(`Running convert script: node "${path.basename(convertScriptPath)}" "${path.basename(inputFilePath)}" "${path.basename(outputFilePath)}"`);
         const child = spawn('node', [convertScriptPath, inputFilePath, outputFilePath], {
             stdio: 'inherit', // Show output/errors from convert.js
-            cwd: __dirname,   // Ensure correct working directory
+            // CWD should still be the app's root to find convert.js, but paths are absolute
+            cwd: __dirname,
             shell: false      // Recommended for security and consistency
         });
         child.on('error', (error) => {
@@ -229,19 +266,25 @@ function runConvertScript(inputFile, outputFile) {
 }
 
 // --- Start Server ---
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Webapp server listening on port ${PORT}`);
-    console.log(`Access the app at http://localhost:${PORT}`);
-    // Initial check/warning based on loaded config (process.env is available now)
-    if (!process.env.DEEPSEEK_API_KEY) {
-       console.warn('WARN: DEEPSEEK_API_KEY environment variable is not set. DeepSeek requests will fail.');
-    }
-    if (!process.env.OPENAI_API_KEY) {
-       console.warn('WARN: OPENAI_API_KEY environment variable is not set. OpenAI requests will fail.');
-    }
-    // *** CHANGE: Add Gemini/Google warning ***
-    if (!process.env.GEMINI_API_KEY) {
-       console.warn('WARN: GEMINI_API_KEY environment variable is not set. Google provider requests will fail.');
-    }
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Webapp server listening on port ${PORT}`);
+        console.log(`Access the app at http://localhost:${PORT}`);
+        // Final check to confirm which keys were loaded
+        console.log("--- API Key Status ---");
+        secretKeys.forEach(key => {
+            if (process.env[key]) {
+                console.log(`- ${key}: Loaded`);
+            } else {
+                console.warn(`- ${key}: NOT FOUND. Calls to this provider will fail.`);
+            }
+        });
+        console.log("----------------------");
+    });
+}
+
+// --- Execute Start ---
+startServer().catch(error => {
+    console.error("FATAL: Failed to start server.", error);
+    process.exit(1);
 });

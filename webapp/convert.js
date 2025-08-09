@@ -4,10 +4,12 @@
  * Usage:
  * node convert.js path/to/input.md path/to/output.html
  *
- * This uses Node ≥18’s built-in fetch. If you're on Node 18+, no need to install node-fetch.
+ * Modified to robustly extract content between the first '```markdown'
+ * (or similar) marker and the last '```' marker found afterwards.
  */
 
 const fs = require("fs");
+const path = require("path"); // Using path for consistency
 const { Transformer } = require("markmap-lib");
 
 /**
@@ -15,7 +17,7 @@ const { Transformer } = require("markmap-lib");
  * (Node v18+ automatically has fetch in global scope).
  */
 async function fetchText(url) {
-  console.log(`Workspaceing: ${url}`);
+  console.log(`Workspaceing dependency: ${url}`);
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`Failed to fetch ${url}: ${res.status}`);
@@ -24,22 +26,57 @@ async function fetchText(url) {
 }
 
 /**
- * We’ll create final HTML by hand so we don’t rely on
- * markmap-lib’s "fillTemplate" subpath (which isn't exported).
+ * **UPDATED:** Function to robustly extract content.
+ * Finds first ```markdown (or ``` followed by newline) start marker.
+ * Finds last ``` end marker occurring *after* the start marker.
+ * Extracts content between them.
+ */
+function extractMarkdownContentRobust(rawContent) {
+  let actualStartIndex = -1;
+  let startIndexMarker = -1;
+  const markers = ['```markdown', '```\n', '```\r\n']; // Markers to check for start
+
+  for (const marker of markers) {
+    startIndexMarker = rawContent.indexOf(marker);
+    if (startIndexMarker !== -1) {
+      if (marker === '```markdown') {
+        // Find the end of the line containing '```markdown'
+        let endOfLine = rawContent.indexOf('\n', startIndexMarker);
+        if (endOfLine === -1) endOfLine = rawContent.length;
+        actualStartIndex = endOfLine + 1;
+      } else {
+        // For '```\n' or '```\r\n', content starts right after the marker
+        actualStartIndex = startIndexMarker + marker.length;
+      }
+      console.log(`Found start marker "${marker}" at index ${startIndexMarker}. Content starts after index ${actualStartIndex - 1}.`);
+      break;
+    }
+  }
+
+  if (actualStartIndex === -1) {
+    console.error("ERROR: Could not find starting ``` marker. Cannot extract markdown content.");
+    console.warn("Processing the raw input file content directly. Markmap conversion may fail if non-markdown text is present.");
+    return rawContent;
+  }
+
+  const endIndexMarker = rawContent.lastIndexOf('```');
+
+  if (endIndexMarker !== -1 && endIndexMarker >= actualStartIndex) {
+    console.log(`Found last end marker at index ${endIndexMarker}. Extracting content between ${actualStartIndex} and ${endIndexMarker}.`);
+    return rawContent.substring(actualStartIndex, endIndexMarker).trim();
+  } else if (endIndexMarker !== -1 && endIndexMarker < actualStartIndex) {
+    console.error("ERROR: Found end ``` marker before content start. Cannot extract reliably.");
+    return "";
+  } else {
+    console.warn("WARN: Found starting ``` marker but no closing ``` marker. Extracting rest of content.");
+    return rawContent.substring(actualStartIndex).trim();
+  }
+}
+
+/**
+ * Builds the final HTML structure for the Markmap.
  */
 function buildHtml({ rootData, scripts, css, markmapOptions = {} }) {
-  // Scripts are plain JS strings that we’ll inline in <script> tags
-  // rootData is the Markmap AST from Transformer.transform()
-  // css is a single string with your styling
-  // markmapOptions, if you want to pass some JSON options to Markmap.
-
-  // We’ll produce a single HTML with:
-  //   1) <style> ... </style>
-  //   2) <script> d3 + markmap-view ...
-  //   3) <script> that calls Markmap.create(...)
-
-  // All local & offline. No external references.
-
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -52,24 +89,25 @@ ${css}
 <body>
   <svg id="mindmap"></svg>
 
-  ${scripts
-    .map((js) => `<script>${js}</script>`)
-    .join("\n")}
+  ${scripts.map(js => `<script>${js}</script>`).join("\n")}
 
   <script>
     (function() {
-      var root = ${JSON.stringify(rootData)};
-      // pass optional config if you want
-      var options = ${JSON.stringify(markmapOptions)};
-
-      // If markmap is loaded, it should attach to window.markmap:
-      var markmap = window.markmap;
-      // Create mindmap
-      window.mm = markmap.Markmap.create(
-        "svg#mindmap",
-        markmap.deriveOptions(options),
-        root
-      );
+      if (window.markmap && window.markmap.Markmap && window.markmap.deriveOptions) {
+        var root = ${JSON.stringify(rootData)};
+        var options = ${JSON.stringify(markmapOptions)};
+        window.mm = window.markmap.Markmap.create(
+          "svg#mindmap",
+          window.markmap.deriveOptions(options),
+          root
+        );
+      } else {
+        console.error("Markmap library not loaded correctly.");
+        var el = document.getElementById('mindmap');
+        if (el) {
+          el.outerHTML = '<p style="color:red;font-family:sans-serif;padding:20px;">Error: Markmap library failed to load. Check console and network.</p>';
+        }
+      }
     })();
   </script>
 </body>
@@ -83,56 +121,86 @@ async function main() {
     process.exit(1);
   }
 
-  // 1) Read local Markdown
-  const md = fs.readFileSync(inputFile, "utf8");
+  const absoluteInputFile = path.resolve(inputFile);
+  const absoluteOutputFile = path.resolve(outputFile);
+  console.log(`Input file: ${absoluteInputFile}`);
+  console.log(`Output file: ${absoluteOutputFile}`);
 
-  // 2) Transform to Markmap AST
-  //    (No subpath import needed; we can just use 'Transformer' from markmap-lib)
-  const transformer = new Transformer();
-  const { root, features } = transformer.transform(md);
+  let rawContent;
+  try {
+    rawContent = fs.readFileSync(absoluteInputFile, "utf8");
+  } catch (err) {
+    console.error(`Error reading input file "${absoluteInputFile}": ${err.message}`);
+    process.exit(1);
+  }
 
-  // 3) Minimal custom CSS
+  const md = extractMarkdownContentRobust(rawContent);
+  if (md === rawContent) {
+    console.log("Proceeding with raw content due to extraction issues.");
+  } else if (md.trim() === "") {
+    console.warn("WARN: Extracted markdown content is empty. Resulting mindmap may be empty.");
+  }
+
+  let root, features;
+  try {
+    const transformer = new Transformer();
+    ({ root, features } = transformer.transform(md));
+    console.log("Markdown transformed successfully.");
+  } catch (err) {
+    console.error(`Error transforming Markdown: ${err.message}`);
+    root = { t: 'r', d: 0, c: [{ t: 'p', d: 1, c: [{ t: 't', d: 2, p: { content: `Error: Failed to process Markdown.` } }] }] };
+  }
+
   const defaultCSS = `
-body { margin: 0; padding: 0; }
-svg#mindmap { display: block; width: 100vw; height: 100vh; }
-  `;
+/* Basic styling for SVG container */
+body { margin: 0; padding: 0; background-color: #f8f9fa; }
+svg#mindmap {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  background-color: white;
+}
+`;
 
-  // 4) We want d3 and markmap-view from CDN
-  //    We'll embed them by fetching their JS and inlining it.
   const cdnUrls = [
     "https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js",
     "https://cdn.jsdelivr.net/npm/markmap-view@0.18.10/dist/browser/index.js",
   ];
 
-  // 5) Load each script as text
   const scripts = [];
-  for (const url of cdnUrls) {
-    const js = await fetchText(url);
-    scripts.push(js);
+  try {
+    console.log("Fetching required JavaScript libraries from CDN...");
+    for (const url of cdnUrls) {
+      const js = await fetchText(url);
+      scripts.push(js);
+    }
+    console.log("JavaScript libraries fetched successfully.");
+  } catch (err) {
+    console.error(`CRITICAL: Could not fetch dependencies: ${err.message}. HTML may not render mindmap.`);
   }
 
-  // 6) Build final HTML
-  //    Markmap can read the “root” data and create the mindmap
-  //    completely offline, because we inlined the code from CDN
+  console.log("Building HTML output...");
   const html = buildHtml({
     rootData: root,
     scripts,
     css: defaultCSS,
     markmapOptions: {
-      // ***** MODIFICATION ADDED HERE *****
-      initialExpandLevel: 1,
-      // ***********************************
-      // Put your Markmap config here if you want
-      // e.g. "colorFreezeLevel": 2, etc.
+      initialExpandLevel: 2,
+      duration: 500,
     },
   });
+  console.log("HTML structure built.");
 
-  // 7) Write the single-file HTML
-  fs.writeFileSync(outputFile, html, "utf8");
-  console.log(`Done! Created: ${outputFile}`);
+  try {
+    fs.writeFileSync(absoluteOutputFile, html, "utf8");
+    console.log(`Success! HTML mindmap created: ${absoluteOutputFile}`);
+  } catch (err) {
+    console.error(`Error writing output file "${absoluteOutputFile}": ${err.message}`);
+    process.exit(1);
+  }
 }
 
-main().catch((err) => {
-  console.error(err);
+main().catch(err => {
+  console.error("An unexpected error occurred during conversion:", err);
   process.exit(1);
 });

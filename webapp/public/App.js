@@ -13,6 +13,8 @@ const App = () => {
     const [wordCount, setWordCount] = React.useState('');
     const [mindmapKey, setMindmapKey] = React.useState(Date.now());
     const saveTimeoutRef = React.useRef(null);
+    // Flag to mark when editorContent changes were user-initiated vs programmatic
+    const userEditRef = React.useRef(false);
 
     // --- LLM Selection State ---
     const llmOptions = {
@@ -125,11 +127,15 @@ const App = () => {
     const updateMarkmapOptions = async (newOptions, opts = { save: true, refresh: true }) => {
         const merged = { ...getMarkmapOptions(), ...newOptions };
         const newMd = buildMarkdownWithMarkmap(editorContent, merged);
+        // Mark this as a programmatic update so the auto-save effect does not double-save
+        userEditRef.current = false;
         setEditorContent(newMd);
         if (opts.save) {
+            // When saving programmatically, rely on saveEditorContent to refresh the mindmap,
+            // so avoid calling setMindmapKey here to prevent double-refresh.
             await saveEditorContent(newMd);
-        }
-        if (opts.refresh) {
+        } else if (opts.refresh) {
+            // Refresh view without saving to disk
             setMindmapKey(Date.now());
         }
         setCurrentInitialExpandLevel(typeof merged.initialExpandLevel === 'number' ? merged.initialExpandLevel : 2);
@@ -291,6 +297,8 @@ const App = () => {
             }
             setStatus({ message: 'Saved & re-converted successfully! Refreshing view...', type: 'success' });
             setMindmapKey(Date.now());
+            // Mark that the latest change is persisted (not a pending user edit)
+            userEditRef.current = false;
             setStatus({ message: data.message || 'Editor content saved & mindmap view updated!', type: 'success' });
         } catch (err) {
             console.error('Save failed:', err);
@@ -309,9 +317,17 @@ const App = () => {
 
     React.useEffect(() => {
         if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        // Only auto-save when the change was user-initiated
+        if (!userEditRef.current) {
+            return () => {
+                if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+            };
+        }
         if (editorContent.trim() !== '') {
             saveTimeoutRef.current = setTimeout(() => {
                 saveEditorContent(editorContent);
+                // After an auto-save, clear the user-edit flag
+                userEditRef.current = false;
             }, 1000);
         }
         return () => {
@@ -394,7 +410,7 @@ const App = () => {
                         <textarea
                             id="md-editor"
                             value={editorContent}
-                            onChange={(e) => setEditorContent(e.target.value)}
+                            onChange={(e) => { userEditRef.current = true; setEditorContent(e.target.value); }}
                             placeholder="Edit PLAIN Markdown content here... (Changes will auto-save and update the mindmap)"
                             disabled={isEditorLoading}
                             style={{

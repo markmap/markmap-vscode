@@ -305,36 +305,78 @@ app.get('/mindmap-plain.md', (req, res) => {
 
 // --- Helper Function --- (No changes needed here)
 function runConvertScript(inputFile, outputFile) {
+    // Resolve the paths as passed (they are expected to be absolute or relative paths)
+    const absoluteInput = path.resolve(inputFile);
+    const absoluteOutput = path.resolve(outputFile);
+    const convertModulePath = path.resolve(__dirname, 'convert.js');
+
     return new Promise((resolve, reject) => {
-        // --- CHANGE: Adjust paths for /tmp directory ---
-        const convertScriptPath = path.resolve(__dirname, 'convert.js'); // This script is in the workspace
-        const inputFilePath = path.resolve('/tmp', inputFile); // Input is in /tmp
-        const outputFilePath = path.resolve('/tmp', outputFile); // Output is in /tmp
-        if (!fs.existsSync(convertScriptPath)) {
-            const errorMsg = `Convert script not found at ${convertScriptPath}`;
-            console.error(errorMsg);
-            return reject(new Error(errorMsg));
-        }
-        console.log(`Running convert script: node "${path.basename(convertScriptPath)}" "${path.basename(inputFilePath)}" "${path.basename(outputFilePath)}"`);
-        const child = spawn('node', [convertScriptPath, inputFilePath, outputFilePath], {
-            stdio: 'inherit', // Show output/errors from convert.js
-            // CWD should still be the app's root to find convert.js, but paths are absolute
-            cwd: __dirname,
-            shell: false      // Recommended for security and consistency
-        });
-        child.on('error', (error) => {
-            console.error('Failed to start convert.js process:', error);
-            reject(new Error(`Failed to start convert.js: ${error.message}`));
-        });
-        child.on('close', (code) => {
-            if (code === 0) {
-                console.log('convert.js finished successfully.');
-                resolve();
+        // Attempt in-process conversion first for performance (avoids spawn overhead).
+        try {
+            if (fs.existsSync(convertModulePath)) {
+                try {
+                    // Clear require cache in development so convert.js updates are picked up only when explicitly requested.
+                    if (process.env.NODE_ENV === 'development' || process.env.FORCE_RELOAD_CONVERT === '1') {
+                        try { delete require.cache[require.resolve(convertModulePath)]; } catch (e) { /* ignore */ }
+                    }
+                    const convertModule = require(convertModulePath);
+                    if (convertModule && typeof convertModule.convertMarkdownFileToHtml === 'function') {
+                        console.log('Running convert.js in-process via convertMarkdownFileToHtml...');
+                        // Call the exported async function and handle its promise
+                        convertModule.convertMarkdownFileToHtml(absoluteInput, absoluteOutput)
+                          .then(() => {
+                            console.log('convert.js in-process finished successfully.');
+                            return resolve();
+                          })
+                          .catch((err) => {
+                            console.error('convert.js in-process failed:', err);
+                            // Fall through to spawn fallback
+                            spawnFallback();
+                          });
+                        return;
+                    } else {
+                        console.warn('convert.js did not export convertMarkdownFileToHtml. Falling back to spawning a node process.');
+                    }
+                } catch (err) {
+                    console.warn('In-process convert attempt threw an error, will fall back to spawn:', err && err.message ? err.message : err);
+                }
             } else {
-                console.error(`convert.js exited with code ${code}`);
-                reject(new Error(`convert.js process failed with code ${code}`));
+                console.warn(`convert.js not found at ${convertModulePath}. Will try spawning node process as fallback.`);
             }
-        });
+        } catch (err) {
+            console.warn('Unexpected error checking convert module, will attempt spawn fallback:', err && err.message ? err.message : err);
+        }
+
+        // Spawn fallback (keeps original behavior if in-process fails)
+        function spawnFallback() {
+            if (!fs.existsSync(convertModulePath)) {
+                const errorMsg = `Convert script not found at ${convertModulePath}`;
+                console.error(errorMsg);
+                return reject(new Error(errorMsg));
+            }
+            console.log(`Spawning convert.js as child process: node "${path.basename(convertModulePath)}" "${absoluteInput}" "${absoluteOutput}"`);
+            const child = spawn('node', [convertModulePath, absoluteInput, absoluteOutput], {
+                stdio: 'inherit',
+                cwd: __dirname,
+                shell: false
+            });
+            child.on('error', (error) => {
+                console.error('Failed to start convert.js process:', error);
+                reject(new Error(`Failed to start convert.js: ${error.message}`));
+            });
+            child.on('close', (code) => {
+                if (code === 0) {
+                    console.log('convert.js finished successfully (spawn fallback).');
+                    resolve();
+                } else {
+                    console.error(`convert.js exited with code ${code}`);
+                    reject(new Error(`convert.js process failed with code ${code}`));
+                }
+            });
+        }
+
+        // If we reach here (no in-process run), call spawnFallback
+        spawnFallback();
     });
 }
 

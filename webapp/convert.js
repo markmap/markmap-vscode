@@ -25,6 +25,53 @@ async function fetchText(url) {
   }
   return res.text();
 }
+// Node OS and crypto for caching
+const os = require('os');
+const crypto = require('crypto');
+
+// Simple in-memory + disk cache for fetched scripts to avoid repeated network downloads
+const scriptCache = new Map();
+
+/**
+ * getScriptFromCacheOrFetch(url) - returns script content as string.
+ * First checks in-memory cache, then disk cache under /tmp/markmap_cache, then fetches and saves.
+ */
+async function getScriptFromCacheOrFetch(url) {
+  if (scriptCache.has(url)) return scriptCache.get(url);
+
+  const cacheDir = path.join(os.tmpdir(), 'markmap_cache');
+  try {
+    if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir, { recursive: true });
+  } catch (err) {
+    console.warn('Could not ensure cache directory exists:', err.message);
+  }
+
+  const hash = crypto.createHash('sha256').update(url).digest('hex').slice(0, 16);
+  const cacheFile = path.join(cacheDir, `${hash}.js`);
+
+  if (fs.existsSync(cacheFile)) {
+    try {
+      const data = fs.readFileSync(cacheFile, 'utf8');
+      scriptCache.set(url, data);
+      console.log(`Loaded cached script from ${cacheFile}`);
+      return data;
+    } catch (err) {
+      console.warn(`Failed to read cache file ${cacheFile}: ${err.message}`);
+    }
+  }
+
+  console.log(`Fetching and caching JS library: ${url}`);
+  const js = await fetchText(url);
+  try {
+    fs.writeFileSync(cacheFile, js, 'utf8');
+    console.log(`Saved fetched script to ${cacheFile}`);
+  } catch (err) {
+    console.warn(`Failed to write cache file ${cacheFile}: ${err.message}`);
+  }
+
+  scriptCache.set(url, js);
+  return js;
+}
 
 /**
  * **UPDATED:** Function to robustly extract content.
@@ -169,11 +216,9 @@ function processMarkdownForMarkmap(md) {
   return processed.join('\n');
 }
 
-async function main() {
-  const [, , inputFile, outputFile] = process.argv;
+async function convertMarkdownFileToHtml(inputFile, outputFile) {
   if (!inputFile || !outputFile) {
-    console.error("Usage: node convert.js <input.md> <output.html>");
-    process.exit(1);
+    throw new Error("convertMarkdownFileToHtml requires inputFile and outputFile arguments.");
   }
 
   const absoluteInputFile = path.resolve(inputFile);
@@ -185,8 +230,7 @@ async function main() {
   try {
     rawContent = fs.readFileSync(absoluteInputFile, "utf8");
   } catch (err) {
-    console.error(`Error reading input file "${absoluteInputFile}": ${err.message}`);
-    process.exit(1);
+    throw new Error(`Error reading input file "${absoluteInputFile}": ${err.message}`);
   }
 
   const md = extractMarkdownContentRobust(rawContent);
@@ -238,12 +282,12 @@ svg#mindmap {
 
   const scripts = [];
   try {
-    console.log("Fetching required JavaScript libraries from CDN...");
+    console.log("Fetching required JavaScript libraries from CDN (with caching)...");
     for (const url of cdnUrls) {
-      const js = await fetchText(url);
+      const js = await getScriptFromCacheOrFetch(url);
       scripts.push(js);
     }
-    console.log("JavaScript libraries fetched successfully.");
+    console.log("JavaScript libraries fetched successfully (cached).");
   } catch (err) {
     console.error(`CRITICAL: Could not fetch dependencies: ${err.message}. HTML may not render mindmap.`);
   }
@@ -263,12 +307,28 @@ svg#mindmap {
     fs.writeFileSync(absoluteOutputFile, html, "utf8");
     console.log(`Success! HTML mindmap created: ${absoluteOutputFile}`);
   } catch (err) {
-    console.error(`Error writing output file "${absoluteOutputFile}": ${err.message}`);
-    process.exit(1);
+    throw new Error(`Error writing output file "${absoluteOutputFile}": ${err.message}`);
   }
 }
 
-main().catch(err => {
-  console.error("An unexpected error occurred during conversion:", err);
-  process.exit(1);
-});
+module.exports = {
+  convertMarkdownFileToHtml,
+};
+
+// CLI compatibility: when run directly from command line
+if (require.main === module) {
+  (async () => {
+    try {
+      const [, , inputFile, outputFile] = process.argv;
+      if (!inputFile || !outputFile) {
+        console.error("Usage: node convert.js <input.md> <output.html>");
+        process.exit(1);
+      }
+      await convertMarkdownFileToHtml(inputFile, outputFile);
+      process.exit(0);
+    } catch (err) {
+      console.error("An unexpected error occurred during conversion:", err);
+      process.exit(1);
+    }
+  })();
+}

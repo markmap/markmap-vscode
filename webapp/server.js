@@ -238,9 +238,21 @@ app.post('/save-md', async (req, res) => {
         fs.writeFileSync(mindmapMdPath, mdWithFences, 'utf8');
         console.log(`Saved fenced markdown to: ${mindmapMdPath}`);
 
-        await runConvertScript(mindmapMdPath, mindmapHtmlPath);
-        console.log(`Regenerated mindmap HTML: ${mindmapHtmlPath}`);
-        res.json({ success: true, message: 'Markdown saved and mindmap.html regenerated!' });
+        // Enqueue background conversion (do not await)
+        try {
+            enqueueConversion(mindmapMdPath, mindmapHtmlPath);
+            console.log(`Enqueued conversion job for: ${mindmapHtmlPath}`);
+        } catch (err) {
+            console.error('Failed to enqueue conversion job:', err);
+            // Fallback to synchronous conversion if enqueue fails
+            try {
+                await runConvertScript(mindmapMdPath, mindmapHtmlPath);
+                console.log(`Regenerated mindmap HTML (fallback): ${mindmapHtmlPath}`);
+            } catch (convErr) {
+                console.error('Fallback synchronous conversion also failed:', convErr);
+            }
+        }
+        res.json({ success: true, message: 'Markdown saved and conversion queued!' });
     } catch (err) {
         console.error('Error in /save-md:', err.stack || err);
         res.status(500).json({ success: false, error: `Save failed: ${err.message}` });

@@ -1,25 +1,275 @@
 /* webapp/public/App.css */
+/* Modernized UI styles for Mindmap Generator & Editor */
 
-/* Add styling for the input fields if needed */
-input[type="text"] {
-    width: 100%; /* Ensure full width */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box; /* Include padding and border */
-    font-size: 1rem;
-    margin-bottom: 15px; /* Consistent margin */
+:root {
+  --bg: #f7fafc;
+  --panel-bg: #ffffff;
+  --muted: #6b7280;
+  --accent: #0ea5a4;
+  --accent-contrast: #ffffff;
+  --border: rgba(15,23,42,0.06);
+  --glass: rgba(255,255,255,0.7);
+  --shadow-sm: 0 4px 12px rgba(2,6,23,0.06);
 }
 
-/* Style labels */
-label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: bold;
-    color: #555;
+/* Global box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-/* Adjust form layout if necessary */
-form div { /* Target the divs wrapping label/input */
-    margin-bottom: 15px;
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  color: #0f172a;
+  background: var(--bg);
+}
+
+/* App shell */
+.app-root {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+/* Left panel (settings + editor) */
+.left-panel {
+  background: var(--panel-bg);
+  border-right: 1px solid var(--border);
+  padding: 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.left-panel h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+/* Compact form layout */
+form {
+  margin: 0;
+}
+
+form label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Inputs / selects / textarea */
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e6eef5;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #0f172a;
+  background: white;
+}
+
+input[type="text"]:disabled,
+input[type="number"]:disabled,
+select:disabled,
+textarea:disabled {
+  background: #f8fafc;
+  opacity: 0.9;
+}
+
+textarea {
+  min-height: 140px;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Courier New', monospace;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+/* Buttons */
+button {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+button:hover:not([disabled]) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* secondary style for transparent buttons */
+button.secondary {
+  background: transparent;
+  color: #334155;
+  border: 1px solid #e6eef5;
+  font-weight: 600;
+}
+
+/* Divider (draggable) */
+.divider {
+  width: 8px;
+  cursor: col-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #f8fafc, #eef2ff);
+  position: relative;
+}
+
+.divider::after {
+  content: '';
+  width: 2px;
+  height: 48px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(15,23,42,0.06), rgba(15,23,42,0.12));
+  opacity: 0.7;
+}
+
+/* Right panel (interactive mindmap) */
+.right-panel {
+  position: relative;
+  background: white;
+  overflow: hidden;
+}
+
+/* Centered "toolbar island" above the mindmap */
+.toolbar-overlay {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 24px;
+  z-index: 60;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(2,6,23,0.08);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid rgba(2,6,23,0.04);
+}
+
+.toolbar-overlay button {
+  background: transparent;
+  color: #1f2937;
+  border: 1px solid rgba(15,23,42,0.06);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.toolbar-overlay button:hover {
+  background: #f1f5f9;
+}
+
+/* Status message styles */
+.status-message {
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.status-message.info {
+  background: #f0f9ff;
+  border: 1px solid #d1eefb;
+  color: #0369a1;
+}
+
+.status-message.success {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #065f46;
+}
+
+.status-message.error {
+  background: #fff1f2;
+  border: 1px solid #fecaca;
+  color: #7f1d1d;
+}
+
+/* Range input styling (split slider) */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  background: #e6eef5;
+  border-radius: 999px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 3px 8px rgba(14,165,164,0.18);
+  border: 3px solid white;
+}
+
+/* Responsive layout for small screens: stack panels */
+@media (max-width: 900px) {
+  .app-root { flex-direction: column; }
+  .divider { display: none; }
+  .left-panel { min-width: unset; width: 100%; }
+  .right-panel { width: 100%; height: 50vh; }
+  .toolbar-overlay { position: static; transform: none; margin: 8px auto; }
+}
+
+/* Subtle scrollbar for left panel */
+.left-panel::-webkit-scrollbar {
+  width: 10px;
+}
+.left-panel::-webkit-scrollbar-thumb {
+  background: rgba(2,6,23,0.06);
+  border-radius: 8px;
+}
+
+/* Reduce visual noise for form groups */
+.form-inline {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* small helper */
+.small {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* make iframe fill available area with smooth fade-in */
+.right-panel iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.right-panel iframe[title] {
+  opacity: 1;
 }

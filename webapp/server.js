@@ -48,9 +48,9 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
 // GENERATE Mindmap from LLM (No changes needed in this route logic itself)
 app.post('/generate', async (req, res) => {
     try {
-        const { bookName, authorName, provider, model, conciseness, wordCount } = req.body;
-        console.log(`Received generate request: Book="${bookName}", Author="${authorName}", Provider="${provider}", Model="${model || 'Default'}", Conciseness="${conciseness}", WordCount="${wordCount || 'Default'}"`);
-
+        const { bookName, authorName, language, provider, model, conciseness, wordCount } = req.body;
+        console.log(`Received generate request: Book="${bookName}", Author="${authorName}", Language="${language || 'English'}", Provider="${provider}", Model="${model || 'Default'}", Conciseness="${conciseness}", WordCount="${wordCount || 'Default'}"`);
+ 
         if (!bookName || !authorName || !provider) {
             console.error('Error: Missing required fields:', { bookName, authorName, provider });
             return res.status(400).json({ success: false, error: 'Missing bookName, authorName, or provider.' });
@@ -60,24 +60,25 @@ app.post('/generate', async (req, res) => {
              console.error('Error: Missing required field: model');
              return res.status(400).json({ success: false, error: 'Missing model selection.' });
         }
-
+ 
         // --- Construct the dynamic conciseness note ---
         let concisenessLevel = conciseness || 'concise';
         let noteText;
         const targetWordCount = parseInt(wordCount, 10);
-
+ 
         if (!isNaN(targetWordCount) && targetWordCount > 0) {
             noteText = `Remember it must be ${concisenessLevel} in approximately ${targetWordCount} words.`;
         } else {
             noteText = `Remember it must be ${concisenessLevel} (default length up to 5000 words).`;
         }
         // --- End construct dynamic note ---
-
+ 
         const finalPrompt = basePromptTemplate
             .replace('${bookName}', bookName)
             .replace('${authorName}', authorName)
+            .replace('${language}', language || 'English')
             .replace('${concisenessNote}', noteText);
-
+ 
         // --- Call the LLM Service ---
         console.log(`Calling LLM Service via /generate endpoint for ${provider}...`);
         const llmMarkdownOutput = await generateMindmapContent(

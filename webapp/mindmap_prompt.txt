@@ -9,7 +9,7 @@ and end *exactly* with:
 No extra characters, text, or commentary are allowed before the opening fence or after the closing fence.
 
 **Task:**  
-- Provide a comprehensive and visually rich summary of the book "${bookName}" by "${authorName}". The summary should empower a reader with limited time to grasp the main ideas and insights from the book through a multi-layered markdown format designed to boost readability and memory retention.
+- Provide a comprehensive and visually rich summary of the book "${bookName}" by "${authorName}" in "${language}". The summary should empower a reader with limited time to grasp the main ideas and insights from the book through a multi-layered markdown format designed to boost readability and memory retention.
 
 
 **Content & Style Guidelines:**  

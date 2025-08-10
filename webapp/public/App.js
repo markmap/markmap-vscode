@@ -5,6 +5,7 @@ const App = () => {
     // --- State Variables ---
     const [bookName, setBookName] = React.useState('');
     const [authorName, setAuthorName] = React.useState('');
+    const [language, setLanguage] = React.useState('');
     const [editorContent, setEditorContent] = React.useState('');
     const [status, setStatus] = React.useState({ message: 'App loaded. Ready to generate or load existing mindmap.', type: 'info' });
     const [isLoading, setIsLoading] = React.useState(false);
@@ -260,6 +261,7 @@ const App = () => {
                 body: JSON.stringify({
                     bookName,
                     authorName,
+                    language,
                     provider: selectedProvider,
                     model: selectedModel,
                     conciseness: selectedConciseness,
@@ -406,12 +408,17 @@ const App = () => {
                         <label htmlFor="bookNameInput" style={{ fontSize: '0.78rem' }}>Book Name</label>
                         <input type="text" id="bookNameInput" name="bookName" placeholder="e.g., Atomic Habits" value={bookName} onChange={(e) => setBookName(e.target.value)} disabled={isLoading} required style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.9rem' }} />
                     </div>
-
+                    
                     <div>
                         <label htmlFor="authorNameInput" style={{ fontSize: '0.78rem' }}>Author Name</label>
                         <input type="text" id="authorNameInput" name="authorName" placeholder="e.g., James Clear" value={authorName} onChange={(e) => setAuthorName(e.target.value)} disabled={isLoading} required style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.9rem' }} />
                     </div>
-
+                    
+                    <div>
+                        <label htmlFor="languageInput" style={{ fontSize: '0.78rem' }}>Language</label>
+                        <input type="text" id="languageInput" name="language" placeholder="English" value={language} onChange={(e) => setLanguage(e.target.value)} disabled={isLoading} style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.9rem' }} />
+                    </div>
+                    
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
                         <button type="submit" disabled={isLoading || !bookName.trim() || !authorName.trim() || !selectedModel} style={{ padding: '8px 10px', cursor: (isLoading || !bookName.trim() || !authorName.trim() || !selectedModel) ? 'not-allowed' : 'pointer', backgroundColor: isLoading ? '#94a3b8' : '#0ea5a4', color: 'white', border: 'none', borderRadius: '6px', fontSize: '0.9rem' }}>
                             {isLoading ? 'Generating...' : 'Generate'}

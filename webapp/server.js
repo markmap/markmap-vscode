@@ -11,6 +11,7 @@ require('dotenv').config();
 
 // --- Import Secret Service and Load Secrets ---
 const { loadSecretsIntoEnv } = require('./services/secretService.js');
+const yaml = require('js-yaml');
 
 // Define the list of secret keys your application needs
 const secretKeys = ['OPENAI_API_KEY', 'GEMINI_API_KEY', 'DEEPSEEK_API_KEY'];
@@ -125,6 +126,42 @@ app.post('/generate', async (req, res) => {
         console.log(`Saved fenced markdown to: ${mindmapMdPath}`);
         fs.writeFileSync(mindmapPlainMdPath, plainMarkdownContent, 'utf8');
         console.log(`Saved plain markdown to: ${mindmapPlainMdPath}`);
+        // Inject YAML frontmatter into plain markdown
+        try {
+          const fileContent = fs.readFileSync(mindmapPlainMdPath, 'utf8');
+          // Parse existing frontmatter if present
+          let yamlObj = {};
+          let body = fileContent;
+          const fmRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
+          const fmMatch = fileContent.match(fmRegex);
+          if (fmMatch) {
+            try {
+              yamlObj = yaml.load(fmMatch[1]) || {};
+            } catch (parseErr) {
+              console.error('Failed to parse existing YAML frontmatter:', parseErr);
+            }
+            body = fileContent.slice(fmMatch[0].length);
+          }
+          // Update title
+          const firstLine = body.split(/\r?\n/)[0] || '';
+          const titleMatch = firstLine.match(/^#\s*(.*)/);
+          yamlObj.title = titleMatch ? titleMatch[1] : '';
+          // Ensure markmap section exists
+          if (typeof yamlObj.markmap !== 'object' || yamlObj.markmap === null) {
+            yamlObj.markmap = {};
+          }
+          // Add default Markmap JSON options if none are present
+          if (Object.keys(yamlObj.markmap).length === 0) {
+            yamlObj.markmap = { colorFreezeLevel: 3, initialExpandLevel: 2 };
+          }
+          // Dump new YAML frontmatter
+          const newYaml = yaml.dump(yamlObj);
+          const updatedContent = `---\n${newYaml}---\n\n${body}`;
+          fs.writeFileSync(mindmapPlainMdPath, updatedContent, 'utf8');
+          console.log('Updated plain markdown with YAML frontmatter');
+        } catch (err) {
+          console.error('Error injecting YAML frontmatter into plain markdown:', err);
+        }
         // --- End Process and Save ---
 
         await runConvertScript(mindmapMdPath, mindmapHtmlPath);
@@ -161,6 +198,42 @@ app.post('/save-md', async (req, res) => {
         // Save the trimmed plain content
         fs.writeFileSync(mindmapPlainMdPath, trimmedMdContent, 'utf8');
         console.log(`Saved plain markdown to: ${mindmapPlainMdPath}`);
+        // Inject YAML frontmatter into plain markdown
+        try {
+          const fileContent = fs.readFileSync(mindmapPlainMdPath, 'utf8');
+          // Parse existing frontmatter if present
+          let yamlObj = {};
+          let body = fileContent;
+          const fmRegex = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
+          const fmMatch = fileContent.match(fmRegex);
+          if (fmMatch) {
+            try {
+              yamlObj = yaml.load(fmMatch[1]) || {};
+            } catch (parseErr) {
+              console.error('Failed to parse existing YAML frontmatter:', parseErr);
+            }
+            body = fileContent.slice(fmMatch[0].length);
+          }
+          // Update title
+          const firstLine = body.split(/\r?\n/)[0] || '';
+          const titleMatch = firstLine.match(/^#\s*(.*)/);
+          yamlObj.title = titleMatch ? titleMatch[1] : '';
+          // Ensure markmap section exists
+          if (typeof yamlObj.markmap !== 'object' || yamlObj.markmap === null) {
+            yamlObj.markmap = {};
+          }
+          // Add default Markmap JSON options if none are present
+          if (Object.keys(yamlObj.markmap).length === 0) {
+            yamlObj.markmap = { colorFreezeLevel: 2, initialExpandLevel: 2 };
+          }
+          // Dump new YAML frontmatter
+          const newYaml = yaml.dump(yamlObj);
+          const updatedContent = `---\n${newYaml}---\n\n${body}`;
+          fs.writeFileSync(mindmapPlainMdPath, updatedContent, 'utf8');
+          console.log('Updated plain markdown with YAML frontmatter');
+        } catch (err) {
+          console.error('Error injecting YAML frontmatter into plain markdown:', err);
+        }
         // Save the fenced content
         fs.writeFileSync(mindmapMdPath, mdWithFences, 'utf8');
         console.log(`Saved fenced markdown to: ${mindmapMdPath}`);

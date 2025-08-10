@@ -11,6 +11,7 @@
 const fs = require("fs");
 const path = require("path"); // Using path for consistency
 const { Transformer } = require("markmap-lib");
+const yaml = require("js-yaml");
 
 /**
  * Helper: built-in fetch to load JS from a CDN
@@ -114,6 +115,60 @@ ${css}
 </html>`;
 }
 
+function processMarkdownForMarkmap(md) {
+  const lines = md.split('\n');
+  const processed = [];
+  let currentParagraph = [];
+  let inList = false;
+  for (let line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('#')) {
+      if (currentParagraph.length > 0) {
+        processed.push('- ' + currentParagraph[0]);
+        for (let i = 1; i < currentParagraph.length; i++) {
+          processed.push('  ' + currentParagraph[i]);
+        }
+        currentParagraph = [];
+      }
+      processed.push(line);
+      inList = false;
+    } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ') || trimmed.match(/^\d+\. /)) {
+      if (currentParagraph.length > 0) {
+        processed.push('- ' + currentParagraph[0]);
+        for (let i = 1; i < currentParagraph.length; i++) {
+          processed.push('  ' + currentParagraph[i]);
+        }
+        currentParagraph = [];
+      }
+      processed.push(line);
+      inList = true;
+    } else if (trimmed === '') {
+      if (currentParagraph.length > 0 && !inList) {
+        processed.push('- ' + currentParagraph[0]);
+        for (let i = 1; i < currentParagraph.length; i++) {
+          processed.push('  ' + currentParagraph[i]);
+        }
+        currentParagraph = [];
+      }
+      processed.push(line);
+      inList = false;
+    } else {
+      if (inList && processed.length > 0) {
+        processed.push('  ' + line);
+      } else {
+        currentParagraph.push(line);
+      }
+    }
+  }
+  if (currentParagraph.length > 0) {
+    processed.push('- ' + currentParagraph[0]);
+    for (let i = 1; i < currentParagraph.length; i++) {
+      processed.push('  ' + currentParagraph[i]);
+    }
+  }
+  return processed.join('\n');
+}
+
 async function main() {
   const [, , inputFile, outputFile] = process.argv;
   if (!inputFile || !outputFile) {
@@ -135,16 +190,30 @@ async function main() {
   }
 
   const md = extractMarkdownContentRobust(rawContent);
+  // Parse YAML frontmatter for markmap options
+  let frontmatter = {};
+  let content = md;
+  const fmMatch = md.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  if (fmMatch) {
+    try {
+      frontmatter = yaml.load(fmMatch[1]) || {};
+    } catch (e) {
+      console.error(`Failed to parse YAML frontmatter: ${e.message}`);
+    }
+    content = md.slice(fmMatch[0].length);
+  }
   if (md === rawContent) {
     console.log("Proceeding with raw content due to extraction issues.");
   } else if (md.trim() === "") {
     console.warn("WARN: Extracted markdown content is empty. Resulting mindmap may be empty.");
   }
 
+  content = processMarkdownForMarkmap(content);
+
   let root, features;
   try {
     const transformer = new Transformer();
-    ({ root, features } = transformer.transform(md));
+    ({ root, features } = transformer.transform(content));
     console.log("Markdown transformed successfully.");
   } catch (err) {
     console.error(`Error transforming Markdown: ${err.message}`);
@@ -180,14 +249,13 @@ svg#mindmap {
   }
 
   console.log("Building HTML output...");
+  const defaultMarkmapOptions = { initialExpandLevel: 2, duration: 500 };
+  const markmapOpts = Object.assign({}, defaultMarkmapOptions, frontmatter.markmap || {});
   const html = buildHtml({
     rootData: root,
     scripts,
     css: defaultCSS,
-    markmapOptions: {
-      initialExpandLevel: 2,
-      duration: 500,
-    },
+    markmapOptions: markmapOpts,
   });
   console.log("HTML structure built.");
 

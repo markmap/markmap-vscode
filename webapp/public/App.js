@@ -1,74 +1,248 @@
 // FILE: webapp/public/App.js
-// Uses React hooks for state and effects
+// React UI for Mindmap Generator & Editor with toolbar controls for markmap options (JSX)
 
 const App = () => {
     // --- State Variables ---
     const [bookName, setBookName] = React.useState('');
     const [authorName, setAuthorName] = React.useState('');
     const [editorContent, setEditorContent] = React.useState(''); // Holds PLAIN markdown
-    const [status, setStatus] = React.useState({ message: 'App loaded. Ready to generate or load existing mindmap.', type: 'info' }); // type: 'info', 'success', 'error'
-    const [isLoading, setIsLoading] = React.useState(false); // For LLM generation
-    const [isEditorLoading, setIsEditorLoading] = React.useState(false); // For loading MD content
-    const [selectedConciseness, setSelectedConciseness] = React.useState('concise'); // 'concise', 'balanced', 'comprehensive'
-    const [wordCount, setWordCount] = React.useState(''); // Optional word count input
-    const [isEditorSaving, setIsEditorSaving] = React.useState(false); // For saving MD content
-    const [mindmapKey, setMindmapKey] = React.useState(Date.now()); // Initialize with timestamp
+    const [status, setStatus] = React.useState({ message: 'App loaded. Ready to generate or load existing mindmap.', type: 'info' });
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [isEditorLoading, setIsEditorLoading] = React.useState(false);
+    const [selectedConciseness, setSelectedConciseness] = React.useState('concise');
+    const [wordCount, setWordCount] = React.useState('');
+    const [mindmapKey, setMindmapKey] = React.useState(Date.now());
+    const saveTimeoutRef = React.useRef(null);
 
     // --- LLM Selection State ---
-    // *** CHANGE: Add Google provider and its models ***
     const llmOptions = {
-        Google: [ // Add the new provider key
-            "gemini-2.5-flash", // Add the specific model names
-            "gemini-2.5-pro"
-        ],
+        Google: ['gemini-2.5-flash', 'gemini-2.5-pro'],
         DeepSeek: ['deepseek-chat', 'deepseek-reasoner'],
-        OpenAI: ['gpt-5-mini', 'o4-mini', 'gpt-4.1-mini'], // Kept previous OpenAI models
-        
+        OpenAI: ['gpt-5-mini', 'o4-mini', 'gpt-4.1-mini'],
     };
-    // Ensure default provider exists, default to first if not
     const defaultProvider = Object.keys(llmOptions)[0];
     const [selectedProvider, setSelectedProvider] = React.useState(defaultProvider);
-    // Ensure default model exists for the default provider
     const defaultModel = llmOptions[defaultProvider]?.[0] || '';
     const [selectedModel, setSelectedModel] = React.useState(defaultModel);
 
-    // --- Handlers ---
+    // --- Toolbar State ---
+    const [currentInitialExpandLevel, setCurrentInitialExpandLevel] = React.useState(2);
+    const [isWrapped, setIsWrapped] = React.useState(false);
 
+    // --- Utility: YAML serializer (simple) ---
+    const yamlSerialize = (obj, indent = 2) => {
+        const lines = [];
+        const pad = (n) => ' '.repeat(n);
+        const serialize = (value, level, keyName) => {
+            if (Array.isArray(value)) {
+                lines.push(`${pad(level)}${keyName}:`);
+                value.forEach(item => {
+                    lines.push(`${pad(level + indent)}- ${item}`);
+                });
+            } else if (value && typeof value === 'object') {
+                if (keyName) lines.push(`${pad(level)}${keyName}:`);
+                Object.entries(value).forEach(([k, v]) => {
+                    serialize(v, level + (keyName ? indent : 0), k);
+                });
+            } else {
+                const v = value === null || value === undefined ? '' : String(value);
+                lines.push(`${pad(level)}${keyName}: ${v}`);
+            }
+        };
+        Object.entries(obj).forEach(([k, v]) => serialize(v, indent, k));
+        return lines.join('\n');
+    };
+
+    // --- Parse markmap frontmatter from markdown (simple) ---
+    const parseMarkmapFromMd = (md) => {
+        const fmMatch = md.match(/^\s*---\s*[\r\n]+([\s\S]*?)\r?\n---\s*\r?\n?/);
+        if (!fmMatch) return {};
+        const fm = fmMatch[1];
+        const lines = fm.split(/\r?\n/);
+        let inMarkmap = false;
+        let baseIndent = 0;
+        const opts = {};
+        let currentArrayKey = null;
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            if (!inMarkmap) {
+                if (/^\s*markmap:\s*$/.test(line)) {
+                    inMarkmap = true;
+                    baseIndent = line.match(/^\s*/)[0].length;
+                }
+                continue;
+            } else {
+                if (/^\s*$/.test(line)) continue;
+                const indent = line.match(/^\s*/)[0].length;
+                if (indent <= baseIndent) break;
+                const trimmed = line.trim();
+                const arrayItemMatch = trimmed.match(/^- (.+)$/);
+                if (arrayItemMatch && currentArrayKey) {
+                    opts[currentArrayKey].push(parseValue(arrayItemMatch[1]));
+                } else {
+                    const kvMatch = trimmed.match(/^([a-zA-Z0-9_]+):\s*(.*)$/);
+                    if (kvMatch) {
+                        const key = kvMatch[1];
+                        let val = kvMatch[2];
+                        if (val === '') {
+                            opts[key] = [];
+                            currentArrayKey = key;
+                        } else {
+                            currentArrayKey = null;
+                            opts[key] = parseValue(val);
+                        }
+                    } else {
+                        currentArrayKey = null;
+                    }
+                }
+            }
+        }
+        return opts;
+    };
+
+    const parseValue = (str) => {
+        if (/^-?\d+$/.test(str)) return parseInt(str, 10);
+        if (/^-?\d+\.\d+$/.test(str)) return parseFloat(str, 10);
+        if (/^(true|false)$/i.test(str)) return str.toLowerCase() === 'true';
+        return str.replace(/^["'](.+)["']$/, '$1');
+    };
+
+    const buildMarkdownWithMarkmap = (mdContent, newMarkmap) => {
+        const contentWithoutFM = mdContent.replace(/^\s*---\s*[\r\n]+([\s\S]*?)\r?\n---\s*\r?\n?/, '');
+        const fm = `---\nmarkmap:\n${yamlSerialize(newMarkmap, 2)}\n---\n\n`;
+        return fm + contentWithoutFM;
+    };
+
+    const getMarkmapOptions = () => {
+        try {
+            return parseMarkmapFromMd(editorContent);
+        } catch (err) {
+            console.warn('Failed parsing markmap from editor content', err);
+            return {};
+        }
+    };
+
+    const updateMarkmapOptions = async (newOptions, opts = { save: true, refresh: true }) => {
+        const merged = { ...getMarkmapOptions(), ...newOptions };
+        const newMd = buildMarkdownWithMarkmap(editorContent, merged);
+        setEditorContent(newMd);
+        if (opts.save) {
+            await saveEditorContent(newMd);
+        }
+        if (opts.refresh) {
+            setMindmapKey(Date.now());
+        }
+        setCurrentInitialExpandLevel(typeof merged.initialExpandLevel === 'number' ? merged.initialExpandLevel : 2);
+        setIsWrapped(Boolean(merged.maxWidth && merged.maxWidth > 0));
+    };
+
+    // --- Toolbar Handlers ---
+    const handleExpandAll = () => {
+        updateMarkmapOptions({ initialExpandLevel: -1 });
+        setStatus({ message: 'Set mindmap to expand all nodes (initialExpandLevel: -1).', type: 'success' });
+    };
+    const handleCollapseToLevel2 = () => {
+        updateMarkmapOptions({ initialExpandLevel: 2 });
+        setStatus({ message: 'Collapsed mindmap to initialExpandLevel: 2.', type: 'success' });
+    };
+    const handleAdjustLevel = (delta) => {
+        const opts = getMarkmapOptions();
+        let cur = typeof opts.initialExpandLevel === 'number' ? opts.initialExpandLevel : 2;
+        if (cur === -1) cur = 2;
+        let next = cur + delta;
+        if (next < 0) next = 0;
+        updateMarkmapOptions({ initialExpandLevel: next });
+        setStatus({ message: `Set initialExpandLevel to ${next}.`, type: 'success' });
+    };
+    const handleToggleWrap = () => {
+        const opts = getMarkmapOptions();
+        const curMax = typeof opts.maxWidth === 'number' ? opts.maxWidth : 0;
+        const newMax = curMax > 0 ? 0 : 400;
+        updateMarkmapOptions({ maxWidth: newMax });
+        setStatus({ message: `Set node wrapping ${newMax > 0 ? 'enabled' : 'disabled'}.`, type: 'success' });
+    };
+
+    const handleDownloadInteractive = async () => {
+        try {
+            const res = await fetch(`/mindmap.html?v=${mindmapKey}`);
+            if (!res.ok) throw new Error(`Failed to fetch mindmap.html: ${res.statusText}`);
+            const html = await res.text();
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mindmap-interactive.html';
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            setStatus({ message: 'Downloaded interactive mindmap HTML.', type: 'success' });
+        } catch (err) {
+            console.error(err);
+            setStatus({ message: `Download failed: ${err.message}`, type: 'error' });
+        }
+    };
+
+    // --- Provider/Model handlers ---
     const handleProviderChange = (e) => {
         const newProvider = e.target.value;
         setSelectedProvider(newProvider);
-        // *** CHANGE: Ensure the default model is selected correctly for the new provider ***
         const newDefaultModel = llmOptions[newProvider]?.[0] || '';
         setSelectedModel(newDefaultModel);
     };
+    const handleModelChange = (e) => setSelectedModel(e.target.value);
+    const handleConcisenessChange = (e) => setSelectedConciseness(e.target.value);
+    const handleWordCountChange = (e) => setWordCount(e.target.value);
 
-    const handleModelChange = (e) => {
-        setSelectedModel(e.target.value);
+    // --- Load editor content ---
+    const handleLoadEditor = async () => {
+        setIsEditorLoading(true);
+        try {
+            const response = await fetch(`/mindmap-plain.md?t=${Date.now()}`);
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.log("mindmap-plain.md not found, editor will be empty.");
+                    setEditorContent('');
+                    setStatus(prev => ({
+                        message: prev.type === 'error' ? prev.message : 'No existing mindmap content found to load into editor.',
+                        type: prev.type === 'error' ? 'error' : 'info'
+                    }));
+                } else {
+                    throw new Error(`Failed to load plain markdown: ${response.statusText}`);
+                }
+            } else {
+                const mdContent = await response.text();
+                setEditorContent(mdContent);
+                const opts = parseMarkmapFromMd(mdContent);
+                setCurrentInitialExpandLevel(typeof opts.initialExpandLevel === 'number' ? opts.initialExpandLevel : 2);
+                setIsWrapped(Boolean(opts.maxWidth && opts.maxWidth > 0));
+                setStatus(prev => ({
+                    message: prev.type === 'success' || prev.type === 'error' ? prev.message : 'Loaded mindmap content into editor.',
+                    type: prev.type === 'success' || prev.type === 'error' ? prev.type : 'success'
+                }));
+            }
+        } catch (err) {
+            console.error('Failed to load editor content:', err);
+            setStatus({ message: `Failed to load mindmap content for editor: ${err.message}`, type: 'error' });
+            setEditorContent('');
+        } finally {
+            setIsEditorLoading(false);
+        }
     };
 
-    const handleConcisenessChange = (e) => {
-        setSelectedConciseness(e.target.value);
-    };
-
-    const handleWordCountChange = (e) => {
-        setWordCount(e.target.value);
-    };
-
-    // GENERATE mindmap via backend
+    // --- Generate mindmap via backend ---
     const handleGenerate = async (e) => {
         e.preventDefault();
         if (!bookName.trim() || !authorName.trim()) {
             setStatus({ message: 'Please enter both Book Name and Author Name.', type: 'error' });
             return;
         }
-        // *** CHANGE: Ensure a model is actually selected, especially after provider change ***
         if (!selectedModel) {
             setStatus({ message: `Please select a model for the ${selectedProvider} provider.`, type: 'error' });
             return;
         }
         setIsLoading(true);
         setStatus({ message: `Generating mindmap using ${selectedProvider} (${selectedModel})... Please wait.`, type: 'info' });
-
         try {
             const response = await fetch('/generate', {
                 method: 'POST',
@@ -77,152 +251,106 @@ const App = () => {
                     bookName,
                     authorName,
                     provider: selectedProvider,
-                    model: selectedModel, // Send the currently selected model name
+                    model: selectedModel,
                     conciseness: selectedConciseness,
                     wordCount: wordCount,
                 }),
             });
             const data = await response.json();
-
             if (!response.ok || !data.success) {
-                // *** CHANGE: Display backend error message directly ***
                 throw new Error(data.error || `Server error: ${response.statusText}`);
             }
-
             setStatus({ message: 'Mindmap generated! Loading editor and refreshing view...', type: 'success' });
-            await handleLoadEditor(); // Load the new plain content into editor
-            setMindmapKey(Date.now()); // Trigger iframe refresh
+            await handleLoadEditor();
+            setMindmapKey(Date.now());
             setStatus({ message: data.message || `Mindmap generated with ${selectedProvider} (${selectedModel})! View updated.`, type: 'success' });
-
         } catch (err) {
             console.error('Generation failed:', err);
-            // Display the error message caught from the fetch or backend
             setStatus({ message: `Generation failed: ${err.message}`, type: 'error' });
         } finally {
             setIsLoading(false);
         }
     };
 
-    // LOAD plain markdown content into editor (No changes needed here)
-    const handleLoadEditor = async () => {
-        setIsEditorLoading(true);
-        try {
-            const response = await fetch(`/mindmap-plain.md?t=${Date.now()}`);
-            if (!response.ok) {
-                 if (response.status === 404) {
-                      console.log("mindmap-plain.md not found, editor will be empty.");
-                      setEditorContent('');
-                      setStatus(prev => ({
-                           message: prev.type === 'error' ? prev.message : 'No existing mindmap content found to load into editor.',
-                           type: prev.type === 'error' ? 'error' : 'info'
-                      }));
-                 } else {
-                      throw new Error(`Failed to fetch plain markdown: ${response.statusText}`);
-                 }
-            } else {
-                const mdContent = await response.text();
-                setEditorContent(mdContent);
-                 setStatus(prev => ({
-                      message: prev.type === 'success' || prev.type === 'error' ? prev.message : 'Loaded mindmap content into editor.',
-                      type: prev.type === 'success' || prev.type === 'error' ? prev.type : 'success'
-                 }));
-            }
-        } catch (err) {
-            console.error('Failed to load editor content:', err);
-            setStatus({ message: `Failed to load mindmap content for editor: ${err.message}`, type: 'error' });
-            setEditorContent(''); // Clear editor on error
-        } finally {
-            setIsEditorLoading(false);
-        }
-    };
-
-    // SAVE editor content (plain markdown) to server (No changes needed here)
-    const handleSaveEditor = async () => {
-        const plainMdContent = editorContent;
-        if (!plainMdContent.trim()) {
+    // --- Save editor content (debounced) ---
+    const saveEditorContent = React.useCallback(async (contentToSave) => {
+        if (!contentToSave.trim()) {
             setStatus({ message: 'Editor is empty. Nothing to save.', type: 'info' });
             return;
         }
-        setIsEditorSaving(true);
         setStatus({ message: 'Saving editor content and regenerating mindmap...', type: 'info' });
-
         try {
             const response = await fetch('/save-md', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mdContent: plainMdContent }),
+                body: JSON.stringify({ mdContent: contentToSave }),
             });
             const data = await response.json();
-
             if (!response.ok || !data.success) {
                 throw new Error(data.error || `Server error: ${response.statusText}`);
             }
-
             setStatus({ message: 'Saved & re-converted successfully! Refreshing view...', type: 'success' });
-            setMindmapKey(Date.now()); // Trigger iframe refresh
+            setMindmapKey(Date.now());
             setStatus({ message: data.message || 'Editor content saved & mindmap view updated!', type: 'success' });
-
         } catch (err) {
             console.error('Save failed:', err);
             setStatus({ message: `Save failed: ${err.message}`, type: 'error' });
-        } finally {
-            setIsEditorSaving(false);
         }
-    };
+    }, []);
 
-    // --- Effect Hook for Initial Load --- (No changes needed here)
+    // --- Effects ---
     React.useEffect(() => {
         handleLoadEditor();
         setMindmapKey(Date.now());
+        return () => {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        };
     }, []);
 
-    // --- Effect Hook to Ensure Model Selection is Valid ---
-    // Make sure the selectedModel state is updated if the provider changes and the old model isn't valid
     React.useEffect(() => {
-        // Check if the current provider exists and has models
+        if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        if (editorContent.trim() !== '') {
+            saveTimeoutRef.current = setTimeout(() => {
+                saveEditorContent(editorContent);
+            }, 1000);
+        }
+        return () => {
+            if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+        };
+    }, [editorContent, saveEditorContent]);
+
+    React.useEffect(() => {
         if (llmOptions[selectedProvider] && llmOptions[selectedProvider].length > 0) {
-            // Check if the currently selected model is NOT in the list for the selected provider
             if (!llmOptions[selectedProvider].includes(selectedModel)) {
-                // If invalid, set the model to the first one available for the new provider
                 setSelectedModel(llmOptions[selectedProvider][0]);
             }
         } else {
-             // If the provider has no models listed (error case), clear the selected model
-             setSelectedModel('');
+            setSelectedModel('');
         }
-    }, [selectedProvider, selectedModel]); // Rerun when provider or model changes
+    }, [selectedProvider, selectedModel]);
 
-
+    // --- Render ---
     return (
         <div style={{ display: 'flex', height: '100vh', fontFamily: 'sans-serif' }}>
-            {/* Left Panel: Controls & Editor */}
+            {/* Left Panel */}
             <div style={{ width: '40%', minWidth: '450px', padding: '20px', borderRight: '1px solid #ccc', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
                 <h1 style={{ flexShrink: 0 }}>Mindmap Generator & Editor</h1>
 
-                {/* Input Form for Generation */}
                 <form onSubmit={handleGenerate} style={{ marginBottom: '20px', padding: '15px', border: '1px solid #eee', borderRadius: '5px', backgroundColor: '#f9f9f9', flexShrink: 0 }}>
-                    {/* LLM Provider Selection */}
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="providerSelect" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>LLM Provider:</label>
-                        {/* *** CHANGE: Ensure dropdown maps over the updated llmOptions keys *** */}
                         <select id="providerSelect" value={selectedProvider} onChange={handleProviderChange} disabled={isLoading} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
                             {Object.keys(llmOptions).map(provider => (<option key={provider} value={provider}>{provider}</option>))}
                         </select>
                     </div>
-                    {/* LLM Model Selection */}
+
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="modelSelect" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Model:</label>
-                        {/* *** CHANGE: Ensure dropdown maps models for the *selected* provider, handling potential empty list *** */}
                         <select id="modelSelect" value={selectedModel} onChange={handleModelChange} disabled={isLoading || !llmOptions[selectedProvider] || llmOptions[selectedProvider].length === 0} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
-                            {/* Check if provider exists and has models before mapping */}
-                            {llmOptions[selectedProvider] && llmOptions[selectedProvider].length > 0 ? (
-                                llmOptions[selectedProvider].map(model => (<option key={model} value={model}>{model}</option>))
-                            ) : (
-                                <option value="" disabled>No models available</option>
-                            )}
+                            {llmOptions[selectedProvider] && llmOptions[selectedProvider].length > 0 ? llmOptions[selectedProvider].map(model => (<option key={model} value={model}>{model}</option>)) : (<option value="" disabled>No models available</option>)}
                         </select>
                     </div>
-                    {/* Conciseness Mode Selection (No changes needed) */}
+
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="concisenessSelect" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Summary Style:</label>
                         <select id="concisenessSelect" value={selectedConciseness} onChange={handleConcisenessChange} disabled={isLoading} style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}>
@@ -231,82 +359,44 @@ const App = () => {
                             <option value="comprehensive">Comprehensive</option>
                         </select>
                     </div>
-                    {/* Word Count Input (No changes needed) */}
+
                     <div style={{ marginBottom: '15px' }}>
                         <label htmlFor="wordCountInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Target Word Count (Optional):</label>
-                        <input
-                            type="number" id="wordCountInput" name="wordCount" placeholder="e.g., 4000 (default: model limit)"
-                            value={wordCount} onChange={handleWordCountChange} disabled={isLoading} min="100"
-                            style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }}
-                        />
+                        <input type="number" id="wordCountInput" name="wordCount" placeholder="e.g., 4000 (default: model limit)" value={wordCount} onChange={handleWordCountChange} disabled={isLoading} min="100" style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
                     </div>
-                    {/* Book Name Input (No changes needed) */}
+
                     <div style={{ marginBottom: '15px' }}>
-                         <label htmlFor="bookNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Book Name:</label>
-                         <input type="text" id="bookNameInput" name="bookName" placeholder="e.g., Atomic Habits" value={bookName} onChange={(e) => setBookName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
+                        <label htmlFor="bookNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Book Name:</label>
+                        <input type="text" id="bookNameInput" name="bookName" placeholder="e.g., Atomic Habits" value={bookName} onChange={(e) => setBookName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
                     </div>
-                    {/* Author Name Input (No changes needed) */}
+
                     <div style={{ marginBottom: '15px' }}>
-                         <label htmlFor="authorNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Author Name:</label>
-                         <input type="text" id="authorNameInput" name="authorName" placeholder="e.g., James Clear" value={authorName} onChange={(e) => setAuthorName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
+                        <label htmlFor="authorNameInput" style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Author Name:</label>
+                        <input type="text" id="authorNameInput" name="authorName" placeholder="e.g., James Clear" value={authorName} onChange={(e) => setAuthorName(e.target.value)} disabled={isLoading} required style={{ width: '100%', padding: '10px', boxSizing: 'border-box', borderRadius: '4px', border: '1px solid #ccc' }} />
                     </div>
-                    <button
-                        type="submit"
-                        disabled={isLoading || !bookName.trim() || !authorName.trim() || !selectedModel} // Also disable if no model is selected
-                        style={{
-                            padding: '10px 15px',
-                            cursor: (isLoading || !bookName.trim() || !authorName.trim() || !selectedModel) ? 'not-allowed' : 'pointer',
-                            backgroundColor: isLoading ? '#ccc' : '#007bff',
-                            color: 'white', border: 'none', borderRadius: '4px', fontSize: '1rem'
-                        }}
-                    >
+
+                    <button type="submit" disabled={isLoading || !bookName.trim() || !authorName.trim() || !selectedModel} style={{ padding: '10px 15px', cursor: (isLoading || !bookName.trim() || !authorName.trim() || !selectedModel) ? 'not-allowed' : 'pointer', backgroundColor: isLoading ? '#ccc' : '#007bff', color: 'white', border: 'none', borderRadius: '4px', fontSize: '1rem' }}>
                         {isLoading ? 'Generating...' : 'Generate Mindmap'}
                     </button>
                 </form>
 
-                {/* Status Display (No changes needed) */}
-                 {status.message && (
-                      <div
-                           style={{
-                                padding: '12px', marginBottom: '15px', borderRadius: '4px', border: '1px solid', flexShrink: 0,
-                                borderColor: status.type === 'error' ? '#f5c6cb' : (status.type === 'success' ? '#c3e6cb' : '#bee5eb'),
-                                backgroundColor: status.type === 'error' ? '#f8d7da' : (status.type === 'success' ? '#d4edda' : '#d1ecf1'),
-                                color: status.type === 'error' ? '#721c24' : (status.type === 'success' ? '#155724' : '#0c5460'),
-                           }}
-                           className={`status-message ${status.type}`}
-                      >
-                           {status.message}
-                      </div>
-                 )}
+                {status.message && (
+                    <div style={{ padding: '12px', marginBottom: '15px', borderRadius: '4px', border: '1px solid', flexShrink: 0, borderColor: status.type === 'error' ? '#f5c6cb' : (status.type === 'success' ? '#c3e6cb' : '#bee5eb'), backgroundColor: status.type === 'error' ? '#f8d7da' : (status.type === 'success' ? '#d4edda' : '#d1ecf1'), color: status.type === 'error' ? '#721c24' : (status.type === 'success' ? '#155724' : '#0c5460') }} className={`status-message ${status.type}`}>
+                        {status.message}
+                    </div>
+                )}
 
-                <hr style={{ margin: '20px 0', flexShrink: 0 }}/>
+                <hr style={{ margin: '20px 0', flexShrink: 0 }} />
 
-                {/* Editor Section (No changes needed) */}
                 <div className="edit-section" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' }}>
                     <h2 style={{ flexShrink: 0, marginBottom: '10px' }}>Edit Mindmap Markdown (Plain Text)</h2>
-                    <div className="edit-buttons" style={{ marginBottom: '10px', flexShrink: 0 }}>
-                        <button
-                            onClick={handleLoadEditor}
-                            disabled={isEditorLoading || isEditorSaving}
-                            style={{ marginRight: '10px', padding: '8px 12px', cursor: (isEditorLoading || isEditorSaving) ? 'wait' : 'pointer' }}
-                        >
-                            {isEditorLoading ? 'Loading...' : 'Load/Refresh Editor'}
-                        </button>
-                        <button
-                            onClick={handleSaveEditor}
-                            disabled={isEditorSaving || isEditorLoading || !editorContent.trim()}
-                            style={{ padding: '8px 12px', cursor: (isEditorSaving || isEditorLoading || !editorContent.trim()) ? 'not-allowed' : 'pointer', backgroundColor: (isEditorSaving || isEditorLoading) ? '#ccc' : '#28a745', color:'white', border:'none' }}
-                        >
-                            {isEditorSaving ? 'Saving...' : 'Save & Re-Convert'}
-                        </button>
-                    </div>
                     <div style={{ flexGrow: 1, display: 'flex' }}>
                         <textarea
                             id="md-editor"
                             value={editorContent}
                             onChange={(e) => setEditorContent(e.target.value)}
-                            placeholder="Load or edit PLAIN Markdown content here... (Fences ```markdown ... ``` will be added/handled on save/generate)"
-                            disabled={isEditorLoading || isEditorSaving}
+                            placeholder="Edit PLAIN Markdown content here... (Changes will auto-save and update the mindmap)"
+                            disabled={isEditorLoading}
                             style={{
                                 width: '100%',
                                 boxSizing: 'border-box', padding: '10px',
@@ -320,22 +410,31 @@ const App = () => {
                 </div>
             </div>
 
-            {/* Right Panel: Mindmap View (Iframe) (No changes needed) */}
-            <div style={{ width: '60%', height: '100vh', overflow: 'hidden', borderLeft: '1px solid #eee' }}>
-                 <iframe
-                      key={mindmapKey}
-                      src={`/mindmap.html?v=${mindmapKey}`}
-                      title="Interactive Mindmap Preview"
-                      style={{ width: '100%', height: '100%', border: 'none' }}
-                 >
-                      Your browser doesn't support iframes. The mindmap cannot be displayed here.
-                 </iframe>
+            {/* Right Panel */}
+            <div style={{ width: '60%', height: '100vh', overflow: 'hidden', borderLeft: '1px solid #eee', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '10px', borderBottom: '1px solid #eee', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    <button type="button" onClick={handleExpandAll}>Expand All</button>
+                    <button type="button" onClick={handleCollapseToLevel2}>Collapse to Lvl 2</button>
+                    <button type="button" onClick={() => handleAdjustLevel(-1)}>-</button>
+                    <button type="button" onClick={() => handleAdjustLevel(1)}>+</button>
+                    <button type="button" onClick={handleToggleWrap}>{isWrapped ? 'Disable Wrap' : 'Wrap Long Text'}</button>
+                    <button type="button" onClick={handleDownloadInteractive}>Download Interactive HTML</button>
+                    <div style={{ marginLeft: 'auto', fontSize: '0.9rem', color: '#555' }}>
+                        {`Expand Level: ${currentInitialExpandLevel === -1 ? '-1 (all)' : currentInitialExpandLevel}`}
+                    </div>
+                </div>
+
+                <div style={{ flex: 1 }}>
+                    <iframe key={mindmapKey} src={`/mindmap.html?v=${mindmapKey}`} title="Interactive Mindmap Preview" style={{ width: '100%', height: '100%', border: 'none' }}>
+                        Your browser doesn't support iframes. The mindmap cannot be displayed here.
+                    </iframe>
+                </div>
             </div>
         </div>
     );
 };
 
-// --- Mount the App --- (No changes needed here)
+// --- Mount the App ---
 const container = document.getElementById('root');
 const root = ReactDOM.createRoot(container);
 root.render(<App />);

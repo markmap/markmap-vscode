@@ -366,7 +366,7 @@ const App = () => {
             {/* Left Panel */}
             <div className="left-panel" style={leftPanelStyle}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                    <h1 style={{ margin: 0, fontSize: '1rem' }}>Mindmap</h1>
+                    <h1 style={{ margin: 0, fontSize: '1rem' }}>MapMyBook AI</h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <button type="button" onClick={() => setLeftCollapsed(true)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #e6eef5', borderRadius: '6px', fontSize: '0.85rem' }}>Hide</button>
                     </div>

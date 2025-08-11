@@ -164,8 +164,10 @@ button.secondary {
   transform: translateX(-50%);
   top: 24px;
   z-index: 60;
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.9);
+  /* Slightly tighter padding and a clear font-size for visual balance */
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  background: rgba(255,255,255,0.94);
   border-radius: 10px;
   box-shadow: 0 10px 30px rgba(2,6,23,0.08);
   display: flex;
@@ -176,12 +178,17 @@ button.secondary {
 
 .toolbar-overlay button {
   background: transparent;
-  color: #1f2937;
   border: 1px solid rgba(15,23,42,0.06);
-  padding: 6px 10px;
+  padding: 8px 10px;
   border-radius: 8px;
   font-weight: 600;
   color: #0f172a;
+  font-size: 0.9rem;
+  min-width: 64px; /* Give buttons a consistent clickable area similar to other controls */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .toolbar-overlay button:hover {

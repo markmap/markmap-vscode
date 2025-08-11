@@ -9,7 +9,7 @@ and end *exactly* with:
 No extra characters, text, or commentary are allowed before the opening fence or after the closing fence.
 
 **Task:**  
-- Provide a comprehensive and visually rich summary of the book "${bookName}" by "${authorName}" in "${language}". The summary should empower a reader with limited time to grasp the main ideas and insights from the book through a multi-layered markdown format designed to boost readability and memory retention.
+- Provide a comprehensive and visually rich summary of the book "${bookName}" by "${authorName}" in "${language}". The summary should empower a reader with limited time to grasp the main ideas and insights from the book through a multi-layered markdown format designed to boost readability and memory retention. You must include a high quality formatting (including organisation, **bold**, italic, emojies, etc.) to make it as readable as possible. Incorporate as much as possible formats such as tables, lists, emojies, rtc.
 
 
 **Content & Style Guidelines:**  
@@ -19,6 +19,7 @@ No extra characters, text, or commentary are allowed before the opening fence or
 - **No Extra Non-Markdown Text:** The response must contain only the markdown content enclosed within the code fences.
 - Avoid using ">" in your markdown especially for the qoutes.
 - Avoid using links of images.
+- Use **bold** and emojies to reinforce important parts of text.
 
 **Valid Markdown Components Examples:**  
 - **Headings:**  
@@ -61,6 +62,16 @@ No extra characters, text, or commentary are allowed before the opening fence or
   - Key insight 🚀  
   - Remember this ⭐  
   ```  
+
+- **Basic Text Formatting:**
+
+  **Bold text**  
+  *Italic text*  
+  ***Bold and italic***  
+  ~~Strikethrough~~  
+  Inline code: `console.log("Hello World");`
+
+
 
 **Final Output Structure Reminder:**  
 Your final output must strictly adhere to the following format (without any additional text):

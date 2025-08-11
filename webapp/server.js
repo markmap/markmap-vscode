@@ -271,15 +271,26 @@ app.get('/mindmap.html', (req, res) => {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Mindmap Not Found</title>
+    <title>Mindmap Not Generated</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <style>
-        body { font-family: sans-serif; padding: 20px; color: #555; text-align: center; }
-        h1 { color: #333; }
+      html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;}
+      /* Center the placeholder content vertically and horizontally inside the iframe */
+      .mindmap-placeholder{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+      /* Card that visually matches the toolbar / app style (rounded, subtle shadow) */
+      .placeholder-card{max-width:720px;width:100%;text-align:center;background:rgba(255,255,255,0.94);border-radius:12px;padding:20px 28px;box-shadow:0 12px 30px rgba(2,6,23,0.06);border:1px solid rgba(2,6,23,0.04);}
+      .placeholder-card h1{margin:0 0 8px;font-size:1.25rem;color:#0f172a;font-weight:600;}
+      .placeholder-card p{margin:0;color:#475569;font-size:0.95rem;}
     </style>
 </head>
 <body>
-    <h1>Mindmap Not Generated Yet</h1>
-    <p>Please use the form on the main page to generate a mindmap first.</p>
+    <div class="mindmap-placeholder">
+        <div class="placeholder-card">
+            <h1>Mindmap Not Generated Yet</h1>
+            <p>Please use the form on the main page to generate a mindmap first.</p>
+        </div>
+    </div>
 </body>
 </html>`;
             res.status(404).send(placeholderHtml);

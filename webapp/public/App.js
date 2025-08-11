@@ -20,7 +20,7 @@ const App = () => {
     const llmOptions = {
         Google: ['gemini-2.5-flash', 'gemini-2.5-pro'],
         DeepSeek: ['deepseek-chat', 'deepseek-reasoner'],
-        OpenAI: ['gpt-5-mini', 'o4-mini', 'gpt-4.1-mini'],
+        OpenAI: ['gpt-5-nano', 'gpt-5-mini', 'o4-mini', 'gpt-4.1-mini'],
     };
     const defaultProvider = Object.keys(llmOptions)[0];
     const [selectedProvider, setSelectedProvider] = React.useState(defaultProvider);
@@ -169,7 +169,7 @@ const App = () => {
     const handleToggleWrap = () => {
         const opts = getMarkmapOptions();
         const curMax = typeof opts.maxWidth === 'number' ? opts.maxWidth : 0;
-        const newMax = curMax > 0 ? 0 : 600;
+        const newMax = curMax > 0 ? 0 : 800;
         updateMarkmapOptions({ maxWidth: newMax });
         setStatus({ message: `Set node wrapping ${newMax > 0 ? 'enabled' : 'disabled'}.`, type: 'success' });
     };

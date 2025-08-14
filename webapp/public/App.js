@@ -169,7 +169,7 @@ const App = () => {
     const handleToggleWrap = () => {
         const opts = getMarkmapOptions();
         const curMax = typeof opts.maxWidth === 'number' ? opts.maxWidth : 0;
-        const newMax = curMax > 0 ? 0 : 800;
+        const newMax = curMax > 0 ? 0 : 700;
         updateMarkmapOptions({ maxWidth: newMax });
         setStatus({ message: `Set node wrapping ${newMax > 0 ? 'enabled' : 'disabled'}.`, type: 'success' });
     };
@@ -368,7 +368,7 @@ const App = () => {
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                     <h1 style={{ margin: 0, fontSize: '1rem' }}>MapMyBook AI</h1>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <button type="button" onClick={() => setLeftCollapsed(true)} style={{ padding: '6px 8px', background: 'transparent', border: '1px solid #e6eef5', borderRadius: '6px', fontSize: '0.85rem' }}>Hide</button>
+                        <button type="button" onClick={() => setLeftCollapsed(true)} className="secondary" style={{ padding: '6px 8px', fontSize: '0.85rem' }}>Hide</button>
                     </div>
                 </div>
 
@@ -423,8 +423,8 @@ const App = () => {
                         <button type="submit" disabled={isLoading || !bookName.trim() || !authorName.trim() || !selectedModel} style={{ padding: '8px 10px', cursor: (isLoading || !bookName.trim() || !authorName.trim() || !selectedModel) ? 'not-allowed' : 'pointer', backgroundColor: isLoading ? '#94a3b8' : '#0ea5a4', color: 'white', border: 'none', borderRadius: '6px', fontSize: '0.9rem' }}>
                             {isLoading ? 'Generating...' : 'Generate'}
                         </button>
-                        <button type="button" onClick={handleLoadEditor} style={{ padding: '8px 10px', background: 'transparent', border: '1px solid #e6eef5', borderRadius: '6px', fontSize: '0.9rem' }}>{isEditorLoading ? 'Loading...' : 'Reload'}</button>
-                        <button type="button" onClick={handleDownloadInteractive} style={{ padding: '8px 10px', background: 'transparent', border: '1px solid #e6eef5', borderRadius: '6px', fontSize: '0.9rem' }}>Download</button>
+                        <button type="button" onClick={handleLoadEditor} className="secondary" style={{ padding: '8px 10px', fontSize: '0.9rem' }}>{isEditorLoading ? 'Loading...' : 'Reload'}</button>
+                        <button type="button" onClick={handleDownloadInteractive} className="secondary" style={{ padding: '8px 10px', fontSize: '0.9rem' }}>Download</button>
                     </div>
                 </form>
 
@@ -460,15 +460,15 @@ const App = () => {
 
             {/* Right Panel */}
             <div className="right-panel" style={{ flex: 1, height: '100vh', overflow: 'hidden', position: 'relative', background: '#fff' }}>
-                <div className="toolbar-overlay" style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: '28px', zIndex: 50, padding: '8px 12px', background: 'rgba(255,255,255,0.95)', borderRadius: '10px', boxShadow: '0 6px 20px rgba(15,23,42,0.08)', display: 'flex', gap: '8px', alignItems: 'center', border: '1px solid rgba(15,23,42,0.05)' }}>
-                    <button type="button" onClick={handleExpandAll} title="Expand all" style={{ padding: '6px 8px', background: 'transparent', border: '1px solid rgba(15,23,42,0.06)', borderRadius: '8px' }}>Expand</button>
-                    <button type="button" onClick={handleCollapseToLevel2} title="Collapse to level 2" style={{ padding: '6px 8px', background: 'transparent', border: '1px solid rgba(15,23,42,0.06)', borderRadius: '8px' }}>Collapse</button>
-                    <button type="button" onClick={() => handleAdjustLevel(-1)} title="Decrease level" style={{ padding: '6px 8px', background: 'transparent', border: '1px solid rgba(15,23,42,0.06)', borderRadius: '8px' }}>-</button>
-                    <button type="button" onClick={() => handleAdjustLevel(1)} title="Increase level" style={{ padding: '6px 8px', background: 'transparent', border: '1px solid rgba(15,23,42,0.06)', borderRadius: '8px' }}>+</button>
-                    <button type="button" onClick={handleToggleWrap} title="Toggle wrap" style={{ padding: '6px 8px', background: 'transparent', border: '1px solid rgba(15,23,42,0.06)', borderRadius: '8px' }}>{isWrapped ? 'Disable Wrap' : 'Wrap'}</button>
-                    <div style={{ marginLeft: '8px', fontSize: '0.85rem', color: '#555' }}>
-                        {`Level: ${currentInitialExpandLevel === -1 ? '-1 (all)' : currentInitialExpandLevel}`}
+                <div className="toolbar-overlay">
+                    <button type="button" onClick={handleExpandAll} title="Expand all">Expand All</button>
+                    <button type="button" onClick={handleCollapseToLevel2} title="Collapse to level 2">Collapse</button>
+                    <button type="button" onClick={() => handleAdjustLevel(-1)} title="Decrease level">-</button>
+                    <div className="level-indicator">
+                        {currentInitialExpandLevel === -1 ? 'All' : `Lvl ${currentInitialExpandLevel}`}
                     </div>
+                    <button type="button" onClick={() => handleAdjustLevel(1)} title="Increase level">+</button>
+                    <button type="button" onClick={handleToggleWrap} title="Toggle node text wrapping">{isWrapped ? 'Unwrap Text' : 'Wrap Text'}</button>
                 </div>
 
                 {/* Expand handle visible when left panel is collapsed */}

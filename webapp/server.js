@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
+const MarkdownIt = require('markdown-it');
 
 // Load dotenv *ONCE* here at the main entry point for the webapp
 // It will load the ./webapp/.env file
@@ -12,13 +13,6 @@ require('dotenv').config();
 // --- Import Secret Service and Load Secrets ---
 const { loadSecretsIntoEnv } = require('./services/secretService.js');
 const yaml = require('js-yaml');
-// Markdown renderer for showing README.md when no mindmap is available
-const MarkdownIt = require('markdown-it');
-const markdownItKatex = require('@vscode/markdown-it-katex');
-const mdIns = require('markdown-it-ins');
-const mdMark = require('markdown-it-mark');
-const mdSub = require('markdown-it-sub');
-const mdSup = require('markdown-it-sup');
 
 // Define the list of secret keys your application needs
 const secretKeys = ['OPENAI_API_KEY', 'GEMINI_API_KEY', 'DEEPSEEK_API_KEY'];
@@ -274,70 +268,42 @@ app.get('/mindmap.html', (req, res) => {
         if (err) {
             console.error(`Mindmap file not found or not readable: ${mindmapPath}`);
             // If the file doesn't exist, send a placeholder HTML.
-                        // Try to render the project's README.md from the webapp folder.
-                        const readmePath = path.join(__dirname, 'README.md');
-                        try {
-                                const mdContent = fs.readFileSync(readmePath, 'utf8');
-                                const md = new MarkdownIt({ html: true, linkify: true, typographer: true })
-                                        .use(markdownItKatex)
-                                        .use(mdIns)
-                                        .use(mdMark)
-                                        .use(mdSub)
-                                        .use(mdSup);
-                                const rendered = md.render(mdContent);
-                                const readmeHtml = `<!DOCTYPE html>
-<html>
-<head>
-        <title>Instructions</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <style>
-            html,body{min-height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;padding:24px;color:#0f172a}
-            .readme-container{max-width:900px;margin:0 auto;background:rgba(255,255,255,0.98);border-radius:8px;padding:24px 28px;box-shadow:0 8px 20px rgba(2,6,23,0.04);border:1px solid rgba(2,6,23,0.03);} 
-            .readme-container h1, .readme-container h2, .readme-container h3{color:#0f172a}
-            .readme-container pre{background:#0b1220;color:#e6eef8;padding:12px;border-radius:6px;overflow:auto}
-            .readme-container code{background:#f1f5f9;padding:2px 6px;border-radius:4px}
-            .readme-container a{color:#0366d6}
-        </style>
-</head>
-<body>
-    <div class="readme-container">
-        ${rendered}
-    </div>
-</body>
-</html>`;
-                                res.status(200).send(readmeHtml);
-                        } catch (readErr) {
-                                console.error(`Failed to read or render README.md at ${readmePath}:`, readErr);
-                                // Fallback to original simple placeholder
-                                const placeholderHtml = `
+            try {
+                const md = new MarkdownIt();
+                const readmePath = path.join(__dirname, 'README.md');
+                const readmeContent = fs.readFileSync(readmePath, 'utf8');
+                const htmlContent = md.render(readmeContent);
+
+                const placeholderHtml = `
 <!DOCTYPE html>
 <html>
 <head>
-        <title>Mindmap Not Generated</title>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <style>
-            html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;}
-            /* Center the placeholder content vertically and horizontally inside the iframe */
-            .mindmap-placeholder{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
-            /* Card that visually matches the toolbar / app style (rounded, subtle shadow) */
-            .placeholder-card{max-width:720px;width:100%;text-align:center;background:rgba(255,255,255,0.94);border-radius:12px;padding:20px 28px;box-shadow:0 12px 30px rgba(2,6,23,0.06);border:1px solid rgba(2,6,23,0.04);} 
-            .placeholder-card h1{margin:0 0 8px;font-size:1.25rem;color:#0f172a;font-weight:600;}
-            .placeholder-card p{margin:0;color:#475569;font-size:0.95rem;}
-        </style>
+    <title>Mindmap Instructions</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      html,body{height:100%;margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#fff;}
+      .mindmap-placeholder{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+      .placeholder-card{max-width:720px;width:100%;text-align:left;background:rgba(255,255,255,0.94);border-radius:12px;padding:20px 28px;box-shadow:0 12px 30px rgba(2,6,23,0.06);border:1px solid rgba(2,6,23,0.04);}
+      .placeholder-card h1{margin:0 0 8px;font-size:1.25rem;color:#0f172a;font-weight:600;}
+      .placeholder-card p{margin:0;color:#475569;font-size:0.95rem;}
+      .placeholder-card ul { padding-left: 20px; }
+      .placeholder-card li { margin-bottom: 10px; }
+    </style>
 </head>
 <body>
-        <div class="mindmap-placeholder">
-                <div class="placeholder-card">
-                        <h1>Mindmap Not Generated Yet</h1>
-                        <p>Please use the form on the main page to generate a mindmap first.</p>
-                </div>
+    <div class="mindmap-placeholder">
+        <div class="placeholder-card">
+            ${htmlContent}
         </div>
+    </div>
 </body>
 </html>`;
-                                res.status(404).send(placeholderHtml);
-                        }
+                res.status(404).send(placeholderHtml);
+            } catch (readmeErr) {
+                console.error(`Failed to read and render README.md: ${readmeErr}`);
+                res.status(500).send('<h1>Error</h1><p>Could not load instructions.</p>');
+            }
         } else {
             console.log(`Serving mindmap file: ${mindmapPath}`);
             // Set headers to prevent caching

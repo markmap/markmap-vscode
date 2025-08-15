@@ -1,4 +1,4 @@
-# 🧠 How to Create Your Mind Map
+# MapMyBook AI
 
 Instantly generate interactive mind maps from any book. It's simple, fast, and powerful! ✨
 
@@ -16,9 +16,9 @@ Instantly generate interactive mind maps from any book. It's simple, fast, and p
 3.  **🚀 Generate Mind Map**: Click the **Generate** button. The AI will create a detailed summary of the book in a mind map structure.
 
 4.  **👆 Interact & Explore**: Your new mind map is fully interactive! Click on individual nodes to open and close them manually. For more control, use the toolbar buttons.
-    * **Using the Toolbar**
-        * `➕` **(Expand Level)**: Reveals the next single layer of nodes.
-        * `➖` **(Collapse Level)**: Hides the outermost layer of nodes.
+    * **Toolbar**
+        * `➕`: Reveals the next single layer of nodes.
+        * `➖`: Hides the outermost layer of nodes.
         * **Expand**: Opens every single node in the mind map at once.
         * **Collapse**: Closes all nodes down to the main topic.
         * **Wrap**: Toggles text wrapping for long sentences, making them easier to read inside the nodes.

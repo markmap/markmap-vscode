@@ -69,7 +69,7 @@ app.post('/generate', async (req, res) => {
         if (!isNaN(targetWordCount) && targetWordCount > 0) {
             noteText = `Remember it must be comprehensive in exactly ** ${targetWordCount} words**.`;
         } else {
-            noteText = `Remember it must be comprehensive (default length up to 5000 words).`;
+            noteText = `Remember it must be concise (default length up to 5000 words).`;
         }
         // --- End construct dynamic note ---
  

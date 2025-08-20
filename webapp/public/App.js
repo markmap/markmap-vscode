@@ -10,7 +10,6 @@ const App = () => {
     const [status, setStatus] = React.useState({ message: 'App loaded. Ready to generate or load existing mindmap.', type: 'info' });
     const [isLoading, setIsLoading] = React.useState(false);
     const [isEditorLoading, setIsEditorLoading] = React.useState(false);
-    const [selectedConciseness, setSelectedConciseness] = React.useState('concise');
     const [wordCount, setWordCount] = React.useState('');
     const [mindmapKey, setMindmapKey] = React.useState(Date.now());
     const saveTimeoutRef = React.useRef(null);
@@ -169,7 +168,7 @@ const App = () => {
     const handleToggleWrap = () => {
         const opts = getMarkmapOptions();
         const curMax = typeof opts.maxWidth === 'number' ? opts.maxWidth : 0;
-        const newMax = curMax > 0 ? 0 : 700;
+        const newMax = curMax > 0 ? 0 : 650;
         updateMarkmapOptions({ maxWidth: newMax });
         setStatus({ message: `Set node wrapping ${newMax > 0 ? 'enabled' : 'disabled'}.`, type: 'success' });
     };
@@ -203,7 +202,6 @@ const App = () => {
         setSelectedModel(newDefaultModel);
     };
     const handleModelChange = (e) => setSelectedModel(e.target.value);
-    const handleConcisenessChange = (e) => setSelectedConciseness(e.target.value);
     const handleWordCountChange = (e) => setWordCount(e.target.value);
 
     // --- Load editor content ---
@@ -264,7 +262,6 @@ const App = () => {
                     language,
                     provider: selectedProvider,
                     model: selectedModel,
-                    conciseness: selectedConciseness,
                     wordCount: wordCount,
                 }),
             });
@@ -389,20 +386,16 @@ const App = () => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-                        <div>
-                            <label htmlFor="concisenessSelect" style={{ fontSize: '0.78rem' }}>Summary</label>
-                            <select id="concisenessSelect" value={selectedConciseness} onChange={handleConcisenessChange} disabled={isLoading} style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.85rem' }}>
-                                <option value="concise">Concise</option>
-                                <option value="balanced">Balanced</option>
-                                <option value="comprehensive">Comprehensive</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="wordCountInput" style={{ fontSize: '0.78rem' }}>Target Words</label>
-                            <input type="number" id="wordCountInput" name="wordCount" placeholder="e.g., 4000" value={wordCount} onChange={handleWordCountChange} disabled={isLoading} min="100" style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.85rem' }} />
-                        </div>
-                    </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                <div>
+                                    <label htmlFor="wordCountInput" style={{ fontSize: '0.78rem' }}>Target Words</label>
+                                    <input type="number" id="wordCountInput" name="wordCount" placeholder="e.g., 4000" value={wordCount} onChange={handleWordCountChange} disabled={isLoading} min="100" style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.85rem' }} />
+                                </div>
+                                <div>
+                                    <label htmlFor="languageInput" style={{ fontSize: '0.78rem' }}>Language</label>
+                                    <input type="text" id="languageInput" name="language" placeholder="English" value={language} onChange={(e) => setLanguage(e.target.value)} disabled={isLoading} style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.9rem' }} />
+                                </div>
+                            </div>
 
                     <div>
                         <label htmlFor="bookNameInput" style={{ fontSize: '0.78rem' }}>Book Name</label>
@@ -414,10 +407,7 @@ const App = () => {
                         <input type="text" id="authorNameInput" name="authorName" placeholder="e.g., James Clear" value={authorName} onChange={(e) => setAuthorName(e.target.value)} disabled={isLoading} required style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.9rem' }} />
                     </div>
                     
-                    <div>
-                        <label htmlFor="languageInput" style={{ fontSize: '0.78rem' }}>Language</label>
-                        <input type="text" id="languageInput" name="language" placeholder="English" value={language} onChange={(e) => setLanguage(e.target.value)} disabled={isLoading} style={{ padding: '6px', borderRadius: '6px', border: '1px solid #d1d5db', width: '100%', fontSize: '0.9rem' }} />
-                    </div>
+                    {/* language moved next to Target Words above */}
                     
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
                         <button type="submit" disabled={isLoading || !bookName.trim() || !authorName.trim() || !selectedModel} style={{ padding: '8px 10px', cursor: (isLoading || !bookName.trim() || !authorName.trim() || !selectedModel) ? 'not-allowed' : 'pointer', backgroundColor: isLoading ? '#94a3b8' : '#0ea5a4', color: 'white', border: 'none', borderRadius: '6px', fontSize: '0.9rem' }}>
@@ -435,7 +425,7 @@ const App = () => {
                 )}
 
                 <div className="edit-section" style={{ flexGrow: 1, display: leftCollapsed ? 'none' : 'flex', flexDirection: 'column', marginTop: '8px' }}>
-                    <h2 style={{ margin: '6px 0', fontSize: '0.95rem' }}>Markdown</h2>
+                    <h2 style={{ margin: '6px 0', fontSize: '0.95rem' }}>Markdown Editor</h2>
                     <textarea
                         id="md-editor"
                         value={editorContent}

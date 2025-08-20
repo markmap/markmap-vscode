@@ -11,7 +11,7 @@ Instantly generate interactive mind maps from any book. It's simple, fast, and p
 2.  **🎛️ Customize Your Output (Optional)**:
     * Choose your preferred AI **Provider** (like OpenAI, Gemini, etc.).
     * Select a specific **Model** 🤖.
-    * Set the output **Language** 🌐, **Conciseness**, and target **Word Count** 🎯.
+    * Set the output **Language** 🌐 and target **Word Count** 🎯.
 
 3.  **🚀 Generate Mind Map**: Click the **Generate** button. The AI will create a detailed summary of the book in a mind map structure.
 

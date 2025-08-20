@@ -49,8 +49,8 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
 // GENERATE Mindmap from LLM (No changes needed in this route logic itself)
 app.post('/generate', async (req, res) => {
     try {
-        const { bookName, authorName, language, provider, model, conciseness, wordCount } = req.body;
-        console.log(`Received generate request: Book="${bookName}", Author="${authorName}", Language="${language || 'English'}", Provider="${provider}", Model="${model || 'Default'}", Conciseness="${conciseness}", WordCount="${wordCount || 'Default'}"`);
+    const { bookName, authorName, language, provider, model, wordCount } = req.body;
+    console.log(`Received generate request: Book="${bookName}", Author="${authorName}", Language="${language || 'English'}", Provider="${provider}", Model="${model || 'Default'}", WordCount="${wordCount || 'Default'}"`);
  
         if (!bookName || !authorName || !provider) {
             console.error('Error: Missing required fields:', { bookName, authorName, provider });
@@ -62,15 +62,14 @@ app.post('/generate', async (req, res) => {
              return res.status(400).json({ success: false, error: 'Missing model selection.' });
         }
  
-        // --- Construct the dynamic conciseness note ---
-        let concisenessLevel = conciseness || 'concise';
-        let noteText;
+    // --- Construct the dynamic note about word count ---
+    let noteText;
         const targetWordCount = parseInt(wordCount, 10);
  
         if (!isNaN(targetWordCount) && targetWordCount > 0) {
-            noteText = `Remember it must be ${concisenessLevel} in approximately ${targetWordCount} words.`;
+            noteText = `Remember it must be comprehensive in exactly ** ${targetWordCount} words**.`;
         } else {
-            noteText = `Remember it must be ${concisenessLevel} (default length up to 5000 words).`;
+            noteText = `Remember it must be comprehensive (default length up to 5000 words).`;
         }
         // --- End construct dynamic note ---
  

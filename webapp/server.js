@@ -6,10 +6,10 @@ const path = require('path');
 const { spawn } = require('child_process');
 const MarkdownIt = require('markdown-it');
 
-// Authentication imports
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const session = require('express-session');
+// Authentication imports - temporarily disabled
+// const passport = require('passport');
+// const GoogleStrategy = require('passport-google-oauth20').Strategy;
+// const session = require('express-session');
 
 // Load dotenv *ONCE* here at the main entry point for the webapp
 // It will load the ./webapp/.env file
@@ -49,129 +49,138 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
 
-// --- Authentication Configuration ---
+// --- Authentication Configuration - Temporarily Disabled ---
 // Session middleware (must be before passport middleware)
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: false, // Set to true in production with HTTPS
-        maxAge: 24 * 60 * 60 * 1000 // 24 hours
-    }
-}));
+// app.use(session({
+//     secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
+//     resave: false,
+//     saveUninitialized: false,
+//     cookie: {
+//         secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+//         maxAge: 24 * 60 * 60 * 1000 // 24 hours
+//     },
+//     // App Engine specific session store configuration
+//     name: 'mindmap.sid',
+//     proxy: true, // Trust proxy for secure cookies
+//     saveUninitialized: false
+// }));
 
 // Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
-// Passport Google OAuth Strategy
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_REDIRECT_URI
-}, (accessToken, refreshToken, profile, done) => {
-    // Here you would typically save user to database
-    // For now, we'll just return the profile
-    return done(null, {
-        id: profile.id,
-        email: profile.emails[0].value,
-        name: profile.displayName,
-        picture: profile.photos[0].value
-    });
-}));
+// Passport Google OAuth Strategy - Temporarily Disabled
+// passport.use(new GoogleStrategy({
+//     clientID: process.env.GOOGLE_CLIENT_ID,
+//     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+//     callbackURL: process.env.GOOGLE_REDIRECT_URI
+// }, (accessToken, refreshToken, profile, done) => {
+//     // Here you would typically save user to database
+//     // For now, we'll just return the profile
+//     return done(null, {
+//         id: profile.id,
+//         email: profile.emails[0].value,
+//         name: profile.displayName,
+//         picture: profile.photos[0].value
+//     });
+// }));
 
-// Serialize user for the session
-passport.serializeUser((user, done) => {
-    done(null, user);
+// Serialize user for the session - Temporarily Disabled
+// passport.serializeUser((user, done) => {
+//     done(null, user);
+// });
+
+// Deserialize user from the session - Temporarily Disabled
+// passport.deserializeUser((user, done) => {
+//     done(null, user);
+// });
+
+// --- Authentication Routes - Temporarily Disabled ---
+// app.get('/auth/google', passport.authenticate('google', {
+//     scope: ['profile', 'email']
+// }));
+
+// app.get('/auth/google/callback',
+//     passport.authenticate('google', { failureRedirect: '/' }),
+//     (req, res) => {
+//         // Successful authentication, redirect to home page
+//         res.redirect('/');
+//     }
+// );
+
+// app.get('/auth/logout', (req, res, next) => {
+//     req.logout((err) => {
+//         if (err) {
+//             return next(err);
+//         }
+//         req.session.destroy((err) => {
+//             if (err) {
+//                 console.error('Error destroying session:', err);
+//             }
+//             res.redirect('/');
+//         });
+//     });
+// });
+
+// app.get('/auth/user', (req, res) => {
+//     if (req.isAuthenticated()) {
+//         res.json({
+//             user: req.user,
+//             generationsRemaining: -1 // -1 means unlimited for authenticated users
+//         });
+//     } else {
+//         const generations = req.session.generations || 0;
+//         const remaining = Math.max(0, 2 - generations);
+//         res.json({
+//             user: null,
+//             generationsRemaining: remaining,
+//             generationsUsed: generations
+//         });
+//     }
+// });
+
+// --- Authentication Middleware - Temporarily Disabled ---
+// const requireAuth = (req, res, next) => {
+//     if (req.isAuthenticated()) {
+//         return next();
+//     }
+//     res.status(401).json({
+//         success: false,
+//         error: 'Authentication required. Please log in with Google.',
+//         authRequired: true
+//     });
+// };
+
+// --- Generation Limit Middleware - Temporarily Disabled ---
+// const checkGenerationLimit = (req, res, next) => {
+//     // If user is authenticated, allow unlimited generations
+//     if (req.isAuthenticated()) {
+//         return next();
+//     }
+
+//     // For unauthenticated users, track generations in session
+//     if (!req.session.generations) {
+//         req.session.generations = 0;
+//     }
+
+//     if (req.session.generations >= 2) {
+//         return res.status(401).json({
+//             success: false,
+//             error: 'You have reached the limit of 2 free generations. Please log in with Google to continue generating mindmaps.',
+//             authRequired: true,
+//             limitReached: true
+//         });
+//     }
+
+//     // Increment generation count for unauthenticated users
+//     req.session.generations += 1;
+//     next();
+// };
+
+// --- Health Check Route for App Engine ---
+app.get('/', (req, res) => {
+    res.status(200).send('Mindmap Generator is running!');
 });
-
-// Deserialize user from the session
-passport.deserializeUser((user, done) => {
-    done(null, user);
-});
-
-// --- Authentication Routes ---
-app.get('/auth/google', passport.authenticate('google', {
-    scope: ['profile', 'email']
-}));
-
-app.get('/auth/google/callback',
-    passport.authenticate('google', { failureRedirect: '/' }),
-    (req, res) => {
-        // Successful authentication, redirect to home page
-        res.redirect('/');
-    }
-);
-
-app.get('/auth/logout', (req, res, next) => {
-    req.logout((err) => {
-        if (err) {
-            return next(err);
-        }
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Error destroying session:', err);
-            }
-            res.redirect('/');
-        });
-    });
-});
-
-app.get('/auth/user', (req, res) => {
-    if (req.isAuthenticated()) {
-        res.json({
-            user: req.user,
-            generationsRemaining: -1 // -1 means unlimited for authenticated users
-        });
-    } else {
-        const generations = req.session.generations || 0;
-        const remaining = Math.max(0, 2 - generations);
-        res.json({
-            user: null,
-            generationsRemaining: remaining,
-            generationsUsed: generations
-        });
-    }
-});
-
-// --- Authentication Middleware ---
-const requireAuth = (req, res, next) => {
-    if (req.isAuthenticated()) {
-        return next();
-    }
-    res.status(401).json({
-        success: false,
-        error: 'Authentication required. Please log in with Google.',
-        authRequired: true
-    });
-};
-
-// --- Generation Limit Middleware ---
-const checkGenerationLimit = (req, res, next) => {
-    // If user is authenticated, allow unlimited generations
-    if (req.isAuthenticated()) {
-        return next();
-    }
-
-    // For unauthenticated users, track generations in session
-    if (!req.session.generations) {
-        req.session.generations = 0;
-    }
-
-    if (req.session.generations >= 2) {
-        return res.status(401).json({
-            success: false,
-            error: 'You have reached the limit of 2 free generations. Please log in with Google to continue generating mindmaps.',
-            authRequired: true,
-            limitReached: true
-        });
-    }
-
-    // Increment generation count for unauthenticated users
-    req.session.generations += 1;
-    next();
-};
 
 // --- Routes ---
 
@@ -543,10 +552,12 @@ function runConvertScript(inputFile, outputFile) {
 }
 
 // --- Start Server ---
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
+    const PORT = parseInt(process.env.PORT) || 3000;
+    const server = app.listen(PORT, '0.0.0.0', () => {
         console.log(`Webapp server listening on port ${PORT}`);
         console.log(`Access the app at http://localhost:${PORT}`);
+        console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+
         // Final check to confirm which keys were loaded
         console.log("--- API Key Status ---");
         secretKeys.forEach(key => {
@@ -557,6 +568,23 @@ function runConvertScript(inputFile, outputFile) {
             }
         });
         console.log("----------------------");
+    });
+
+    // Handle server errors gracefully
+    server.on('error', (err) => {
+        console.error('Server error:', err);
+        if (err.code === 'EADDRINUSE') {
+            console.error(`Port ${PORT} is already in use`);
+        }
+        process.exit(1);
+    });
+
+    // Handle process termination gracefully
+    process.on('SIGTERM', () => {
+        console.log('SIGTERM received, shutting down gracefully');
+        server.close(() => {
+            console.log('Process terminated');
+        });
     });
 }
 

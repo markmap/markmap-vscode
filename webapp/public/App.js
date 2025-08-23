@@ -15,6 +15,7 @@ const App = () => {
     const saveTimeoutRef = React.useRef(null);
     const userEditRef = React.useRef(false);
 
+
     // --- LLM Selection State ---
     const llmOptions = {
         Google: ['gemini-2.5-flash', 'gemini-2.5-pro'],
@@ -118,6 +119,7 @@ const App = () => {
         return str.replace(/^["'](.+)["']$/, '$1');
     };
 
+
     const buildMarkdownWithMarkmap = (mdContent, newMarkmap) => {
         const contentWithoutFM = mdContent.replace(/^\s*---\s*[\r\n]+([\s\S]*?)\r?\n---\s*\r?\n?/, '');
         const fm = `---\nmarkmap:\n${yamlSerialize(newMarkmap, 2)}\n---\n\n`;
@@ -182,12 +184,28 @@ const App = () => {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'mindmap-interactive.html';
+
+            // Create filename from book name (sanitize for file system)
+            let filename = 'mindmap-interactive.html';
+            if (bookName && bookName.trim()) {
+                // Replace spaces with underscores, remove special characters
+                const safeBookName = bookName.trim()
+                    .replace(/\s+/g, '_')  // Replace spaces with underscores
+                    .replace(/[^a-zA-Z0-9_]/g, '')  // Remove special characters
+                    .replace(/_+/g, '_')  // Replace multiple underscores with single
+                    .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+
+                if (safeBookName) {
+                    filename = `${safeBookName}_mindmap.html`;
+                }
+            }
+
+            a.download = filename;
             document.body.appendChild(a);
             a.click();
             a.remove();
             URL.revokeObjectURL(url);
-            setStatus({ message: 'Downloaded interactive mindmap HTML.', type: 'success' });
+            setStatus({ message: `Downloaded "${filename}" successfully!`, type: 'success' });
         } catch (err) {
             console.error(err);
             setStatus({ message: `Download failed: ${err.message}`, type: 'error' });
@@ -368,6 +386,7 @@ const App = () => {
                         <button type="button" onClick={() => setLeftCollapsed(true)} className="secondary" style={{ padding: '6px 8px', fontSize: '0.85rem' }}>Hide</button>
                     </div>
                 </div>
+
 
                 <form onSubmit={handleGenerate} style={{ padding: '10px', borderRadius: '8px', backgroundColor: '#ffffff', boxShadow: '0 1px 3px rgba(15,23,42,0.04)', display: 'grid', gap: '8px', marginTop: '8px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>

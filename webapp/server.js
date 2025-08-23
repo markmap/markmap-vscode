@@ -6,6 +6,11 @@ const path = require('path');
 const { spawn } = require('child_process');
 const MarkdownIt = require('markdown-it');
 
+// Authentication imports
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const session = require('express-session');
+
 // Load dotenv *ONCE* here at the main entry point for the webapp
 // It will load the ./webapp/.env file
 require('dotenv').config();
@@ -44,9 +49,133 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files
 
+// --- Authentication Configuration ---
+// Session middleware (must be before passport middleware)
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'fallback-secret-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false, // Set to true in production with HTTPS
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Passport Google OAuth Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_REDIRECT_URI
+}, (accessToken, refreshToken, profile, done) => {
+    // Here you would typically save user to database
+    // For now, we'll just return the profile
+    return done(null, {
+        id: profile.id,
+        email: profile.emails[0].value,
+        name: profile.displayName,
+        picture: profile.photos[0].value
+    });
+}));
+
+// Serialize user for the session
+passport.serializeUser((user, done) => {
+    done(null, user);
+});
+
+// Deserialize user from the session
+passport.deserializeUser((user, done) => {
+    done(null, user);
+});
+
+// --- Authentication Routes ---
+app.get('/auth/google', passport.authenticate('google', {
+    scope: ['profile', 'email']
+}));
+
+app.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+        // Successful authentication, redirect to home page
+        res.redirect('/');
+    }
+);
+
+app.get('/auth/logout', (req, res, next) => {
+    req.logout((err) => {
+        if (err) {
+            return next(err);
+        }
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+            }
+            res.redirect('/');
+        });
+    });
+});
+
+app.get('/auth/user', (req, res) => {
+    if (req.isAuthenticated()) {
+        res.json({
+            user: req.user,
+            generationsRemaining: -1 // -1 means unlimited for authenticated users
+        });
+    } else {
+        const generations = req.session.generations || 0;
+        const remaining = Math.max(0, 2 - generations);
+        res.json({
+            user: null,
+            generationsRemaining: remaining,
+            generationsUsed: generations
+        });
+    }
+});
+
+// --- Authentication Middleware ---
+const requireAuth = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.status(401).json({
+        success: false,
+        error: 'Authentication required. Please log in with Google.',
+        authRequired: true
+    });
+};
+
+// --- Generation Limit Middleware ---
+const checkGenerationLimit = (req, res, next) => {
+    // If user is authenticated, allow unlimited generations
+    if (req.isAuthenticated()) {
+        return next();
+    }
+
+    // For unauthenticated users, track generations in session
+    if (!req.session.generations) {
+        req.session.generations = 0;
+    }
+
+    if (req.session.generations >= 2) {
+        return res.status(401).json({
+            success: false,
+            error: 'You have reached the limit of 2 free generations. Please log in with Google to continue generating mindmaps.',
+            authRequired: true,
+            limitReached: true
+        });
+    }
+
+    // Increment generation count for unauthenticated users
+    req.session.generations += 1;
+    next();
+};
+
 // --- Routes ---
 
-// GENERATE Mindmap from LLM (No changes needed in this route logic itself)
+// GENERATE Mindmap from LLM (No authentication required)
 app.post('/generate', async (req, res) => {
     try {
     const { bookName, authorName, language, provider, model, wordCount } = req.body;
@@ -180,7 +309,7 @@ app.post('/generate', async (req, res) => {
     }
 });
 
-// SAVE Edited Markdown from Editor (No changes needed here)
+// SAVE Edited Markdown from Editor (No authentication required)
 app.post('/save-md', async (req, res) => {
     try {
         const { mdContent } = req.body;

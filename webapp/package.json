@@ -16,6 +16,7 @@
     "body-parser": "^1.20.3",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-session": "^1.18.2",
     "js-yaml": "^4.1.0",
     "markdown-it": "^14.1.0",
     "markdown-it-ins": "^4.0.0",
@@ -24,6 +25,8 @@
     "markdown-it-sup": "^2.0.0",
     "markmap-lib": "^0.18.12",
     "markmap-render": "^0.18.12",
-    "openai": "^4.89.0"
+    "openai": "^4.89.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0"
   }
 }

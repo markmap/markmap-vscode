@@ -83,9 +83,11 @@ document.addEventListener('click', (e) => {
       const node = findHeading(href.slice(1));
       highlightNode(node);
     } else if (!href.includes('://')) {
+      // transform UTF-8
+      const utf8Href = decodeURIComponent(href);
       vscode.postMessage({
         type: 'openFile',
-        data: href,
+        data: utf8Href,
       });
     }
   }

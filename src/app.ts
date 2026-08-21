@@ -1,4 +1,10 @@
-import { IDeferred, defer, wrapFunction, type INode } from 'markmap-common';
+import {
+  IDeferred,
+  defer,
+  walkTree,
+  wrapFunction,
+  type INode,
+} from 'markmap-common';
 import { Toolbar } from 'markmap-toolbar';
 import {
   defaultOptions,
@@ -16,7 +22,6 @@ let style: HTMLStyleElement;
 let active:
   | {
       node: INode;
-      el: Element;
     }
   | undefined;
 const activeNodeOptions: {
@@ -139,7 +144,19 @@ function initialize(mm: Markmap) {
             vscode.postMessage({ type: 'setFocus', data: line });
         },
         true,
-      );
+      )
+      .on('click.toggleNode', (e, d) => {
+        // markmap-view only handles clicks on the circle of a node;
+        // make the whole node (text included) clickable
+        if (!d?.children?.length) return;
+        // the circle is handled by markmap-view itself, and links by the
+        // document-level click handler
+        if ((e.target as Element).closest('circle, a')) return;
+        // ctrl/cmd inverts the recursive mode, same as clicking the circle
+        const recursive =
+          mm.options.toggleRecursively !== !!(e.metaKey || e.ctrlKey);
+        mm.toggleNode(d, recursive);
+      });
   });
 }
 
@@ -214,6 +231,7 @@ function findActiveNode({
 }
 
 async function highlightNode(node?: INode) {
+  active = node && { node };
   await mm.setHighlight(node);
   if (!node) return;
   await mm[
@@ -221,4 +239,152 @@ async function highlightNode(node?: INode) {
   ](node, {
     bottom: 80,
   });
+}
+
+/**
+ * Keyboard shortcuts, available when the markmap preview is focused.
+ * Single keys only, since they have no other function in the preview.
+ */
+const keyHandlers: {
+  [key: string]: () => void;
+} = {
+  f: () =>
+    whenReady(() => {
+      mm.fit();
+      pulseToolbar('fit');
+    }),
+  r: () => toggleRecursively(),
+  '+': () => rescaleByKey(1.25),
+  '=': () => rescaleByKey(1.25),
+  '-': () => rescaleByKey(0.8),
+  e: () => setFoldAll(0),
+  c: () => setFoldAll(1),
+  t: () => {
+    if (active?.node) mm.toggleNode(active.node, isToggleRecursively());
+  },
+  '?': () => toggleHelp(),
+};
+
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const el = e.target as HTMLElement | null;
+  if (el?.closest?.('input, textarea, select, [contenteditable]')) return;
+  if (e.key === 'Escape') {
+    hideHelp();
+    return;
+  }
+  const handler = keyHandlers[e.key.toLowerCase()];
+  if (!handler) return;
+  e.preventDefault();
+  handler();
+});
+
+function whenReady(fn: () => void | Promise<void>) {
+  return loading?.promise.then(fn);
+}
+
+function isToggleRecursively() {
+  return mm.options.toggleRecursively;
+}
+
+/**
+ * Toggle `toggleRecursively` mode, same as the `recurse` toolbar button,
+ * and sync the button's active state so the current mode is visible.
+ */
+function toggleRecursively() {
+  const enabled = !mm.options.toggleRecursively;
+  mm.setOptions({ toggleRecursively: enabled });
+  getToolbarItemEl('recurse')?.classList.toggle('active', enabled);
+}
+
+/**
+ * Get the rendered DOM element of a toolbar item.
+ * `registry[id].content` holds a virtual node instead of the rendered
+ * element, so look the button up by its index in the rendered items.
+ */
+function getToolbarItemEl(id: string) {
+  const index = toolbar.items.indexOf(id);
+  if (index < 0) return;
+  return toolbar.el.querySelectorAll<HTMLElement>('.mm-toolbar-item')[index];
+}
+
+/**
+ * Briefly highlight a toolbar item, as visual feedback for shortcuts
+ * mapped to one-shot actions like `fit` and zooming.
+ */
+function pulseToolbar(id: string) {
+  const el = getToolbarItemEl(id);
+  if (!el) return;
+  el.classList.add('active');
+  setTimeout(() => {
+    el.classList.remove('active');
+  }, 200);
+}
+
+function rescaleByKey(ratio: number) {
+  whenReady(() => {
+    mm.rescale(ratio);
+    pulseToolbar(ratio > 1 ? 'zoomIn' : 'zoomOut');
+  });
+}
+
+async function setFoldAll(fold: number) {
+  await whenReady();
+  if (!root) return;
+  let isRoot = true;
+  walkTree(root, (node, next) => {
+    // never fold the root node, otherwise nothing is visible
+    if (!isRoot && node.children?.length) {
+      node.payload = { ...node.payload, fold };
+    }
+    isRoot = false;
+    next();
+  });
+  await mm.renderData();
+  await mm.fit();
+}
+
+let helpEl: HTMLDivElement | undefined;
+
+function toggleHelp() {
+  if (helpEl?.isConnected) {
+    hideHelp();
+    return;
+  }
+  helpEl = document.createElement('div');
+  helpEl.className = 'markmap-help';
+  const title = document.createElement('div');
+  title.className = 'markmap-help-title';
+  title.textContent = 'Keyboard Shortcuts';
+  const list = document.createElement('ul');
+  const items: [string[], string][] = [
+    [['F'], 'Fit window size'],
+    [['R'], 'Toggle recursively'],
+    [['+', '='], 'Zoom in'],
+    [['-'], 'Zoom out'],
+    [['E'], 'Expand all'],
+    [['C'], 'Collapse all'],
+    [['T'], 'Toggle the highlighted node'],
+    [['?'], 'Show/hide this help'],
+  ];
+  items.forEach(([keys, label]) => {
+    const li = document.createElement('li');
+    const kbdContainer = document.createElement('span');
+    keys.forEach((key, i) => {
+      if (i) kbdContainer.append(' / ');
+      const kbd = document.createElement('kbd');
+      kbd.textContent = key;
+      kbdContainer.append(kbd);
+    });
+    const text = document.createElement('span');
+    text.textContent = label;
+    li.append(kbdContainer, text);
+    list.append(li);
+  });
+  helpEl.append(title, list);
+  document.body.append(helpEl);
+}
+
+function hideHelp() {
+  helpEl?.remove();
 }

@@ -23,3 +23,58 @@ body {
   padding-left: 4px;
   padding-right: 4px;
 }
+
+.markmap-help {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+  padding: 12px 16px;
+  border: 1px solid rgb(0 0 0 / 10%);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 80%);
+  color: #333;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.markmap-help-title {
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+.markmap-help ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.markmap-help li {
+  display: flex;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.markmap-help kbd {
+  display: inline-block;
+  min-width: 1em;
+  padding: 0 6px;
+  border: 1px solid rgb(0 0 0 / 30%);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #fff;
+  font-family: monospace;
+  text-align: center;
+}
+
+.markmap-dark .markmap-help {
+  border-color: rgb(255 255 255 / 15%);
+  background: rgb(0 0 0 / 70%);
+  color: #eee;
+}
+
+.markmap-dark .markmap-help kbd {
+  border-color: rgb(255 255 255 / 30%);
+  background: #333;
+  color: #eee;
+}

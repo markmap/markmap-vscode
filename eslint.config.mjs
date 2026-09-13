@@ -16,7 +16,7 @@ export default [
       },
     },
   },
-  { ignores: ['**/*.js', '**/dist/', '.vscode-test-web/'] },
+  { ignores: ['**/*.js', '**/dist/'] },
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

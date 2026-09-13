@@ -9,14 +9,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v1
+        name: Install pnpm
         with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+          version: 12
+          runtime: node@26
+          cache: true
       - name: Install deps
         run: pnpm i
       - name: Publish to Open VSX Registry

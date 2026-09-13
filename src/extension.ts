@@ -54,6 +54,17 @@ async function writeFile(targetUri: Uri, text: string) {
   }
 }
 
+function isSafeRelPath(raw: string) {
+  let path = raw;
+  try {
+    path = decodeURIComponent(raw);
+  } catch {
+    return false;
+  }
+  if (/^([a-zA-Z]:)?[\\/]/.test(path)) return false;
+  return !path.split(/[/\\]/).includes('..');
+}
+
 class MarkmapEditor implements CustomTextEditorProvider {
   private webviewPanelMap = new Map<TextDocument, WebviewPanel>();
 
@@ -78,9 +89,13 @@ class MarkmapEditor implements CustomTextEditorProvider {
     const transformerLocal = new Transformer([
       ...builtInPlugins,
       localImage((relPath) =>
-        webviewPanel.webview
-          .asWebviewUri(Utils.joinPath(Utils.dirname(document.uri), relPath))
-          .toString(),
+        isSafeRelPath(relPath)
+          ? webviewPanel.webview
+              .asWebviewUri(
+                Utils.joinPath(Utils.dirname(document.uri), relPath),
+              )
+              .toString()
+          : '',
       ),
     ]);
     const resolveUrl = (path: string) =>
@@ -147,6 +162,7 @@ class MarkmapEditor implements CustomTextEditorProvider {
       htmlParser?: unknown;
     };
     let customCSS: string;
+    let pendingSvgUri: Uri | undefined;
     const updateOptions = () => {
       const raw = workspace
         .getConfiguration('markmap')
@@ -307,17 +323,21 @@ class MarkmapEditor implements CustomTextEditorProvider {
         if (targetUri.path.endsWith('.html')) {
           await exportAsHtml(targetUri);
         } else if (targetUri.path.endsWith('.svg')) {
+          pendingSvgUri = targetUri;
           webviewPanel.webview.postMessage({
             type: 'downloadSvg',
             data: targetUri.toString(),
           });
         }
       },
-      async downloadSvg(data: { content: string; path: string }) {
-        const targetUri = Uri.parse(data.path);
+      async downloadSvg(data: { content: string }) {
+        const targetUri = pendingSvgUri;
+        pendingSvgUri = undefined;
+        if (!targetUri) return;
         await writeFile(targetUri, data.content);
       },
       openFile(relPath: string) {
+        if (!isSafeRelPath(relPath)) return;
         const filePath = Utils.joinPath(Utils.dirname(document.uri), relPath);
         commands.executeCommand('vscode.open', filePath);
       },

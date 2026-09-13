@@ -4,9 +4,10 @@ on:
   push:
     tags:
       - v*
+  workflow_dispatch:
 
 jobs:
-  build:
+  package:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -18,16 +19,54 @@ jobs:
           cache: true
       - name: Install deps
         run: pnpm i
-      - name: Publish to Open VSX Registry
-        continue-on-error: true
-        uses: HaaLeo/publish-vscode-extension@v2
+      - name: Package
+        run: pnpm exec vsce package --no-dependencies
+      - name: Upload vsix
+        uses: actions/upload-artifact@v7
         with:
-          pat: ${{ secrets.OVSX_TOKEN }}
-          dependencies: false
+          name: markmap-vsix
+          path: markmap-vscode-*.vsix
+
+  publish-marketplace:
+    name: Publish to Marketplace
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v1
+        name: Install pnpm
+        with:
+          version: 12
+          runtime: node@26
+          cache: true
+      - name: Install deps
+        run: pnpm i
+      - uses: actions/download-artifact@v8
+        with:
+          name: markmap-vsix
       - name: Publish to Visual Studio Marketplace
-        continue-on-error: true
-        uses: HaaLeo/publish-vscode-extension@v2
+        run: pnpm exec vsce publish --packagePath markmap-vscode-*.vsix
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
+
+  publish-openvsx:
+    name: Publish to Open VSX
+    needs: package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v1
+        name: Install pnpm
         with:
-          pat: ${{ secrets.VSCE_TOKEN }}
-          dependencies: false
-          registryUrl: https://marketplace.visualstudio.com
+          version: 12
+          runtime: node@26
+          cache: true
+      - name: Install deps
+        run: pnpm i
+      - uses: actions/download-artifact@v8
+        with:
+          name: markmap-vsix
+      - name: Publish to Open VSX Registry
+        run: pnpm exec ovsx publish markmap-vscode-*.vsix
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_TOKEN }}

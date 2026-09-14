@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.2.12
+
+- Fix security issue in file operations requested from the webview, thanks to Brian Willows for reporting
+
 ## 0.1.1
 
 - Use <kbd>Cmd</kbd>+click to toggle nodes recursively on macOS

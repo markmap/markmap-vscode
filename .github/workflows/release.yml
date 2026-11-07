@@ -31,6 +31,9 @@ jobs:
     name: Publish to Marketplace
     needs: package
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/setup@v3
@@ -45,9 +48,7 @@ jobs:
         with:
           name: markmap-vsix
       - name: Publish to Visual Studio Marketplace
-        run: pnpm exec vsce publish --packagePath markmap-vscode-*.vsix
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_TOKEN }}
+        run: pnpm exec vsce publish --oidc --packagePath markmap-vscode-*.vsix
 
   publish-openvsx:
     name: Publish to Open VSX

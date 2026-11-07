@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/setup@v1
+      - uses: pnpm/setup@v3
         name: Install pnpm
         with:
           version: 12
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/setup@v1
+      - uses: pnpm/setup@v3
         name: Install pnpm
         with:
           version: 12
@@ -55,7 +55,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/setup@v1
+      - uses: pnpm/setup@v3
         name: Install pnpm
         with:
           version: 12

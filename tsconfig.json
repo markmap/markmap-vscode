@@ -6,6 +6,7 @@
     "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
+    "types": ["node", "vscode-webview"],
     "noEmit": true
   },
   "include": [

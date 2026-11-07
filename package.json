@@ -89,13 +89,13 @@
         "markmap.defaultOptions": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Default options for Markmap, see <https://markmap.js.org/docs/json-options#markmap-for-vscode> for more details.",
+          "markdownDescription": "Default options for Markmap as JSON, see <https://markmap.js.org/docs/guide/options> for the options. The options in a document win over these, and they do not apply to exported HTML.",
           "editPresentation": "multilineText"
         },
         "markmap.customCSS": {
           "type": "string",
           "default": "",
-          "markdownDescription": "Custom CSS for Markmap, please don't change this if you are not sure what you are doing. You can test your styles on <https://markmap.js.org> since the SVGs shares the same structure.",
+          "markdownDescription": "Custom CSS for the page around the map. To change colors, set the `--mm-*` properties on `markmap-view`, see <https://markmap.js.org/docs/guide/themes-and-layouts>. Rules cannot reach inside the map, and they do not apply to exported HTML.",
           "editPresentation": "multilineText"
         }
       }
@@ -127,6 +127,14 @@
     "dist"
   ],
   "devDependencies": {
+    "@markmap/canvas": "1.0.0",
+    "@markmap/core": "1.0.0",
+    "@markmap/element": "1.0.0",
+    "@markmap/page": "1.0.0",
+    "@markmap/plugin-math": "1.0.0",
+    "@markmap/render": "1.0.0",
+    "@markmap/toolbar": "1.0.0",
+    "@markmap/view": "1.0.0",
     "@types/node": "^24.0.1",
     "@types/vscode": "~1.75.0",
     "@types/vscode-webview": "^1.57.5",
@@ -135,11 +143,6 @@
     "es-toolkit": "^1.39.3",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.0",
-    "markmap-common": "0.18.9",
-    "markmap-lib": "0.18.12",
-    "markmap-render": "0.18.12",
-    "markmap-toolbar": "0.18.12",
-    "markmap-view": "0.18.12",
     "ovsx": "^1.2.0",
     "oxfmt": "^0.76.0",
     "oxlint": "^1.91.0",

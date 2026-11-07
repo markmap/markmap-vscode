@@ -1,25 +1,44 @@
 html,
 body {
+  height: 100%;
   margin: 0;
   padding: 0;
 }
 
-.button-panel {
-  position: absolute;
-  right: 20px;
-  bottom: 20px;
-  background: #fff8;
+markmap-view {
+  height: 100%;
+  user-select: none;
+  --mm-bg: var(--vscode-editor-background);
+  --mm-text: var(--vscode-editor-foreground);
+  --mm-toggle-bg: var(--vscode-editor-background);
+  --mm-link: var(--vscode-textLink-foreground);
+}
+
+.node-flash {
+  position: fixed;
+  z-index: 1;
+  box-sizing: border-box;
   border-radius: 4px;
+  outline: 2px solid var(--vscode-focusBorder);
+  outline-offset: 2px;
+  pointer-events: none;
+  animation: node-flash 1s ease-out forwards;
 }
 
-.mm-toolbar {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
+@keyframes node-flash {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
-.btn-text {
-  height: auto;
-  padding-left: 4px;
-  padding-right: 4px;
+.status {
+  position: fixed;
+  left: 8px;
+  bottom: 8px;
+  max-width: calc(100% - 280px);
+  color: var(--vscode-editorWarning-foreground);
+  font: 12px var(--vscode-font-family);
 }

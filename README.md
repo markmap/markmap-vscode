@@ -9,6 +9,8 @@ This extension integrates [markmap](https://markmap.js.org/) into VSCode.
 
 - Preview markdown files as markmap
 - Edit markdown files in a text editor and the markmap will update on the fly
+- Themes and layouts, set in frontmatter
+- Export as HTML, SVG or PNG
 - Works offline
 
 <img width="1014" alt="markmap" src="https://user-images.githubusercontent.com/3139113/97068999-5f9e8480-15ff-11eb-8222-43d26cecade5.png">
@@ -33,8 +35,14 @@ Open a markdown file. Find the markmap icon on the editor title-bar and click it
 
 ### Custom CSS
 
-Extra CSS to customize the style of markmap.
+Extra CSS for the page around the map. To change colors, set `--mm-*` properties on `markmap-view`. See [Themes and layouts](https://markmap.js.org/docs/guide/themes-and-layouts) for the list.
+
+```css
+markmap-view {
+  --mm-link: rebeccapurple;
+}
+```
 
 ### Default Options
 
-Default options for Markmap, see <https://markmap.js.org/docs/json-options#markmap-for-vscode> for more details.
+Default options for Markmap as JSON, see [Options](https://markmap.js.org/docs/guide/options). Options in the frontmatter of a document win over these.

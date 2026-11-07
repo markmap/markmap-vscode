@@ -1,0 +1,8 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript"],
+  "env": { "browser": true, "node": true },
+  "categories": { "correctness": "error" },
+  "rules": { "typescript/no-explicit-any": "off" },
+  "ignorePatterns": ["dist"]
+}

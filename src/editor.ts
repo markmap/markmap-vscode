@@ -19,6 +19,16 @@ import { Utils } from 'vscode-uri';
 import { isSafeRelPath } from './paths';
 import type { HostMessage, WebviewMessage } from './protocol';
 
+const EXPORT_FORMATS = [
+  { label: 'SVG', format: 'svg', detail: 'Vector image' },
+  { label: 'PNG', format: 'png', detail: 'Bitmap image' },
+  {
+    label: 'HTML',
+    format: 'html',
+    detail: 'Interactive page that works offline',
+  },
+] as const;
+
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
@@ -33,6 +43,14 @@ async function writeFile(targetUri: Uri, content: string | Uint8Array) {
       `Cannot write file "${targetUri.toString()}"!`,
     );
   }
+}
+
+/** The document's name in its folder, with the extension of the export. */
+function defaultExportUri(document: TextDocument, format: string) {
+  if (document.isUntitled) return undefined;
+  const ext = Utils.extname(document.uri);
+  const name = Utils.basename(document.uri).slice(0, -ext.length || undefined);
+  return Utils.joinPath(Utils.dirname(document.uri), `${name}.${format}`);
 }
 
 function readDefaultOptions() {
@@ -156,15 +174,21 @@ export class MarkmapEditor implements CustomTextEditorProvider {
         });
       },
       export: async ({ title }) => {
+        const choice = await vscodeWindow.showQuickPick(EXPORT_FORMATS, {
+          title: 'Export the map',
+          placeHolder: 'Choose a format',
+        });
+        if (!choice) return;
+        const { label, format } = choice;
         const targetUri = await vscodeWindow.showSaveDialog({
           saveLabel: 'Export',
-          filters: { HTML: ['html'], SVG: ['svg'], PNG: ['png'] },
+          defaultUri: defaultExportUri(document, format),
+          filters: { [label]: [format] },
         });
         if (!targetUri) return;
-        const format = targetUri.path.split('.').pop()?.toLowerCase();
         if (format === 'html') {
           await writeFile(targetUri, await this.createHtml(document, title));
-        } else if (format === 'svg' || format === 'png') {
+        } else {
           pendingImageUri = targetUri;
           post({ type: 'exportImage', data: format });
         }

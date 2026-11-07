@@ -5,7 +5,7 @@
 Rebuilt on the new `@markmap/*` packages.
 
 - Add themes (`classic`, `cards`, `minimal`) and layouts (`tree`, `two-sided`, `org-chart`), set in frontmatter
-- Add PNG export
+- Add PNG export, and choose the format before picking a file
 - Keep folded branches while editing
 - Follow the VS Code color theme
 - Add a content security policy to the webview, and limit local files to the document's folder

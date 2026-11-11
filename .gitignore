@@ -4,3 +4,5 @@ node_modules
 .vscode-test/
 *.vsix
 .vscode/settings.json
+.vscode-test-web/
+e2e-web-failure.png

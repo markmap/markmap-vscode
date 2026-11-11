@@ -1,13 +1,14 @@
 allowBuilds:
+  '@playwright/browser-chromium': false
   '@vscode/vsce-sign': false
   keytar: false
 minimumReleaseAgeExclude:
-  - '@markmap/canvas@1.0.0'
-  - '@markmap/core@1.0.0'
-  - '@markmap/element@1.0.0'
-  - '@markmap/page@1.0.0'
-  - '@markmap/parse@1.0.0'
-  - '@markmap/plugin-math@1.0.0'
-  - '@markmap/render@1.0.0'
-  - '@markmap/toolbar@1.0.0'
-  - '@markmap/view@1.0.0'
+  - '@markmap/canvas@1.1.0'
+  - '@markmap/core@1.1.0'
+  - '@markmap/element@1.1.0'
+  - '@markmap/page@1.1.0'
+  - '@markmap/parse@1.1.0'
+  - '@markmap/plugin-math@1.1.0'
+  - '@markmap/render@1.1.0'
+  - '@markmap/toolbar@1.1.0'
+  - '@markmap/view@1.1.0'

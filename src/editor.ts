@@ -1,12 +1,17 @@
 import { createPage } from '@markmap/page';
 import { debounce } from 'es-toolkit';
+import GithubSlugger from 'github-slugger';
 import {
   CustomTextEditorProvider,
+  DocumentSymbol,
   ExtensionContext,
   Position,
   Selection,
+  SymbolInformation,
+  SymbolKind,
   TabInputText,
   TextDocument,
+  TextEditorRevealType,
   Uri,
   ViewColumn,
   Webview,
@@ -200,12 +205,75 @@ export class MarkmapEditor implements CustomTextEditorProvider {
           vscodeWindow.showErrorMessage(`Cannot export the map: ${error}`);
         if (targetUri && content != null) await writeFile(targetUri, content);
       },
-      openFile(relPath) {
-        if (!isSafeRelPath(relPath)) return;
-        commands.executeCommand(
-          'vscode.open',
-          Utils.joinPath(documentDir, relPath),
-        );
+      async openFile(relPath) {
+        try {
+          if (/^[a-z][a-z\d+.-]*:/i.test(relPath)) return;
+          // A schemeless URI would otherwise be parsed as an absolute file path.
+          const link = Uri.parse(`relative:${relPath}`);
+          if (
+            link.authority ||
+            link.query ||
+            !link.path ||
+            !isSafeRelPath(link.path)
+          )
+            return;
+          const uri = Utils.joinPath(documentDir, link.path);
+          if (!link.fragment) {
+            await commands.executeCommand('vscode.open', uri);
+            return;
+          }
+          const target = await workspace.openTextDocument(uri);
+          if (target.languageId !== 'markdown') {
+            await commands.executeCommand(
+              'vscode.open',
+              uri.with({ fragment: link.fragment }),
+            );
+            return;
+          }
+          const editor = await vscodeWindow.showTextDocument(target);
+          const symbols = await commands.executeCommand<
+            (DocumentSymbol | SymbolInformation)[]
+          >('vscode.executeDocumentSymbolProvider', uri);
+          const headings: { text: string; position: Position }[] = [];
+          const collect = (items: typeof symbols) => {
+            for (const symbol of items || []) {
+              // Markdown headings are String symbols named "# Heading";
+              // link definitions are Constant symbols and must not consume slugs.
+              if (symbol.kind === SymbolKind.String) {
+                headings.push({
+                  text: symbol.name.replace(/^#{1,6}\s+/, '').trim(),
+                  position:
+                    'selectionRange' in symbol
+                      ? symbol.selectionRange.start
+                      : symbol.location.range.start,
+                });
+              }
+              if ('children' in symbol) collect(symbol.children);
+            }
+          };
+          collect(symbols);
+          // Duplicate slugs are assigned in source order, not provider tree order.
+          headings.sort(
+            (a, b) =>
+              a.position.line - b.position.line ||
+              a.position.character - b.position.character,
+          );
+          const slugger = new GithubSlugger();
+          const heading = headings.find(
+            (item) => slugger.slug(item.text) === link.fragment,
+          );
+          if (!heading) {
+            vscodeWindow.showWarningMessage(
+              `Cannot find Markdown heading "#${link.fragment}".`,
+            );
+            return;
+          }
+          const position = new Position(heading.position.line, 0);
+          editor.selection = new Selection(position, position);
+          editor.revealRange(editor.selection, TextEditorRevealType.InCenter);
+        } catch {
+          vscodeWindow.showErrorMessage(`Cannot open link "${relPath}"!`);
+        }
       },
       async setFocus(offset) {
         const viewColumn = vscodeWindow.tabGroups.all

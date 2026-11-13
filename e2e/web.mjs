@@ -3,7 +3,7 @@
 import { spawn } from 'node:child_process';
 import { chromium } from 'playwright-core';
 import {
-  chooseExport, createReporter, extensionPath, findNodeId, openSampleAsMarkmap, prepareWorkspace, runCommand, sleep,
+  checkLocalLinks, chooseExport, createReporter, extensionPath, findNodeId, openSampleAsMarkmap, prepareWorkspace, runCommand, sleep,
 } from './lib.mjs';
 
 const port = process.env.E2E_PORT || '3123';
@@ -12,7 +12,9 @@ const t = createReporter();
 
 const server = spawn(
   'pnpm',
-  ['exec', 'vscode-test-web', '--browserType=none', `--port=${port}`, '--quality=stable', `--extensionDevelopmentPath=${extensionPath}`, workspace],
+  ['exec', 'vscode-test-web', '--browserType=none', `--port=${port}`, '--quality=stable',
+    ...(process.env.E2E_VSCODE_COMMIT ? [`--commit=${process.env.E2E_VSCODE_COMMIT}`] : []),
+    `--extensionDevelopmentPath=${extensionPath}`, workspace],
   { cwd: extensionPath, stdio: ['ignore', 'pipe', 'inherit'] },
 );
 await new Promise((resolve, reject) => {
@@ -109,6 +111,8 @@ try {
   const tabs = (await page.locator('.tabs-container .tab').allTextContents()).join(',');
   t.ok('relative link opens the file', tabs.includes('other.md'), tabs);
 
+  await checkLocalLinks(page, frame, t);
+
   // live update while typing (the link above left other.md active, so reopen sample.md from the explorer)
   await page.locator('.explorer-folders-view').getByText('sample.md', { exact: true }).first().click();
   await sleep(800);
@@ -118,11 +122,13 @@ try {
   t.ok('typing updates the map', !!(await findNodeId(frame, 'typed live')));
 
   // theme
-  await runCommand(page, 'Preferences: Color Theme');
-  await page.keyboard.type('Dark Modern');
-  await sleep(500);
-  await page.keyboard.press('Enter');
-  await sleep(1500);
+  // Open the installed-theme picker, not the similarly named marketplace command.
+  const modifier = process.platform === 'darwin' ? 'Meta' : 'Control';
+  await page.keyboard.press(`${modifier}+k`);
+  await page.keyboard.press(`${modifier}+t`);
+  await page.locator('.quick-input-box input').first().fill('Dark Modern');
+  await page.locator('.quick-input-list').getByText('Dark Modern', { exact: true }).click();
+  await frame.waitForFunction(() => document.querySelector('markmap-view').mm.options.colorScheme === 'dark');
   t.ok('map follows the dark theme', (await v(() => document.querySelector('markmap-view').mm.options.colorScheme)) === 'dark');
 
   // note popover anchor

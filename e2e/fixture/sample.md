@@ -21,3 +21,7 @@ const a = 1;
 ## Second
 
 - [outside](https://example.com)
+
+- [Unicode heading](./other.md#006-café-outage-naïve-retries-and-recovery)
+- [encoded heading](./other.md#006-caf%C3%A9-outage-na%C3%AFve-retries-and-recovery)
+- [duplicate heading](./other.md#duplicate-1)

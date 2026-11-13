@@ -5,6 +5,7 @@ There are two suites, and neither is part of `pnpm build` or CI.
 
 ```bash
 pnpm build:js        # the tests load dist/, so rebuild first
+pnpm test:links      # focused host-handler regression tests, no browser required
 pnpm test:e2e:web
 pnpm test:e2e:desktop
 ```
@@ -12,11 +13,17 @@ pnpm test:e2e:desktop
 Each suite prints `PASS`/`FAIL` lines and exits non-zero if any check fails.
 They copy `e2e/fixture` to a temp folder, so nothing is written into the repo.
 
+The focused `test:links` checks load the built extension with VS Code API stubs.
+They cover heading-symbol prefixes and shapes, Unicode and duplicate anchors,
+encoded paths, plain links, missing headings, and the existing path restrictions.
+They do not replace the real VS Code suites below.
+
 ## Requirements
 
 - Google Chrome (the web suite launches it with Playwright's `channel: 'chrome'`).
 - Desktop suite: VS Code, at the default macOS path or set by `VSCODE_PATH`.
 - Web suite: the first run downloads VS Code for the Web (about 80 MB) into `.vscode-test-web/`, which is git-ignored.
+- Set `E2E_VSCODE_COMMIT` to a VS Code commit to reuse a cached build without checking for the latest release.
 - Ports `3123` (web, `E2E_PORT`) and `9333` (desktop, `E2E_CDP_PORT`) must be free.
 
 ## What is covered
@@ -28,6 +35,7 @@ Web (`web.mjs`, VS Code for the Web through `@vscode/test-web`):
 - Cursor to map: the node flashes, "Toggle the active node" folds it, and a cursor inside a folded branch unfolds it.
 - Map to cursor: double-clicking a node jumps to its source line.
 - A relative link on a node opens the file.
+- Cross-file anchors select the source heading, including Unicode, encoded fragments, and duplicate headings.
 - Typing updates the map live, and the map follows the VS Code color theme.
 - An anchor link in a note popover flashes the heading.
 - The export picker lists SVG, PNG and HTML, and each opens a save dialog.
@@ -37,6 +45,7 @@ Desktop (`desktop.mjs`, desktop VS Code over the DevTools protocol):
 
 - The webview loads, images are rewritten, and math renders.
 - A code block in a note is highlighted, which proves the lazy chunk loads.
+- Cross-file anchors select the source heading, including Unicode, encoded fragments, and duplicate headings. Each case resets the source cursor first to avoid stale-position passes.
 - SVG, PNG and HTML exports write real, valid files.
 
 Both suites also fail on console errors, except `favicon` and `404`.

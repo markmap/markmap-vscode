@@ -6,7 +6,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright-core';
 import {
-  chooseExport, createReporter, extensionPath, findNodeId, openSampleAsMarkmap, prepareWorkspace, sleep,
+  checkLocalLinks, chooseExport, createReporter, extensionPath, findNodeId, openSampleAsMarkmap, prepareWorkspace, sleep,
 } from './lib.mjs';
 
 const vscodePath = process.env.VSCODE_PATH || '/Applications/Visual Studio Code.app/Contents/MacOS/Code';
@@ -22,7 +22,14 @@ mkdirSync(join(dataDir, 'User'), { recursive: true });
 // simpleDialog makes the save dialog a quick-input box that Playwright can drive.
 writeFileSync(
   join(dataDir, 'User', 'settings.json'),
-  JSON.stringify({ 'files.simpleDialog.enable': true, 'workbench.startupEditor': 'none', 'update.mode': 'none', 'telemetry.telemetryLevel': 'off' }),
+  JSON.stringify({
+    'files.simpleDialog.enable': true,
+    'workbench.startupEditor': 'none',
+    'update.mode': 'none',
+    'telemetry.telemetryLevel': 'off',
+    // Keep unrelated built-in chat/agent services out of this extension test host.
+    'chat.disableAIFeatures': true,
+  }),
 );
 
 const t = createReporter();
@@ -33,13 +40,13 @@ const proc = spawn(
 );
 
 let browser;
+let page;
 try {
   for (let i = 0; i < 60 && !browser; i++) {
     await sleep(500);
     browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`).catch(() => undefined);
   }
   if (!browser) throw new Error('could not connect to VS Code');
-  let page;
   for (let i = 0; i < 40 && !page; i++) {
     await sleep(500);
     page = browser.contexts().flatMap((c) => c.pages()).find((p) => p.url().includes('workbench'));
@@ -66,6 +73,8 @@ try {
   t.ok('code block in a note is highlighted (lazy chunk loads)', await v(() => !!document.querySelector('.markmap-popover .hljs-keyword')));
   await v(() => document.querySelector('markmap-view').mm.closeNotes());
 
+  await checkLocalLinks(page, frame, t);
+
   const signatures = { svg: (b) => /<svg/.test(b.subarray(0, 400).toString()), png: (b) => b.subarray(1, 4).toString() === 'PNG', html: (b) => /<html|<!doctype/i.test(b.subarray(0, 400).toString()) };
   for (const format of ['svg', 'png', 'html']) {
     const rows = await chooseExport(page, frame, format);
@@ -86,6 +95,9 @@ try {
   t.ok('no console errors', bad.length === 0, bad.join(' | '));
 } catch (e) {
   t.ok('test run completed', false, e.message);
+  const screenshot = join(root, 'failure.png');
+  await page?.screenshot({ path: screenshot }).catch(() => {});
+  t.info('Failure screenshot:', screenshot);
 } finally {
   await browser?.close().catch(() => {});
   proc.kill();

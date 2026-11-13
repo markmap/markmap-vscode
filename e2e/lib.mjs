@@ -80,6 +80,48 @@ export function findNodeId(frame, text) {
   }, text);
 }
 
+/** Click rendered links and verify navigation, resetting the cursor between cases. */
+export async function checkLocalLinks(page, frame, t) {
+  for (const [label, expectedLine] of [
+    ['Unicode heading', 5],
+    ['encoded heading', 5],
+    ['duplicate heading', 13],
+  ]) {
+    // Reset in the source document, so identical targets cannot pass on stale state.
+    await page.locator('.monaco-editor').first().click();
+    await page.locator('.explorer-folders-view').getByText('sample.md', { exact: true }).first().click();
+    await page.locator('.monaco-editor').first().click();
+    await page.keyboard.press('Control+g');
+    await sleep(300);
+    await page.keyboard.type('1');
+    await page.keyboard.press('Enter');
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('[aria-label*="Ln "]')].some((el) => /Ln 1,/.test(el.textContent)));
+    const href = await frame.evaluate((label) => {
+      const find = (node) => {
+        const link = node.content.find((c) =>
+          c.type === 'link' && c.children.some((child) => child.value === label));
+        return link?.url || node.children.map(find).find(Boolean);
+      };
+      return find(document.querySelector('markmap-view').mm.tree);
+    }, label);
+    if (!href) throw new Error(`Missing rendered link: ${label}`);
+    // The SVG anchor contains a hit-area rect; its label is drawn separately.
+    await frame.locator('markmap-view').locator(`svg a[href=${JSON.stringify(href)}]`).click();
+    try {
+      await page.waitForFunction((line) =>
+        [...document.querySelectorAll('.tabs-container .tab.active')].some((el) => el.textContent.includes('other.md')) &&
+        [...document.querySelectorAll('[aria-label*="Ln "]')].some((el) =>
+          new RegExp(`Ln ${line},`).test(el.textContent)),
+      expectedLine, { timeout: 10000 });
+    } catch (error) {
+      t.info(label, await page.locator('.tab.active, [aria-label*="Ln "], .notifications-toasts').allTextContents());
+      throw error;
+    }
+    t.ok(`${label} opens the exact source heading`, true);
+  }
+}
+
 /** Click the toolbar Export button and choose a format in the picker. Returns the picker rows. */
 export async function chooseExport(page, frame, format) {
   await frame.evaluate(() =>
